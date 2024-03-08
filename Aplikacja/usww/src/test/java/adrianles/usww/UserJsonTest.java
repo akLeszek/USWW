@@ -20,7 +20,7 @@ public class UserJsonTest {
     @Test
     public void userJsonSerializationTest() throws IOException {
         User user = new User(99L, "test", "12345");
-        File userJsonTest = ResourceFileLoader.getJsonFile("user.json", classLoader);
+        File userJsonTest = ResourceFileLoader.getJsonFile("testResources/json/user.json", classLoader);
 
         assertThat(json.write(user)).isStrictlyEqualToJson(userJsonTest);
         assertThat(json.write(user)).hasJsonPathNumberValue("@.id");
@@ -36,7 +36,7 @@ public class UserJsonTest {
 
     @Test
     public void userJsonDeserializationTest() throws IOException {
-        String userJsonTest = ResourceFileLoader.getJsonFileAsString("user.json", classLoader);
+        String userJsonTest = ResourceFileLoader.getJsonFileAsString("testResources/json/user.json", classLoader);
         assertThat(json.parse(userJsonTest)).isEqualTo(new User(99L, "test", "12345"));
         assertThat(json.parseObject(userJsonTest).id()).isEqualTo(99);
         assertThat(json.parseObject(userJsonTest).login()).isEqualTo("test");

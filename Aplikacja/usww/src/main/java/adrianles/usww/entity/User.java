@@ -2,6 +2,7 @@ package adrianles.usww.entity;
 
 import adrianles.usww.entity.dictionary.OrganizationUnit;
 import adrianles.usww.entity.dictionary.UserGroup;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;
@@ -13,6 +14,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String login;
+    @JsonIgnore
     private byte[] password;
     private String forename;
     private String surname;

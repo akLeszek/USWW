@@ -1,17 +1,13 @@
 package adrianles.usww.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "MESSAGE_ATTACHMENT")
-public class MessageAttachment {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @ManyToOne
-    @JoinColumn(name = "message_id")
+public class MessageAttachment extends AbstractEntity {
     private TicketMessage message;
 
     private byte[] attachment;
@@ -19,20 +15,13 @@ public class MessageAttachment {
     public MessageAttachment() {
     }
 
-    public MessageAttachment(Integer id, TicketMessage message, byte[] attachment) {
-        this.id = id;
+    public MessageAttachment(TicketMessage message, byte[] attachment) {
         this.message = message;
         this.attachment = attachment;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
+    @ManyToOne
+    @JoinColumn(name = "message_id")
     public TicketMessage getMessage() {
         return message;
     }

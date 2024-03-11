@@ -1,33 +1,19 @@
 package adrianles.usww.entity.dictionary;
 
+import adrianles.usww.entity.AbstractEntity;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 
 @Entity
-public abstract class Dictionary {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+public abstract class Dictionary extends AbstractEntity {
     private String idn;
     private String name;
 
     public Dictionary() {
     }
 
-    public Dictionary(Integer id, String idn, String name) {
-        this.id = id;
+    public Dictionary(String idn, String name) {
         this.idn = idn;
         this.name = name;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getIdn() {

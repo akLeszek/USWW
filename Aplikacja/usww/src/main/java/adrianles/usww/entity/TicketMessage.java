@@ -6,32 +6,18 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "TICKET_MESSAGE")
-public class TicketMessage {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+public class TicketMessage extends AbstractEntity {
 
-    @ManyToOne
-    @JoinColumn(name = "ticket_id")
     private Ticket ticket;
-
-    @ManyToOne
-    @JoinColumn(name = "sender_id")
     private User sender;
-
-    @Column(name = "message_text")
     private String message;
-
-    @Column(name = "insert_date")
     private Timestamp insertDate;
-
     private boolean archive;
 
     public TicketMessage() {
     }
 
-    public TicketMessage(Integer id, Ticket ticket, User sender, String message, Timestamp insertDate, boolean archive) {
-        this.id = id;
+    public TicketMessage(Ticket ticket, User sender, String message, Timestamp insertDate, boolean archive) {
         this.ticket = ticket;
         this.sender = sender;
         this.message = message;
@@ -39,14 +25,8 @@ public class TicketMessage {
         this.archive = archive;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
+    @ManyToOne
+    @JoinColumn(name = "ticket_id")
     public Ticket getTicket() {
         return ticket;
     }
@@ -55,6 +35,8 @@ public class TicketMessage {
         this.ticket = ticket;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "sender_id")
     public User getSender() {
         return sender;
     }
@@ -63,6 +45,7 @@ public class TicketMessage {
         this.sender = sender;
     }
 
+    @Column(name = "message_text")
     public String getMessage() {
         return message;
     }
@@ -71,6 +54,7 @@ public class TicketMessage {
         this.message = message;
     }
 
+    @Column(name = "insert_date")
     public Timestamp getInsertDate() {
         return insertDate;
     }

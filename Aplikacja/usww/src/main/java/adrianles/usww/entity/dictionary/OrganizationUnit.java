@@ -9,7 +9,8 @@ public class OrganizationUnit extends Dictionary {
     public OrganizationUnit() {
     }
 
-    public OrganizationUnit(Integer id, String idn, String name) {
-        super(id, idn, name);
+    public OrganizationUnit(String idn, String name) {
+        super(idn, name);
     }
+
 }

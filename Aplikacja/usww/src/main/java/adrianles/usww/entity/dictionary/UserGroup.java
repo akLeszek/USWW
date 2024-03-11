@@ -10,8 +10,8 @@ public class UserGroup extends Dictionary {
     public UserGroup() {
     }
 
-    public UserGroup(Integer id, String idn, String name) {
-        super(id, idn, name);
+    public UserGroup(String idn, String name) {
+        super(idn, name);
     }
 
 }

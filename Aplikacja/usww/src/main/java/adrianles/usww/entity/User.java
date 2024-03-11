@@ -9,33 +9,22 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "USER")
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+public class User extends AbstractEntity {
     private String login;
-    @JsonIgnore
     private byte[] password;
     private String forename;
     private String surname;
-    @Column(name = "login_ban")
     private boolean loginBan;
-    @Column(name = "last_login")
     private Timestamp lastLogin;
-    @ManyToOne
-    @JoinColumn(name = "group_id")
     private UserGroup group;
-    @ManyToOne
-    @JoinColumn(name = "organization_unit_id")
     private OrganizationUnit organizationUnit;
     private boolean archive;
 
     public User() {
     }
 
-    public User(Integer id, String login, byte[] password, String forename, String surname, boolean loginBan,
+    public User(String login, byte[] password, String forename, String surname, boolean loginBan,
                 Timestamp lastLogin, UserGroup group, OrganizationUnit organizationUnit, boolean archive) {
-        this.id = id;
         this.login = login;
         this.password = password;
         this.forename = forename;
@@ -47,14 +36,6 @@ public class User {
         this.archive = archive;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public String getLogin() {
         return login;
     }
@@ -63,6 +44,7 @@ public class User {
         this.login = login;
     }
 
+    @JsonIgnore
     public byte[] getPassword() {
         return password;
     }
@@ -87,6 +69,7 @@ public class User {
         this.surname = surname;
     }
 
+    @Column(name = "login_ban")
     public boolean isLoginBan() {
         return loginBan;
     }
@@ -95,6 +78,7 @@ public class User {
         this.loginBan = loginBan;
     }
 
+    @Column(name = "last_login")
     public Timestamp getLastLogin() {
         return lastLogin;
     }
@@ -103,6 +87,8 @@ public class User {
         this.lastLogin = lastLogin;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "group_id")
     public UserGroup getGroup() {
         return group;
     }
@@ -111,6 +97,8 @@ public class User {
         this.group = group;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "organization_unit_id")
     public OrganizationUnit getOrganizationUnit() {
         return organizationUnit;
     }

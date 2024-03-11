@@ -10,7 +10,8 @@ public class TicketStatus extends Dictionary {
     public TicketStatus() {
     }
 
-    public TicketStatus(Integer id, String idn, String name) {
-        super(id, idn, name);
+    public TicketStatus(String idn, String name) {
+        super(idn, name);
     }
+
 }

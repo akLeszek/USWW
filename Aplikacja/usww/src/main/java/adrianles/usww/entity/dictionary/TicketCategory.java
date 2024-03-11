@@ -9,7 +9,8 @@ public class TicketCategory extends Dictionary {
     public TicketCategory() {
     }
 
-    public TicketCategory(Integer id, String idn, String name) {
-        super(id, idn, name);
+    public TicketCategory(String idn, String name) {
+        super(idn, name);
     }
+
 }

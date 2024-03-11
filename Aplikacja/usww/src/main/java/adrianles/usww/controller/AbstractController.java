@@ -1,38 +1,42 @@
 package adrianles.usww.controller;
 
-import adrianles.usww.EntityRepositoryService;
+import adrianles.usww.entity.AbstractEntity;
+import adrianles.usww.service.AbstractService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 
-public abstract class EntityController<T> {
+@Controller
+public abstract class AbstractController<E extends AbstractEntity> {
 
-    private EntityRepositoryService<T> service;
+    private AbstractService<E> service;
 
-    EntityController(EntityRepositoryService service) {
+    @Autowired
+    public AbstractController(AbstractService<E> service) {
         this.service = service;
     }
 
     @PostMapping("/index.json")
-    public T create(@RequestBody T item) throws Exception {
+    public E create(@RequestBody E item) throws Exception {
         return service.create(item);
     }
 
     @PutMapping(value = "/{id}.json")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public T update(@PathVariable Integer id, @RequestBody T item) throws Exception {
-        return service.update(item, new HashMap<>());
+    public E update(@PathVariable Integer id, @RequestBody E item) throws Exception {
+        return service.update(item);
     }
 
     @GetMapping(value = "/{id}.json")
-    public T read(@PathVariable Integer id) throws Exception {
+    public E read(@PathVariable Integer id) throws Exception {
         return service.get(id);
     }
 
     @GetMapping(value = "/index.json")
-    public List<T> readAll() throws Exception {
+    public List<E> readAll() throws Exception {
         return service.findAll();
     }
 

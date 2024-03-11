@@ -8,40 +8,21 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "TICKET")
-public class Ticket {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+public class Ticket extends AbstractEntity {
 
-    @ManyToOne
-    @JoinColumn(name = "operator_id")
     private User operator;
-
-    @ManyToOne
-    @JoinColumn(name = "student_id")
     private User student;
-
-    @ManyToOne
-    @JoinColumn(name = "status_id")
     private TicketStatus status;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
     private TicketCategory category;
-
-    @Column(name = "inserted_date")
     private Timestamp insertedDate;
-
-    @Column(name = "change_date")
     private Timestamp changeDate;
     private boolean archive;
 
     public Ticket() {
     }
 
-    public Ticket(Integer id, User operator, User student, TicketStatus status, TicketCategory category,
+    public Ticket(User operator, User student, TicketStatus status, TicketCategory category,
                   Timestamp insertedDate, Timestamp changeDate, boolean archive) {
-        this.id = id;
         this.operator = operator;
         this.student = student;
         this.status = status;
@@ -51,14 +32,9 @@ public class Ticket {
         this.archive = archive;
     }
 
-    public Integer getId() {
-        return id;
-    }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
+    @ManyToOne
+    @JoinColumn(name = "operator_id")
     public User getOperator() {
         return operator;
     }
@@ -67,6 +43,8 @@ public class Ticket {
         this.operator = operator;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "student_id")
     public User getStudent() {
         return student;
     }
@@ -75,6 +53,8 @@ public class Ticket {
         this.student = student;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "status_id")
     public TicketStatus getStatus() {
         return status;
     }
@@ -83,6 +63,8 @@ public class Ticket {
         this.status = status;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "category_id")
     public TicketCategory getCategory() {
         return category;
     }
@@ -91,6 +73,7 @@ public class Ticket {
         this.category = category;
     }
 
+    @Column(name = "inserted_date")
     public Timestamp getInsertedDate() {
         return insertedDate;
     }
@@ -99,6 +82,7 @@ public class Ticket {
         this.insertedDate = insertedDate;
     }
 
+    @Column(name = "change_date")
     public Timestamp getChangeDate() {
         return changeDate;
     }

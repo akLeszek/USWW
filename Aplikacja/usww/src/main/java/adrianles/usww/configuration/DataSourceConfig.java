@@ -1,20 +1,20 @@
 package adrianles.usww.configuration;
 
+import adrianles.usww.utils.PropertiesLoader;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.util.Properties;
 
-@Configuration
 public class DataSourceConfig {
 
-    @Bean
     public DataSource getDataSource() {
-        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+        DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
         Properties dataSourceProperties = getDataSourceProperties();
-        dataSourceBuilder.driverClassName("");
+        dataSourceBuilder.driverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         dataSourceBuilder.url(dataSourceProperties.getProperty("url"));
         dataSourceBuilder.username(dataSourceProperties.getProperty("user"));
         dataSourceBuilder.password(dataSourceProperties.getProperty("password"));
@@ -22,9 +22,14 @@ public class DataSourceConfig {
     }
 
     private Properties getDataSourceProperties() {
-        Properties dataSourceProperties = new Properties();
-        dataSourceProperties.setProperty("url", getUrlProperty(dataSourceProperties));
-        return dataSourceProperties;
+        Properties dataSourceProperties;
+        try {
+            dataSourceProperties = PropertiesLoader.getPropertiesFromResources("mainDataSource.properties");
+            dataSourceProperties.setProperty("url", getUrlProperty(dataSourceProperties));
+            return dataSourceProperties;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private String getUrlProperty(Properties dataSourceProperties) {
@@ -34,7 +39,7 @@ public class DataSourceConfig {
         String database = dataSourceProperties.getProperty("dbName");
 
         stringBuilder.append("jdbc:sqlserver://");
-        stringBuilder.append(host + ":" + port);
+        stringBuilder.append(host).append(":").append(port);
         stringBuilder.append(";database=");
         stringBuilder.append(database);
         return stringBuilder.toString();

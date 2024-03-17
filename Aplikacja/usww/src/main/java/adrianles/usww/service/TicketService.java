@@ -1,7 +1,7 @@
 package adrianles.usww.service;
 
 import adrianles.usww.entity.Ticket;
-import adrianles.usww.service.repository.CommonRepository;
+import adrianles.usww.repository.CommonRepository;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -1,4 +1,4 @@
-package adrianles.usww.service.repository;
+package adrianles.usww.repository;
 
 import adrianles.usww.entity.AbstractEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

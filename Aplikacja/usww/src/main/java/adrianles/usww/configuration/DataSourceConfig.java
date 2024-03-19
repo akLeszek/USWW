@@ -10,6 +10,16 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class DataSourceConfig {
+    /**@Test
+    void databaseTest() {
+    ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+    populator.addScripts(
+    new ClassPathResource("test-schema.sql"),
+    new ClassPathResource("test-data.sql"));
+    populator.setSeparator("@@");
+    populator.execute(this.dataSource);
+    // run code that uses the test schema and data
+    }*/
 
     public DataSource getDataSource() {
         DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();

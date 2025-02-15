@@ -8,7 +8,7 @@ import jakarta.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "USER")
+@Table(name = "USERS")
 public class User extends AbstractEntity {
     private String login;
     private byte[] password;

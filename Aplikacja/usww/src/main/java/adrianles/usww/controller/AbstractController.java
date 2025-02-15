@@ -4,12 +4,10 @@ import adrianles.usww.entity.AbstractEntity;
 import adrianles.usww.service.AbstractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
 public abstract class AbstractController<E extends AbstractEntity> {
 
     private AbstractService<E> service;
@@ -26,7 +24,8 @@ public abstract class AbstractController<E extends AbstractEntity> {
 
     @PutMapping(value = "/{id}.json")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public E update(@PathVariable Integer id, @RequestBody E item) throws Exception {
+    public E update(@PathVariable Integer id, @RequestBody E item)
+            throws Exception {
         return service.update(item);
     }
 

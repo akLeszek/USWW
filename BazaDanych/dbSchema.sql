@@ -1,3 +1,5 @@
+--SŁOWNIKI
+--GRUPA UŻYTKOWNIKÓW - służyć będzie do nadawania uprawnień grupowych.
 IF OBJECT_ID (N'USER_GROUP', N'U') IS NULL
 	CREATE TABLE USER_GROUP (
 		id INT IDENTITY(1, 1) PRIMARY KEY,
@@ -7,6 +9,7 @@ IF OBJECT_ID (N'USER_GROUP', N'U') IS NULL
 	)
 GO
 
+--JEDNOSTKA ORGANIZACYJNA/GRUPA - służy do grupowania użytkowników względem przynależności
 IF OBJECT_ID (N'ORGANIZATION_UNIT', N'U') IS NULL
 	CREATE TABLE ORGANIZATION_UNIT (
 		id INT IDENTITY(1, 1) PRIMARY KEY,
@@ -16,6 +19,7 @@ IF OBJECT_ID (N'ORGANIZATION_UNIT', N'U') IS NULL
 	)
 GO
 
+--KATEGORIA/RODZAJ ZGŁOSZENIA
 IF OBJECT_ID (N'TICKET_CATEGORY', N'U') IS NULL
 	CREATE TABLE TICKET_CATEGORY (
 		id INT IDENTITY(1, 1) PRIMARY KEY,
@@ -25,6 +29,7 @@ IF OBJECT_ID (N'TICKET_CATEGORY', N'U') IS NULL
 	)
 GO
 
+--STATUS ZGŁOSZENIA 
 IF OBJECT_ID (N'TICKET_STATUS', N'U') IS NULL
 	CREATE TABLE TICKET_STATUS (
 		id INT IDENTITY(1, 1) PRIMARY KEY,
@@ -34,6 +39,8 @@ IF OBJECT_ID (N'TICKET_STATUS', N'U') IS NULL
 	)
 GO
 
+--UŻYTKOWNIK - tabela posiadać będzie wszystkie informacje na temat użykownika systemu.
+--Z użyciem tych danych weryfikowana będzie procedura logowania do systemu.
 IF OBJECT_ID (N'USER', N'U') IS NULL
 	CREATE TABLE [USER] (
 		id INT IDENTITY(1, 1) PRIMARY KEY,
@@ -52,6 +59,7 @@ IF OBJECT_ID (N'USER', N'U') IS NULL
 	)
 GO
 
+--ZGŁOSZENIE - rekord nadrzędny zgłoszenia, nagłówek.
 IF OBJECT_ID (N'TICKET', N'U') IS NULL
 	CREATE TABLE TICKET (
 		id INT IDENTITY(1, 1) PRIMARY KEY,
@@ -69,6 +77,7 @@ IF OBJECT_ID (N'TICKET', N'U') IS NULL
 	)
 GO
 
+--WIADOMOŚĆ W ZGŁOSZENIU - podpięta do zgłoszenia. Jedno zgłoszenie może posiadać kilka komentarzy/wiadomości.
 IF OBJECT_ID (N'TICKET_MESSAGE', N'U') IS NULL
 	CREATE TABLE TICKET_MESSAGE (
 		id INT IDENTITY(1, 1) PRIMARY KEY,
@@ -82,6 +91,7 @@ IF OBJECT_ID (N'TICKET_MESSAGE', N'U') IS NULL
 	)
 GO
 
+--ZAŁĄCZNIK WIADOMOŚCI - podpinane do wiadomości ze zgłoszenia. Jedna wiadomość może posiadać kilka załączników.
 IF OBJECT_ID (N'MESSAGE_ATTACHMENT', N'U') IS NULL
 	CREATE TABLE MESSAGE_ATTACHMENT (
 		id INT IDENTITY(1, 1) PRIMARY KEY,

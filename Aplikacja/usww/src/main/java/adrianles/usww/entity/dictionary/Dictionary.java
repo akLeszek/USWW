@@ -3,7 +3,6 @@ package adrianles.usww.entity.dictionary;
 import adrianles.usww.entity.AbstractEntity;
 import jakarta.persistence.Entity;
 
-@Entity
 public abstract class Dictionary extends AbstractEntity {
     private String idn;
     private String name;

@@ -1,57 +1,68 @@
 package adrianles.usww.configuration;
 
-import adrianles.usww.utils.PropertiesLoader;
-import org.springframework.boot.jdbc.DataSourceBuilder;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.orm.jpa.JpaVendorAdapter;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.util.Properties;
 
+@Configuration
+@EnableTransactionManagement
 public class DataSourceConfig {
-    /**@Test
-    void databaseTest() {
-    ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-    populator.addScripts(
-    new ClassPathResource("test-schema.sql"),
-    new ClassPathResource("test-data.sql"));
-    populator.setSeparator("@@");
-    populator.execute(this.dataSource);
-    // run code that uses the test schema and data
-    }*/
 
+    @Bean
     public DataSource getDataSource() {
-        DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
-        Properties dataSourceProperties = getDataSourceProperties();
-        dataSourceBuilder.driverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        dataSourceBuilder.url(dataSourceProperties.getProperty("url"));
-        dataSourceBuilder.username(dataSourceProperties.getProperty("user"));
-        dataSourceBuilder.password(dataSourceProperties.getProperty("password"));
-        return dataSourceBuilder.build();
+        HikariConfig hikariConfig = new HikariConfig();
+        setDatabaseProperties(hikariConfig);
+        setHikariProperties(hikariConfig);
+        HikariDataSource dataSource = new HikariDataSource(hikariConfig);
+        executeSqlScripts(dataSource);
+        return dataSource;
     }
 
-    private Properties getDataSourceProperties() {
-        Properties dataSourceProperties;
-        try {
-            dataSourceProperties = PropertiesLoader.getPropertiesFromResources("mainDataSource.properties");
-            dataSourceProperties.setProperty("url", getUrlProperty(dataSourceProperties));
-            return dataSourceProperties;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private void setDatabaseProperties(HikariConfig hikariConfig) {
+        hikariConfig.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        hikariConfig.setJdbcUrl("jdbc:sqlserver://localhost;databaseName=USWW;encrypt=true;trustServerCertificate=true;");
+        hikariConfig.setUsername("usww_admin");
+        hikariConfig.setPassword("usww1234");
     }
 
-    private String getUrlProperty(Properties dataSourceProperties) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String host = dataSourceProperties.getProperty("host");
-        String port = dataSourceProperties.getProperty("port");
-        String database = dataSourceProperties.getProperty("dbName");
+    private void setHikariProperties(HikariConfig hikariConfig) {
+        hikariConfig.setMaximumPoolSize(10);
+        hikariConfig.setMinimumIdle(2);
+        hikariConfig.setIdleTimeout(30000);
+        hikariConfig.setConnectionTimeout(30000);
+    }
 
-        stringBuilder.append("jdbc:sqlserver://");
-        stringBuilder.append(host).append(":").append(port);
-        stringBuilder.append(";database=");
-        stringBuilder.append(database);
-        return stringBuilder.toString();
+    private void executeSqlScripts(DataSource dataSource) {
+        DatabaseInitializer initializer = new DatabaseInitializer(dataSource);
+        initializer.runScripts();
+    }
+
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(dataSource);
+        em.setPackagesToScan("adrianles.usww.entity");
+
+        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        em.setJpaVendorAdapter(vendorAdapter);
+        em.setJpaProperties(getHibernateProperties());
+        return em;
+    }
+
+    private Properties getHibernateProperties() {
+        Properties hibernateProperties = new Properties();
+        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "validate");
+        hibernateProperties.setProperty("hibernate.show_sql", "true");
+        hibernateProperties.setProperty("hibernate.format_sql", "true");
+        hibernateProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.SQLServerDialect");
+        return hibernateProperties;
     }
 }

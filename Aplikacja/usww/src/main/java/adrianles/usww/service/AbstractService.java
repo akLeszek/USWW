@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 
-@Service
 public abstract class AbstractService<E extends AbstractEntity> {
     protected final CommonRepository<E> repository;
 

@@ -59,6 +59,7 @@ public class DataSourceConfig {
 
     private Properties getHibernateProperties() {
         Properties hibernateProperties = new Properties();
+        hibernateProperties.setProperty("hibernate.physical_naming_strategy", "adrianles.usww.configuration.CustomPhysicalNamingStrategy");
         hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "validate");
         hibernateProperties.setProperty("hibernate.show_sql", "true");
         hibernateProperties.setProperty("hibernate.format_sql", "true");

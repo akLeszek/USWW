@@ -12,44 +12,41 @@ INSERT INTO users VALUES
 (10, 'zboniek', '$argon2i$v=19$m=16,t=2,p=1$Qm9iRHlsYW4$NqRxFtwCN/kKYwfkJ4KUQQ', 'Zbigniew', 'Boniek', 0, 0)
 */
 
--- Dodawanie przykładowych jednostek organizacyjnych
-INSERT INTO ORGANIZATION_UNIT (idn, name)
-VALUES ('WI', 'Wydział Informatyki'),
-       ('WM', 'Wydział modelarstwa');
+INSERT INTO USER_GROUP (idn, name) VALUES
+('ADMIN', 'Administratorzy'),
+('TECH', 'Technicy'),
+('STUDENT', 'Studenci');
 
--- Dodawanie przykładowych kategorii zgłoszeń
-INSERT INTO TICKET_CATEGORY (idn, name)
-VALUES ('POPS', 'Podanie o przedłużenie sesji'),
-       ('ZOSS', 'Zaświadczenie o statusie studenta');
+INSERT INTO ORGANIZATION_UNIT (idn, name) VALUES
+('IT', 'Dział IT'),
+('DZIEKANAT', 'Dziekanat'),
+('ADMIN', 'Administracja');
 
-INSERT INTO USER_GROUP (idn, name)
-VALUES ('A', 'Administrator'),
-       ('S', 'Student'),
-       ('P', 'Pracownik Dziekanatu');
+INSERT INTO TICKET_CATEGORY (idn, name) VALUES
+('LOGOWANIE', 'Problemy z logowaniem'),
+('KURS', 'Problemy z dostępem do kursów'),
+('INNE', 'Inne zgłoszenia');
 
-INSERT INTO TICKET_STATUS (idn, name)
-VALUES ('N', 'Nowe'),
-       ('W', 'W trakcie rozpatrywania'),
-       ('Z', 'Zakończone');
+INSERT INTO TICKET_STATUS (idn, name) VALUES
+('NOWE', 'Nowe'),
+('W_TRAKCIE', 'W trakcie realizacji'),
+('ZAMKNIETE', 'Zamknięte');
 
--- Dodawanie przykładowych użytkowników
-INSERT INTO USER (login, password, forename, surname, last_login, login_ban, archive, group_id,
-                  organization_user_id)
-VALUES ('admin', 'admin', 'Admin', 'USWW', '2024-02-10 08:30:00', 0, 0, 1, null),
-       ('pracownik1', 'pracownik1', 'Marek', 'Wiśniewski', '2024-02-08 10:15:00', 0, 0, 3, 1),
-       ('pracownik2', 'pracownik2', 'Andrzej', 'Fonfara', '2024-02-08 10:15:00', 0, 0, 3, 2),
-       ('student1', 'student1', 'Jan', 'Kowalski', '2024-02-10 08:30:00', 0, 0, 2, 1),
-       ('student2', 'student2', 'Anna', 'Nowak', '2024-02-09 14:50:00', 0, 0, 2, 1),
-       ('student_ban', 'student_ban', 'Student', 'Ban', '2024-02-09 14:50:00', 1, 0, 2, 1);
+INSERT INTO USERS (login, password, forename, surname, login_ban, last_login, group_id, organization_unit_id, archive) VALUES
+('admin', 0x123456789ABCDEF, 'Jan', 'Kowalski', 0, '2024-02-16 10:00:00', 1, 3, 0),
+('technician1', 0x123456789ABCDEF, 'Piotr', 'Nowak', 0, '2024-02-16 10:10:00', 2, 1, 0),
+('student1', 0x123456789ABCDEF, 'Anna', 'Zielińska', 0, '2024-02-16 10:15:00', 3, 2, 0);
 
--- Dodawanie przykładowych zgłoszeń
-INSERT INTO TICKET (student_id, operator_id, category_id, status_id, inserted_date, change_date, archive)
-VALUES (3, 2, 2, 1, '2024-02-05 09:00:00', '2024-02-06 12:00:00', 0),
-       (4, 2, 3, 2, '2024-02-06 14:30:00', '2024-02-07 10:15:00', 0);
+INSERT INTO TICKET (operator_id, student_id, status_id, category_id, inserted_date, change_date, archive, title) VALUES
+(2, 3, 1, 1, '2024-02-16 11:00:00', NULL, 0, 'Nie mogę się zalogować'),
+(2, 3, 2, 2, '2024-02-16 11:30:00', '2024-02-16 12:00:00', 0, 'Brak dostępu do kursu'),
+(2, 3, 3, 3, '2024-02-15 09:00:00', '2024-02-16 13:00:00', 1, 'Problem z aplikacją');
 
--- Dodawanie przykładowych wiadomości do zgłoszeń
-INSERT INTO TICKET_MESSAGE (ticket_id, sender_id, message_text, inserted_date)
-VALUES (1, 3, 'Czy mogę uzyskać informację na temat przedłużenia sesji?', '2024-02-05 09:15:00'),
-       (1, 2, 'Tak, wniosek musi być zatwierdzony przez dziekana.', '2024-02-06 11:30:00'),
-       (2, 4, 'Proszę o zaświadczenie o statusie studenta.', '2024-02-06 14:45:00'),
-       (2, 2, 'Zaświadczenie zostało wysłane na e-mail.', '2024-02-07 10:00:00');
+INSERT INTO TICKET_MESSAGE (ticket_id, sender_id, message_text, insert_date, archive) VALUES
+(1, 3, 'Nie mogę się zalogować do systemu. Pokazuje błędne hasło.', '2024-02-16 11:05:00', 0),
+(1, 2, 'Czy próbowałaś zresetować hasło?', '2024-02-16 11:10:00', 0),
+(2, 3, 'Brak kursu na moim profilu.', '2024-02-16 11:35:00', 0);
+
+INSERT INTO MESSAGE_ATTACHMENT (message_id, attachment) VALUES
+(1, 0xAABBCCDD),  -- Przykładowy plik binarny
+(2, 0xEEFF0011);

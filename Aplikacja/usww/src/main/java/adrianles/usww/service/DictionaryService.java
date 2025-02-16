@@ -1,37 +1,23 @@
 package adrianles.usww.service;
 
-import adrianles.usww.entity.dictionary.Dictionary;
-import adrianles.usww.repository.CommonRepository;
+import adrianles.usww.dto.dictionary.TicketCategoryDTO;
+import adrianles.usww.repository.dictionary.TicketCategoryRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
-public class DictionaryService extends AbstractService<Dictionary> {
+@RequiredArgsConstructor
+public class DictionaryService {
 
-    public DictionaryService(CommonRepository<Dictionary> repository) {
-        super(repository);
-    }
+    private final TicketCategoryRepository ticketCategoryRepository;
 
-    @Override
-    void verifyNew(Dictionary t) {
-    }
-
-    @Override
-    void verifyUpdate(Dictionary t) {
-
-    }
-
-    @Override
-    void verifyDelete(Dictionary t) {
-
-    }
-
-    @Override
-    void archiveLinkedObjects(Dictionary t) {
-
-    }
-
-    @Override
-    void archiveObject(Dictionary t) {
-
+    public List<TicketCategoryDTO> getAllTicketCategories() {
+        return ticketCategoryRepository.findAll().stream()
+                .map(category ->
+                        new TicketCategoryDTO(category.getId(), category.getIdn(), category.getName()))
+                .collect(Collectors.toList());
     }
 }

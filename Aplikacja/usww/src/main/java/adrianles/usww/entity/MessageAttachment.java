@@ -1,40 +1,23 @@
 package adrianles.usww.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "MESSAGE_ATTACHMENT")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class MessageAttachment extends AbstractEntity {
+    @ManyToOne
+    @JoinColumn(name = "message_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "fk_message_attachment_ticket_message"))
     private TicketMessage message;
 
+    @Lob
     private byte[] attachment;
-
-    public MessageAttachment() {
-    }
-
-    public MessageAttachment(TicketMessage message, byte[] attachment) {
-        this.message = message;
-        this.attachment = attachment;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "message_id")
-    public TicketMessage getMessage() {
-        return message;
-    }
-
-    public void setMessage(TicketMessage message) {
-        this.message = message;
-    }
-
-    public byte[] getAttachment() {
-        return attachment;
-    }
-
-    public void setAttachment(byte[] attachment) {
-        this.attachment = attachment;
-    }
 }

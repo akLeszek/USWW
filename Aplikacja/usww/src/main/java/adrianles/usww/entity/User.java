@@ -2,116 +2,50 @@ package adrianles.usww.entity;
 
 import adrianles.usww.entity.dictionary.OrganizationUnit;
 import adrianles.usww.entity.dictionary.UserGroup;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "USERS")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User extends AbstractEntity {
+
+    @Column(nullable = false, unique = true, length = 32)
     private String login;
+
+    @Column(nullable = false, length = 64)
     private byte[] password;
+
+    @Column(length = 32)
     private String forename;
+
+    @Column(length = 64)
     private String surname;
-    private boolean loginBan;
-    private Timestamp lastLogin;
-    private UserGroup group;
+
+    @Column(nullable = false)
+    private boolean loginBan = false;
+
+    private LocalDateTime lastLogin;
+
+    @ManyToOne
+    @JoinColumn(name = "group_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_user_user_group"))
+    private UserGroup userGroup;
+
+    @ManyToOne
+    @JoinColumn(name = "organization_unit_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_user_organization_unit"))
     private OrganizationUnit organizationUnit;
-    private boolean archive;
 
-    public User() {
-    }
+    @Column(nullable = false)
+    private boolean archive = false;
 
-    public User(String login, byte[] password, String forename, String surname, boolean loginBan,
-                Timestamp lastLogin, UserGroup group, OrganizationUnit organizationUnit, boolean archive) {
-        this.login = login;
-        this.password = password;
-        this.forename = forename;
-        this.surname = surname;
-        this.loginBan = loginBan;
-        this.lastLogin = lastLogin;
-        this.group = group;
-        this.organizationUnit = organizationUnit;
-        this.archive = archive;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    @JsonIgnore
-    public byte[] getPassword() {
-        return password;
-    }
-
-    public void setPassword(byte[] password) {
-        this.password = password;
-    }
-
-    public String getForename() {
-        return forename;
-    }
-
-    public void setForename(String forename) {
-        this.forename = forename;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    @Column(name = "login_ban")
-    public boolean isLoginBan() {
-        return loginBan;
-    }
-
-    public void setLoginBan(boolean loginBan) {
-        this.loginBan = loginBan;
-    }
-
-    @Column(name = "last_login")
-    public Timestamp getLastLogin() {
-        return lastLogin;
-    }
-
-    public void setLastLogin(Timestamp lastLogin) {
-        this.lastLogin = lastLogin;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "group_id")
-    public UserGroup getGroup() {
-        return group;
-    }
-
-    public void setGroup(UserGroup group) {
-        this.group = group;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "organization_unit_id")
-    public OrganizationUnit getOrganizationUnit() {
-        return organizationUnit;
-    }
-
-    public void setOrganizationUnit(OrganizationUnit organizationUnit) {
-        this.organizationUnit = organizationUnit;
-    }
-
-    public boolean isArchive() {
-        return archive;
-    }
-
-    public void setArchive(boolean archive) {
-        this.archive = archive;
-    }
 }

@@ -5,12 +5,4 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "TICKET_CATEGORY")
-public class TicketCategory extends Dictionary {
-    public TicketCategory() {
-    }
-
-    public TicketCategory(String idn, String name) {
-        super(idn, name);
-    }
-
-}
+public class TicketCategory extends AbstractDictionary {}

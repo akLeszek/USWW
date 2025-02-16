@@ -59,6 +59,7 @@ CREATE TABLE TICKET (
         student_id INT NOT NULL,
         status_id INT NOT NULL,
         category_id INT NOT NULL,
+        title VARCHAR(30) NOT NULL,
         inserted_date DATETIME,
         change_date DATETIME,
         archive BIT DEFAULT 0,

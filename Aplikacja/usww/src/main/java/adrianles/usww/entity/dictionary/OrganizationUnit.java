@@ -5,12 +5,4 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "ORGANIZATION_UNIT")
-public class OrganizationUnit extends Dictionary {
-    public OrganizationUnit() {
-    }
-
-    public OrganizationUnit(String idn, String name) {
-        super(idn, name);
-    }
-
-}
+public class OrganizationUnit extends AbstractDictionary {}

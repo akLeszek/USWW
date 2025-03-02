@@ -38,7 +38,7 @@ IF OBJECT_ID (N'USERS', N'U') IS NULL BEGIN
     CREATE TABLE USERS (
         id INT IDENTITY(1, 1) PRIMARY KEY,
         login VARCHAR(32) NOT NULL,
-        password VARBINARY(64) NOT NULL,
+        password VARCHAR(255) NOT NULL,
         forename VARCHAR(32),
         surname VARCHAR(64),
         login_ban BIT DEFAULT 0,

@@ -1,5 +1,6 @@
 package adrianles.usww.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TicketDTO {
     private Integer id;
+    @NotNull(message = "Ticket title cannot be null")
     private String title;
     private String insertedDate;
     private String changeDate;

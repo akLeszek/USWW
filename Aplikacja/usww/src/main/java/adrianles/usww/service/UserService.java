@@ -2,8 +2,13 @@ package adrianles.usww.service;
 
 import adrianles.usww.dto.UserDTO;
 import adrianles.usww.entity.User;
+import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.repository.UserRepository;
+import adrianles.usww.repository.dictionary.OrganizationUnitRepository;
+import adrianles.usww.repository.dictionary.UserGroupRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +19,9 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final OrganizationUnitRepository organizationUnitRepository;
+    private final UserGroupRepository userGroupRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
@@ -22,7 +30,7 @@ public class UserService {
     }
 
     public UserDTO getUserById(Integer id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return convertToDTO(user);
     }
 
@@ -34,8 +42,24 @@ public class UserService {
         user.setLoginBan(userDTO.isLoginBan());
         user.setArchive(userDTO.isArchive());
 
+        user.setOrganizationUnit(organizationUnitRepository.findById(userDTO.getOrganizationUnitId())
+                .orElseThrow(() -> new ResourceNotFoundException("OrganizationUnit not found")));
+
+        user.setUserGroup(userGroupRepository.findById(userDTO.getGroupId())
+                .orElseThrow(() -> new ResourceNotFoundException("UserGroup not found")));
+
+        String rawPassword = generateRandomPassword();
+        user.setPassword(passwordEncoder.encode(rawPassword));
+
         User savedUser = userRepository.save(user);
-        return convertToDTO(savedUser);
+
+        UserDTO savedUserDTO = convertToDTO(savedUser);
+        savedUserDTO.setGeneratedPassword(rawPassword);
+        return savedUserDTO;
+    }
+
+    private String generateRandomPassword() {
+        return RandomStringUtils.random(12, true, true);
     }
 
     private UserDTO convertToDTO(User user) {
@@ -48,7 +72,8 @@ public class UserService {
                 user.getLastLogin() != null ? user.getLastLogin().toString() : null,
                 user.getUserGroup() != null ? user.getUserGroup().getId() : null,
                 user.getOrganizationUnit() != null ? user.getOrganizationUnit().getId() : null,
-                user.isArchive()
+                user.isArchive(),
+                null
         );
     }
 }

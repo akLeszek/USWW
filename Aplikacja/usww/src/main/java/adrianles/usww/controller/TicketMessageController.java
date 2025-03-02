@@ -2,6 +2,7 @@ package adrianles.usww.controller;
 
 import adrianles.usww.dto.TicketMessageDTO;
 import adrianles.usww.service.TicketMessageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class TicketMessageController {
     }
 
     @PostMapping
-    public ResponseEntity<TicketMessageDTO> addTicketMessage(@RequestBody TicketMessageDTO ticketMessageDTO) {
+    public ResponseEntity<TicketMessageDTO> addTicketMessage(@Valid @RequestBody TicketMessageDTO ticketMessageDTO) {
         return ResponseEntity.ok(ticketMessageService.createMessage(ticketMessageDTO));
     }
 }

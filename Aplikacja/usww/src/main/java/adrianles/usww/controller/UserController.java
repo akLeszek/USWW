@@ -2,6 +2,7 @@ package adrianles.usww.controller;
 
 import adrianles.usww.dto.UserDTO;
 import adrianles.usww.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.createUser(userDTO));
     }
 }

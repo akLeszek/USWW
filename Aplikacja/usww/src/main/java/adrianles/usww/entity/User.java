@@ -3,6 +3,7 @@ package adrianles.usww.entity;
 import adrianles.usww.entity.dictionary.OrganizationUnit;
 import adrianles.usww.entity.dictionary.UserGroup;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,11 +19,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class User extends AbstractEntity {
 
+    @NotNull(message = "Login cannot be null")
     @Column(nullable = false, unique = true, length = 32)
     private String login;
 
-    @Column(nullable = false, length = 64)
-    private byte[] password;
+    @NotNull(message = "Password cannot be null")
+    @Column(nullable = false)
+    private String password;
 
     @Column(length = 32)
     private String forename;

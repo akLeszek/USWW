@@ -3,6 +3,7 @@ package adrianles.usww.entity;
 import adrianles.usww.entity.dictionary.TicketCategory;
 import adrianles.usww.entity.dictionary.TicketStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,6 +39,7 @@ public class Ticket extends AbstractEntity {
             foreignKey = @ForeignKey(name = "fk_ticket_category"))
     private TicketCategory category;
 
+    @NotNull(message = "Ticket title cannot be null")
     @Column(nullable = false, length = 30)
     private String title;
 

@@ -1,6 +1,7 @@
 package adrianles.usww.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,11 +17,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TicketMessage extends AbstractEntity {
 
+    @NotNull(message = "Ticket cannot be null")
     @ManyToOne
     @JoinColumn(name = "ticket_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_ticket_message_ticket"))
     private Ticket ticket;
 
+    @NotNull(message = "Sender cannot be null")
     @ManyToOne
     @JoinColumn(name = "sender_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_ticket_message_sender"))

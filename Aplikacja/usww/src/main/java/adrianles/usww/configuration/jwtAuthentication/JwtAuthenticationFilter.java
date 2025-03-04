@@ -1,6 +1,5 @@
-package adrianles.usww.configuration.jwt;
+package adrianles.usww.configuration.jwtAuthentication;
 
-import adrianles.usww.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

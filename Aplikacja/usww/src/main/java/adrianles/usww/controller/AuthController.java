@@ -1,8 +1,8 @@
 package adrianles.usww.controller;
 
-import adrianles.usww.dto.auth.AuthRequest;
-import adrianles.usww.dto.auth.AuthResponse;
-import adrianles.usww.utils.JwtUtil;
+import adrianles.usww.configuration.jwtAuthentication.AuthRequest;
+import adrianles.usww.configuration.jwtAuthentication.AuthResponse;
+import adrianles.usww.configuration.jwtAuthentication.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {

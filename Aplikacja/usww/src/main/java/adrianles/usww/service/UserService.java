@@ -1,10 +1,12 @@
 package adrianles.usww.service;
 
 import adrianles.usww.dto.UserDTO;
+import adrianles.usww.entity.Ticket;
 import adrianles.usww.entity.User;
 import adrianles.usww.entity.dictionary.OrganizationUnit;
 import adrianles.usww.entity.dictionary.UserGroup;
 import adrianles.usww.exception.ResourceNotFoundException;
+import adrianles.usww.repository.TicketRepository;
 import adrianles.usww.repository.UserRepository;
 import adrianles.usww.repository.dictionary.OrganizationUnitRepository;
 import adrianles.usww.repository.dictionary.UserGroupRepository;
@@ -24,6 +26,7 @@ public class UserService {
     private final OrganizationUnitRepository organizationUnitRepository;
     private final UserGroupRepository userGroupRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TicketRepository ticketRepository;
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
@@ -120,6 +123,26 @@ public class UserService {
         User user = findUserById(userId);
         user.setArchive(true);
         user.setLoginBan(true);
+        User savedUser = userRepository.save(user);
+        archiveUserTickets(ticketRepository.findByStudentId(userId));
+        archiveUserTickets(ticketRepository.findByOperatorId(userId));
+        return convertToDTO(savedUser);
+    }
+
+    private void archiveUserTickets(List<Ticket> tickets) {
+        tickets.forEach(ticket -> {
+            ticket.setArchive(true);
+            ticketRepository.save(ticket);
+        });
+    }
+
+    public List<UserDTO> getArchivedUsers() {
+        return userRepository.findAllByArchiveTrue().stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    public UserDTO restoreUser(Integer userId) {
+        User user = findUserById(userId);
+        user.setArchive(false);
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
     }

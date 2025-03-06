@@ -25,6 +25,11 @@ public class AdminUserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    @PostMapping
+    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
+        return ResponseEntity.ok(userService.createUser(userDTO));
+    }
+
     @PostMapping("/{id}/block")
     public ResponseEntity<UserDTO> blockUser(@PathVariable int id) {
         return ResponseEntity.ok(userService.blockUser(id));
@@ -40,8 +45,13 @@ public class AdminUserController {
         return ResponseEntity.ok(userService.archiveUser(id));
     }
 
-    @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(userService.createUser(userDTO));
+    @GetMapping("/archived")
+    public ResponseEntity<List<UserDTO>> getArchivedUsers() {
+        return ResponseEntity.ok(userService.getArchivedUsers());
+    }
+
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<UserDTO> restoreUser(@PathVariable int id) {
+        return ResponseEntity.ok(userService.restoreUser(id));
     }
 }

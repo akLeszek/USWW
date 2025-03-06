@@ -2,12 +2,13 @@ package adrianles.usww.service;
 
 import adrianles.usww.dto.UserDTO;
 import adrianles.usww.entity.User;
+import adrianles.usww.entity.dictionary.OrganizationUnit;
+import adrianles.usww.entity.dictionary.UserGroup;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.repository.UserRepository;
 import adrianles.usww.repository.dictionary.OrganizationUnitRepository;
 import adrianles.usww.repository.dictionary.UserGroupRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,48 +26,69 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public List<UserDTO> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        return userRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    private UserDTO convertToDTO(User user) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setLogin(user.getLogin());
+        userDTO.setForename(user.getForename());
+        userDTO.setSurname(user.getSurname());
+        userDTO.setArchive(user.isArchive());
+        userDTO.setFirstLogin(user.isFirstLogin());
+        userDTO.setLoginBan(user.isLoginBan());
+        userDTO.setLastLogin(user.getLastLogin() != null ? user.getLastLogin().toString() : null);
+        userDTO.setGroupId(user.getUserGroup() != null ? user.getUserGroup().getId() : null);
+        userDTO.setOrganizationUnitId(user.getOrganizationUnit() != null ? user.getOrganizationUnit().getId() : null);
+        userDTO.setGeneratedPassword(null);
+        return userDTO;
     }
 
     public UserDTO getUserById(Integer id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = findUserById(id);
+        return convertToDTO(user);
+    }
+
+    private User findUserById(Integer id) {
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    public UserDTO getUserByLogin(String login) {
+        User user = userRepository.findByLogin(login).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return convertToDTO(user);
     }
 
     public UserDTO createUser(UserDTO userDTO) {
         User user = new User();
         user.setLogin(userDTO.getLogin());
+        user.setPassword(passwordEncoder.encode(userDTO.getLogin()));
         user.setForename(userDTO.getForename());
         user.setSurname(userDTO.getSurname());
         user.setLoginBan(userDTO.isLoginBan());
         user.setArchive(userDTO.isArchive());
         user.setFirstLogin(true);
-
-        user.setOrganizationUnit(organizationUnitRepository.findById(userDTO.getOrganizationUnitId())
-                .orElseThrow(() -> new ResourceNotFoundException("OrganizationUnit not found")));
-
-        user.setUserGroup(userGroupRepository.findById(userDTO.getGroupId())
-                .orElseThrow(() -> new ResourceNotFoundException("UserGroup not found")));
-
-        String rawPassword = generateRandomPassword();
-        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setOrganizationUnit(getOrganizationUnit(userDTO));
+        user.setUserGroup(getUserGroup(userDTO));
 
         User savedUser = userRepository.save(user);
-
         UserDTO savedUserDTO = convertToDTO(savedUser);
-        savedUserDTO.setGeneratedPassword(rawPassword);
+        savedUserDTO.setGeneratedPassword(savedUserDTO.getLogin());
         return savedUserDTO;
     }
 
-    private String generateRandomPassword() {
-        return RandomStringUtils.random(12, true, true);
+    private OrganizationUnit getOrganizationUnit(UserDTO userDTO) {
+        return organizationUnitRepository.findById(userDTO.getOrganizationUnitId())
+                .orElseThrow(() -> new ResourceNotFoundException("OrganizationUnit not found"));
+    }
+
+    private UserGroup getUserGroup(UserDTO userDTO) {
+        return userGroupRepository.findById(userDTO.getGroupId())
+                .orElseThrow(() -> new ResourceNotFoundException("UserGroup not found"));
     }
 
     public UserDTO changePassword(Integer userId, String currentPassword, String newPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = findUserById(userId);
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new IllegalArgumentException("Current password is incorrect");
@@ -80,19 +102,35 @@ public class UserService {
         return convertToDTO(savedUser);
     }
 
-    private UserDTO convertToDTO(User user) {
-        return new UserDTO(
-                user.getId(),
-                user.getLogin(),
-                user.getForename(),
-                user.getSurname(),
-                user.isLoginBan(),
-                user.getLastLogin() != null ? user.getLastLogin().toString() : null,
-                user.getUserGroup() != null ? user.getUserGroup().getId() : null,
-                user.getOrganizationUnit() != null ? user.getOrganizationUnit().getId() : null,
-                user.isArchive(),
-                null,
-                user.isFirstLogin()
-        );
+    public UserDTO blockUser(Integer userId) {
+        User user = findUserById(userId);
+        user.setLoginBan(true);
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
+    }
+
+    public UserDTO unblockUser(Integer userId) {
+        User user = findUserById(userId);
+        user.setLoginBan(false);
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
+    }
+
+    public UserDTO archiveUser(Integer userId) {
+        User user = findUserById(userId);
+        user.setArchive(true);
+        user.setLoginBan(true);
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
+    }
+
+    public UserDTO getUserBasicInfo(Integer id) {
+        User user = findUserById(id);
+
+        UserDTO basicInfo = new UserDTO();
+        basicInfo.setId(user.getId());
+        basicInfo.setForename(user.getForename());
+        basicInfo.setSurname(user.getSurname());
+        return basicInfo;
     }
 }

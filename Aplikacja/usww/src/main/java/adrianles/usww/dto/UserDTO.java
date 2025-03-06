@@ -24,4 +24,5 @@ public class UserDTO {
     private Integer organizationUnitId;
     private boolean archive;
     private String generatedPassword;
+    private boolean firstLogin;
 }

@@ -46,6 +46,7 @@ IF OBJECT_ID (N'USERS', N'U') IS NULL BEGIN
         group_id INT NOT NULL,
         organization_unit_id INT,
         archive BIT DEFAULT 0,
+        first_login BIT DEFAULT 1,
         CONSTRAINT unique_login UNIQUE (login),
         CONSTRAINT fk_user_user_group FOREIGN KEY (group_id) REFERENCES USER_GROUP (id),
         CONSTRAINT fk_user_organization_unit FOREIGN KEY (organization_unit_id) REFERENCES ORGANIZATION_UNIT (id)

@@ -49,4 +49,8 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return !user.isArchive();
     }
+
+    public boolean isFirstLogin() { return user.isFirstLogin(); }
+
+    public Integer getUserId() { return user.getId(); }
 }

@@ -11,6 +11,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,7 @@ public class UserService {
         user.setSurname(userDTO.getSurname());
         user.setLoginBan(userDTO.isLoginBan());
         user.setArchive(userDTO.isArchive());
+        user.setFirstLogin(true);
 
         user.setOrganizationUnit(organizationUnitRepository.findById(userDTO.getOrganizationUnitId())
                 .orElseThrow(() -> new ResourceNotFoundException("OrganizationUnit not found")));
@@ -62,6 +64,22 @@ public class UserService {
         return RandomStringUtils.random(12, true, true);
     }
 
+    public UserDTO changePassword(Integer userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setFirstLogin(false);
+        user.setLastLogin(LocalDateTime.now());
+
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
+    }
+
     private UserDTO convertToDTO(User user) {
         return new UserDTO(
                 user.getId(),
@@ -73,7 +91,8 @@ public class UserService {
                 user.getUserGroup() != null ? user.getUserGroup().getId() : null,
                 user.getOrganizationUnit() != null ? user.getOrganizationUnit().getId() : null,
                 user.isArchive(),
-                null
+                null,
+                user.isFirstLogin()
         );
     }
 }

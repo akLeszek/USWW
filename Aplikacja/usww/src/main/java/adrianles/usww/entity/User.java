@@ -51,4 +51,7 @@ public class User extends AbstractEntity {
     @Column(nullable = false)
     private boolean archive = false;
 
+    @Column(name = "first_login", nullable = false)
+    private boolean firstLogin = true;
+
 }

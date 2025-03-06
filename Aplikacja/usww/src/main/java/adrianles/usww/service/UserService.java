@@ -32,22 +32,6 @@ public class UserService {
         return userRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    private UserDTO convertToDTO(User user) {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(user.getId());
-        userDTO.setLogin(user.getLogin());
-        userDTO.setForename(user.getForename());
-        userDTO.setSurname(user.getSurname());
-        userDTO.setArchive(user.isArchive());
-        userDTO.setFirstLogin(user.isFirstLogin());
-        userDTO.setLoginBan(user.isLoginBan());
-        userDTO.setLastLogin(user.getLastLogin() != null ? user.getLastLogin().toString() : null);
-        userDTO.setGroupId(user.getUserGroup() != null ? user.getUserGroup().getId() : null);
-        userDTO.setOrganizationUnitId(user.getOrganizationUnit() != null ? user.getOrganizationUnit().getId() : null);
-        userDTO.setGeneratedPassword(null);
-        return userDTO;
-    }
-
     public UserDTO getUserById(Integer id) {
         User user = findUserById(id);
         return convertToDTO(user);
@@ -155,5 +139,21 @@ public class UserService {
         basicInfo.setForename(user.getForename());
         basicInfo.setSurname(user.getSurname());
         return basicInfo;
+    }
+
+    private UserDTO convertToDTO(User user) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setLogin(user.getLogin());
+        userDTO.setForename(user.getForename());
+        userDTO.setSurname(user.getSurname());
+        userDTO.setArchive(user.isArchive());
+        userDTO.setFirstLogin(user.isFirstLogin());
+        userDTO.setLoginBan(user.isLoginBan());
+        userDTO.setLastLogin(user.getLastLogin() != null ? user.getLastLogin().toString() : null);
+        userDTO.setGroupId(user.getUserGroup() != null ? user.getUserGroup().getId() : null);
+        userDTO.setOrganizationUnitId(user.getOrganizationUnit() != null ? user.getOrganizationUnit().getId() : null);
+        userDTO.setGeneratedPassword(null);
+        return userDTO;
     }
 }

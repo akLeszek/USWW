@@ -1,6 +1,5 @@
 package adrianles.usww.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,16 +9,18 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TicketDTO {
-    private Integer id;
-    @NotNull(message = "Ticket title cannot be null")
+public class TicketFilterCriteriaDTO {
     private String title;
-    private String insertedDate;
-    private String changeDate;
-    private boolean archive;
-    private Integer operatorId;
     private Integer studentId;
+    private Integer operatorId;
     private Integer statusId;
     private Integer categoryId;
     private Integer priorityId;
+    private Boolean archive;
+    private String fromDate;
+    private String toDate;
+    private String lastActivityFrom;
+    private String lastActivityTo;
+    private String sortBy;
+    private String sortOrder;
 }

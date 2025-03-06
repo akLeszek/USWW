@@ -1,6 +1,8 @@
 package adrianles.usww.controller;
 
 import adrianles.usww.dto.dictionary.TicketCategoryDTO;
+import adrianles.usww.dto.dictionary.TicketPriorityDTO;
+import adrianles.usww.dto.dictionary.TicketStatusDTO;
 import adrianles.usww.service.DictionaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,5 +21,15 @@ public class DictionaryController {
     @GetMapping("/categories")
     public ResponseEntity<List<TicketCategoryDTO>> getAllCategories() {
         return ResponseEntity.ok(dictionaryService.getAllTicketCategories());
+    }
+
+    @GetMapping("/statuses")
+    public ResponseEntity<List<TicketStatusDTO>> getAllStatuses() {
+        return ResponseEntity.ok(dictionaryService.getAllTicketStatuses());
+    }
+
+    @GetMapping("/priorities")
+    public ResponseEntity<List<TicketPriorityDTO>> getAllPriorities() {
+        return ResponseEntity.ok(dictionaryService.getAllTicketPriorities());
     }
 }

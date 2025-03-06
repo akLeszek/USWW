@@ -17,7 +17,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(user.getUserGroup().getName().toUpperCase()));
+        return List.of(new SimpleGrantedAuthority(user.getUserGroup().getIdn().toUpperCase()));
     }
 
     @Override

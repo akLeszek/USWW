@@ -27,10 +27,12 @@ public class DatabaseInitializer {
     }
 
     private void executeScripts(final Connection connection) throws SQLException {
+        executeScript(connection, "dbScripts/czysczenieBazy.sql");
         executeScript(connection, "dbScripts/dbSchema.sql");
+        executeScript(connection, "dbScripts/data.sql");
     }
 
-    private void executeScript(final Connection connection, final String sqlScript) throws SQLException {
+    private void executeScript(final Connection connection, final String sqlScript) {
         try {
             System.out.println("Executing script " + sqlScript);
             Resource resource = new ClassPathResource(sqlScript);

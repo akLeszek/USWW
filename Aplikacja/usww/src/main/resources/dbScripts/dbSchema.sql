@@ -34,6 +34,15 @@ IF OBJECT_ID (N'TICKET_STATUS', N'U') IS NULL BEGIN
     );
 END
 
+IF OBJECT_ID (N'TICKET_PRIORITY', N'U') IS NULL BEGIN
+    CREATE TABLE TICKET_PRIORITY (
+        id INT IDENTITY(1, 1) PRIMARY KEY,
+        idn VARCHAR(15) NOT NULL,
+        name VARCHAR(255),
+        CONSTRAINT unique_ticket_priority_idn UNIQUE (idn)
+    );
+END
+
 IF OBJECT_ID (N'USERS', N'U') IS NULL BEGIN
     CREATE TABLE USERS (
         id INT IDENTITY(1, 1) PRIMARY KEY,
@@ -56,18 +65,21 @@ END
 IF OBJECT_ID (N'TICKET', N'U') IS NULL BEGIN
 CREATE TABLE TICKET (
         id INT IDENTITY(1, 1) PRIMARY KEY,
+        title VARCHAR(30) NOT NULL,
         operator_id INT NOT NULL,
         student_id INT NOT NULL,
         status_id INT NOT NULL,
         category_id INT NOT NULL,
-        title VARCHAR(30) NOT NULL,
+        priority_id INT,
         inserted_date DATETIME,
         change_date DATETIME,
+        last_activity_date DATETIME,
         archive BIT DEFAULT 0,
         CONSTRAINT fk_ticket_operator FOREIGN KEY (operator_id) REFERENCES USERS (id),
         CONSTRAINT fk_ticket_student FOREIGN KEY (student_id) REFERENCES USERS (id),
         CONSTRAINT fk_ticket_status FOREIGN KEY (status_id) REFERENCES TICKET_STATUS (id),
-        CONSTRAINT fk_ticket_category FOREIGN KEY (category_id) REFERENCES TICKET_CATEGORY (id)
+        CONSTRAINT fk_ticket_category FOREIGN KEY (category_id) REFERENCES TICKET_CATEGORY (id),
+        CONSTRAINT fk_ticket_priority FOREIGN KEY (priority_id) REFERENCES TICKET_PRIORITY (id)
     );
 END
 

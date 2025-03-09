@@ -1,14 +1,18 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.2.0'
+	id 'org.springframework.boot' version '3.2.4'
 	id 'io.spring.dependency-management' version '1.1.4'
+	id 'com.github.node-gradle.node' version '7.1.0'
 }
 
 group = 'adrianles'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '17'
+	sourceCompatibility = JavaVersion.VERSION_17
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
 }
 
 repositories {
@@ -16,36 +20,61 @@ repositories {
 }
 
 dependencies {
+	// Spring Boot dependencies
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Database
 	implementation 'com.microsoft.sqlserver:mssql-jdbc'
+
+	// Utilities
 	implementation 'org.projectlombok:lombok'
 	implementation 'org.apache.commons:commons-lang3'
 	implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
 	implementation 'io.jsonwebtoken:jjwt:0.12.6'
 
+	// Annotation processors
 	annotationProcessor 'org.projectlombok:lombok'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	// Development and Test
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
+//tasks.named('test') {
+//	useJUnitPlatform()
+//	testLogging {
+//		events "passed", "skipped", "failed"
+//		showExceptions true
+//		exceptionFormat "full"
+//		showCauses true
+//		showStackTraces true
+//		showStandardStreams = false
+//	}
+//}
+
+node {
+	version = '22.14.0'
+	download = true
+	workDir = layout.buildDirectory.dir('nodejs').get().asFile
+	npmWorkDir = layout.buildDirectory.dir('npm').get().asFile
 }
 
-test {
-	testLogging {
-		events "passed", "skipped", "failed" //, "standardOut", "standardError"
+tasks.register('buildAngular', NpmTask) {
+	dependsOn npmInstall
+	workingDir = file("${projectDir}/frontend")
+	args = ['run', 'build', '--omit=dev']
+}
 
-		showExceptions true
-		exceptionFormat "full"
-		showCauses true
-		showStackTraces true
+tasks.register('copyAngularToStatic', Copy) {
+	dependsOn buildAngular
+	from "${projectDir}/frontend/dist/frontend/browser"
+	into layout.buildDirectory.dir('resources/main/static').get().asFile
+}
 
-		showStandardStreams = false
-	}
+tasks.named('processResources') {
+	dependsOn copyAngularToStatic
 }

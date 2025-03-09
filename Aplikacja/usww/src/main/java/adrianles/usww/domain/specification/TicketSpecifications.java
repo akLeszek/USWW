@@ -4,85 +4,115 @@ import adrianles.usww.api.dto.TicketFilterCriteriaDTO;
 import adrianles.usww.domain.entity.Ticket;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TicketSpecifications {
 
     public static Specification<Ticket> buildSpecification(TicketFilterCriteriaDTO criteria) {
-        return (Root<Ticket> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
+        Specification<Ticket> spec = Specification.where(null);
 
-            // Filtrowanie po tytule
-            if (StringUtils.hasText(criteria.getTitle())) {
-                predicates.add(cb.like(cb.lower(root.get("title")),
-                        "%" + criteria.getTitle().toLowerCase() + "%"));
-            }
+        if (criteria == null) {
+            return spec;
+        }
 
-            // Filtrowanie po ID studenta
-            if (criteria.getStudentId() != null) {
-                predicates.add(cb.equal(root.get("student").get("id"), criteria.getStudentId()));
-            }
+        if (StringUtils.hasText(criteria.getTitle())) {
+            spec = spec.and(hasTitle(criteria.getTitle()));
+        }
 
-            // Filtrowanie po ID operatora
-            if (criteria.getOperatorId() != null) {
-                predicates.add(cb.equal(root.get("operator").get("id"), criteria.getOperatorId()));
-            }
+        if (criteria.getStudentId() != null) {
+            spec = spec.and(hasStudentId(criteria.getStudentId()));
+        }
 
-            // Filtrowanie po statusie
-            if (criteria.getStatusId() != null) {
-                predicates.add(cb.equal(root.get("status").get("id"), criteria.getStatusId()));
-            }
+        if (criteria.getOperatorId() != null) {
+            spec = spec.and(hasOperatorId(criteria.getOperatorId()));
+        }
 
-            // Filtrowanie po kategorii
-            if (criteria.getCategoryId() != null) {
-                predicates.add(cb.equal(root.get("category").get("id"), criteria.getCategoryId()));
-            }
+        if (criteria.getStatusId() != null) {
+            spec = spec.and(hasStatusId(criteria.getStatusId()));
+        }
 
-            // Filtrowanie po priorytecie
-            if (criteria.getPriorityId() != null) {
-                predicates.add(cb.equal(root.get("priority").get("id"), criteria.getPriorityId()));
-            }
+        if (criteria.getCategoryId() != null) {
+            spec = spec.and(hasCategoryId(criteria.getCategoryId()));
+        }
 
-            // Filtrowanie po archiwizacji
-            if (criteria.getArchive() != null) {
-                predicates.add(cb.equal(root.get("archive"), criteria.getArchive()));
-            }
+        if (criteria.getPriorityId() != null) {
+            spec = spec.and(hasPriorityId(criteria.getPriorityId()));
+        }
 
-            // Filtrowanie po dacie utworzenia (zakres)
-            if (StringUtils.hasText(criteria.getFromDate())) {
-                LocalDateTime fromDate = LocalDateTime.parse(criteria.getFromDate(),
-                        DateTimeFormatter.ISO_DATE_TIME);
-                predicates.add(cb.greaterThanOrEqualTo(root.get("insertedDate"), fromDate));
-            }
+        if (criteria.getArchive() != null) {
+            spec = spec.and(hasArchiveStatus(criteria.getArchive()));
+        }
 
-            if (StringUtils.hasText(criteria.getToDate())) {
-                LocalDateTime toDate = LocalDateTime.parse(criteria.getToDate(),
-                        DateTimeFormatter.ISO_DATE_TIME);
-                predicates.add(cb.lessThanOrEqualTo(root.get("insertedDate"), toDate));
-            }
+        if (StringUtils.hasText(criteria.getFromDate())) {
+            spec = spec.and(isInsertedAfter(criteria.getFromDate()));
+        }
 
-            // Filtrowanie po dacie ostatniej aktywności
-            if (StringUtils.hasText(criteria.getLastActivityFrom())) {
-                LocalDateTime lastActivityFrom = LocalDateTime.parse(criteria.getLastActivityFrom(),
-                        DateTimeFormatter.ISO_DATE_TIME);
-                predicates.add(cb.greaterThanOrEqualTo(root.get("lastActivityDate"), lastActivityFrom));
-            }
+        if (StringUtils.hasText(criteria.getToDate())) {
+            spec = spec.and(isInsertedBefore(criteria.getToDate()));
+        }
 
-            if (StringUtils.hasText(criteria.getLastActivityTo())) {
-                LocalDateTime lastActivityTo = LocalDateTime.parse(criteria.getLastActivityTo(),
-                        DateTimeFormatter.ISO_DATE_TIME);
-                predicates.add(cb.lessThanOrEqualTo(root.get("lastActivityDate"), lastActivityTo));
-            }
+        if (StringUtils.hasText(criteria.getLastActivityFrom())) {
+            spec = spec.and(hasLastActivityAfter(criteria.getLastActivityFrom()));
+        }
 
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
+        if (StringUtils.hasText(criteria.getLastActivityTo())) {
+            spec = spec.and(hasLastActivityBefore(criteria.getLastActivityTo()));
+        }
+
+        return spec;
+    }
+
+    public static Specification<Ticket> hasTitle(String title) {
+        return (Root<Ticket> root, CriteriaQuery<?> query, CriteriaBuilder cb) ->
+                cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase() + "%");
+    }
+
+    public static Specification<Ticket> hasStudentId(Integer studentId) {
+        return (root, query, cb) -> cb.equal(root.get("student").get("id"), studentId);
+    }
+
+    public static Specification<Ticket> hasOperatorId(Integer operatorId) {
+        return (root, query, cb) -> cb.equal(root.get("operator").get("id"), operatorId);
+    }
+
+    public static Specification<Ticket> hasStatusId(Integer statusId) {
+        return (root, query, cb) -> cb.equal(root.get("status").get("id"), statusId);
+    }
+
+    public static Specification<Ticket> hasCategoryId(Integer categoryId) {
+        return (root, query, cb) -> cb.equal(root.get("category").get("id"), categoryId);
+    }
+
+    public static Specification<Ticket> hasPriorityId(Integer priorityId) {
+        return (root, query, cb) -> cb.equal(root.get("priority").get("id"), priorityId);
+    }
+
+    public static Specification<Ticket> hasArchiveStatus(Boolean archive) {
+        return (root, query, cb) -> cb.equal(root.get("archive"), archive);
+    }
+
+    public static Specification<Ticket> isInsertedAfter(String fromDate) {
+        LocalDateTime date = LocalDateTime.parse(fromDate, DateTimeFormatter.ISO_DATE_TIME);
+        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("insertedDate"), date);
+    }
+
+    public static Specification<Ticket> isInsertedBefore(String toDate) {
+        LocalDateTime date = LocalDateTime.parse(toDate, DateTimeFormatter.ISO_DATE_TIME);
+        return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("insertedDate"), date);
+    }
+
+    public static Specification<Ticket> hasLastActivityAfter(String fromDate) {
+        LocalDateTime date = LocalDateTime.parse(fromDate, DateTimeFormatter.ISO_DATE_TIME);
+        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("lastActivityDate"), date);
+    }
+
+    public static Specification<Ticket> hasLastActivityBefore(String toDate) {
+        LocalDateTime date = LocalDateTime.parse(toDate, DateTimeFormatter.ISO_DATE_TIME);
+        return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("lastActivityDate"), date);
     }
 }

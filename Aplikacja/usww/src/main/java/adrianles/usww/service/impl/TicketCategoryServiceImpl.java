@@ -2,6 +2,7 @@ package adrianles.usww.service.impl;
 
 import adrianles.usww.api.dto.dictionary.TicketCategoryDTO;
 import adrianles.usww.api.mapper.dictionary.TicketCategoryMapper;
+import adrianles.usww.domain.entity.dictionary.TicketCategory;
 import adrianles.usww.domain.repositiory.dictionary.TicketCategoryRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.service.facade.TicketCategoryService;
@@ -27,15 +28,15 @@ public class TicketCategoryServiceImpl implements TicketCategoryService {
 
     @Override
     public TicketCategoryDTO getTicketCategoryById(Integer id) {
-        return ticketCategoryRepository.findById(id)
-                .map(ticketCategoryMapper::toDto)
+        TicketCategory ticketCategory = ticketCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket category with id " + id + " not found"));
+        return ticketCategoryMapper.toDto(ticketCategory);
     }
 
     @Override
     public TicketCategoryDTO getTicketCategoryByIdn(String idn) {
-        return ticketCategoryRepository.findByIdn(idn)
-                .map(ticketCategoryMapper::toDto)
+        TicketCategory ticketCategory = ticketCategoryRepository.findByIdn(idn)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket category with idn " + idn + " not found"));
+        return ticketCategoryMapper.toDto(ticketCategory);
     }
 }

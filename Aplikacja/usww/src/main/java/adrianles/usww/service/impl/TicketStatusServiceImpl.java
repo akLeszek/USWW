@@ -2,6 +2,7 @@ package adrianles.usww.service.impl;
 
 import adrianles.usww.api.dto.dictionary.TicketStatusDTO;
 import adrianles.usww.api.mapper.dictionary.TicketStatusMapper;
+import adrianles.usww.domain.entity.dictionary.TicketStatus;
 import adrianles.usww.domain.repositiory.dictionary.TicketStatusRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.service.facade.TicketStatusService;
@@ -27,15 +28,15 @@ public class TicketStatusServiceImpl implements TicketStatusService {
 
     @Override
     public TicketStatusDTO getTicketStatusById(Integer id) {
-        return ticketStatusRepository.findById(id)
-                .map(ticketStatusMapper::toDto)
+        TicketStatus ticketStatus = ticketStatusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket status with id " + id + " not found"));
+        return ticketStatusMapper.toDto(ticketStatus);
     }
 
     @Override
     public TicketStatusDTO getTicketStatusByIdn(String idn) {
-        return ticketStatusRepository.findByIdn(idn)
-                .map(ticketStatusMapper::toDto)
+        TicketStatus ticketStatus = ticketStatusRepository.findByIdn(idn)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket status with idn " + idn + " not found"));
+        return ticketStatusMapper.toDto(ticketStatus);
     }
 }

@@ -1,4 +1,4 @@
-package adrianles.usww.exception;
+package adrianles.usww.api.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -4,13 +4,12 @@ import adrianles.usww.domain.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class CustomUserDetails implements UserDetails {
+public class CustomUserDetails implements ExtendedUserDetails {
     private final User user;
 
     @Override
@@ -48,6 +47,7 @@ public class CustomUserDetails implements UserDetails {
         return !user.isArchive();
     }
 
+    @Override
     public boolean isFirstLogin() {
         return user.isFirstLogin();
     }

@@ -22,4 +22,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return user.map(CustomUserDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
     }
+
+    public ExtendedUserDetails loadExtendedUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> user = userRepository.findByLogin(username);
+        return user.map(CustomUserDetails::new)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    }
 }

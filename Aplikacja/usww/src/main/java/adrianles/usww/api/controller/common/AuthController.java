@@ -4,9 +4,9 @@ import adrianles.usww.api.dto.UserDTO;
 import adrianles.usww.api.dto.request.AuthRequest;
 import adrianles.usww.api.dto.request.PasswordChangeRequestDTO;
 import adrianles.usww.api.dto.response.AuthResponse;
-import adrianles.usww.domain.entity.User;
-import adrianles.usww.domain.repositiory.UserRepository;
 import adrianles.usww.security.jwt.JwtUtil;
+import adrianles.usww.security.userdetails.ExtendedUserDetails;
+import adrianles.usww.security.userdetails.UserDetailsServiceImpl;
 import adrianles.usww.service.facade.UserPasswordService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +16,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -29,9 +27,8 @@ import java.util.Optional;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
     private final UserPasswordService userPasswordService;
 
     @PostMapping("/login")
@@ -41,22 +38,21 @@ public class AuthController {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
+        ExtendedUserDetails userDetails = userDetailsService.loadExtendedUserByUsername(authRequest.getUsername());
 
-        Optional<User> optionalUser = userRepository.findByLogin(authRequest.getUsername());
-        if (optionalUser.isPresent() && optionalUser.get().isFirstLogin()) {
-            return userFirstLogin(optionalUser.get(), userDetails.getUsername());
+        if (userDetails.isFirstLogin()) {
+            return userFirstLogin(userDetails);
         }
 
         String token = jwtUtil.generateToken(userDetails.getUsername());
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
-    private ResponseEntity<?> userFirstLogin(User user, String username) {
+    private ResponseEntity<?> userFirstLogin(ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<>();
         response.put("requirePasswordChange", true);
-        response.put("token", jwtUtil.generateToken(username));
-        response.put("userId", user.getId());
+        response.put("token", jwtUtil.generateToken(userDetails.getUsername()));
+        response.put("userId", userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 

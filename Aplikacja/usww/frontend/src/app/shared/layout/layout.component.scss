@@ -1,0 +1,29 @@
+.layout-container {
+  display: flex;
+  height: 100vh;
+}
+
+.content-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s ease;
+  margin-left: 250px;
+
+  &.expanded {
+    margin-left: 70px;
+  }
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  background-color: #f8f9fa;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .content-container {
+    margin-left: 0;
+  }
+}

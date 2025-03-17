@@ -1,7 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {RouterModule} from '@angular/router';
 import {AuthService} from '../../../auth/services/auth.service';
-import {NgClass} from '@angular/common';
+import {NgClass, NgForOf, NgIf} from '@angular/common';
 
 interface MenuItem {
   title: string;
@@ -15,7 +15,7 @@ interface MenuItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterModule, NgClass],
+  imports: [RouterModule, NgClass, NgForOf, NgIf],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
@@ -32,20 +32,21 @@ export class SidebarComponent implements OnInit {
     {
       title: 'Zgłoszenia',
       icon: 'bi-ticket-perforated',
-      // children: [
-      //   {
-      //     title: 'Nowe zgłoszenie',
-      //     route: '/tickets/new'
-      //   },
-      //   {
-      //     title: 'Aktywne zgłoszenia',
-      //     route: '/tickets/active'
-      //   },
-      //   {
-      //     title: 'Historia zgłoszeń',
-      //     route: '/tickets/history'
-      //   }
-      // ]
+      children: [
+        {
+          title: 'Nowe zgłoszenie',
+          route: '/tickets/new',
+          icon: ''
+        }
+        // {
+        //   title: 'Aktywne zgłoszenia',
+        //   route: '/tickets/active'
+        // },
+        // {
+        //   title: 'Historia zgłoszeń',
+        //   route: '/tickets/history'
+        // }
+      ]
     },
     {
       title: 'Administracja',

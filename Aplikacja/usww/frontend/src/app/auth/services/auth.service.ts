@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {BehaviorSubject, Observable, tap} from 'rxjs';
+import {environment} from '../../../environments/environment';
 
 interface LoginResponse {
   token: string;
@@ -42,14 +42,19 @@ export class AuthService {
       .pipe(
         tap(response => {
           if (!response.requirePasswordChange) {
-            localStorage.setItem('currentUser', JSON.stringify({
-              username,
-              token: response.token
-            }));
-            this.currentUserSubject.next({username, token: response.token});
+            this.setCurrentUserFromResponse(response, username);
           }
         })
       );
+  }
+
+  setCurrentUserFromResponse(response: LoginResponse, username: string) {
+    localStorage.setItem('currentUser', JSON.stringify({
+      username,
+      userId: response.userId,
+      token: response.token
+    }));
+    this.currentUserSubject.next({username, userId: response.userId, token: response.token});
   }
 
   changePassword(userId: number, currentPassword: string, newPassword: string): Observable<PasswordChangeResponse> {
@@ -59,11 +64,7 @@ export class AuthService {
     ).pipe(
       tap(response => {
         const username = this.currentUserValue?.username;
-        localStorage.setItem('currentUser', JSON.stringify({
-          username,
-          token: response.token
-        }));
-        this.currentUserSubject.next({username, token: response.token});
+        this.setCurrentUserFromResponse(response, username);
       })
     );
   }

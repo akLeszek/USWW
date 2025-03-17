@@ -9,9 +9,9 @@ import adrianles.usww.domain.repositiory.UserRepository;
 import adrianles.usww.domain.repositiory.dictionary.TicketCategoryRepository;
 import adrianles.usww.domain.repositiory.dictionary.TicketPriorityRepository;
 import adrianles.usww.domain.repositiory.dictionary.TicketStatusRepository;
+import adrianles.usww.domain.specification.TicketSpecifications;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.service.facade.TicketService;
-import adrianles.usww.domain.specification.TicketSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -97,6 +97,9 @@ public class TicketServiceImpl implements TicketService {
         if (ticketDTO.getOperatorId() != null) {
             ticket.setOperator(userRepository.findById(ticketDTO.getOperatorId())
                     .orElseThrow(() -> new ResourceNotFoundException("Operator not found")));
+        } else {
+            ticket.setOperator(userRepository.findByLogin("unknown_operator")
+                    .orElseThrow(() -> new ResourceNotFoundException("Default operator not found")));
         }
 
         if (ticketDTO.getStudentId() != null) {

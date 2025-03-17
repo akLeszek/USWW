@@ -7,7 +7,8 @@ import { AuthService } from '../auth/services/auth.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterModule, NgClass, NgFor, NgIf, NgbModule, AsyncPipe],
+  // imports: [RouterModule, NgClass, NgFor, NgIf, NgbModule, AsyncPipe],
+  imports: [RouterModule, NgClass, NgFor, NgIf, NgbModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })

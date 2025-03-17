@@ -1,0 +1,45 @@
+<aside class="sidebar" [ngClass]="{'collapsed': collapsed}">
+  <div class="sidebar-header">
+    <div class="logo-container">
+      <i class="bi bi-chat-dots-fill"></i>
+      <span class="logo-text" *ngIf="!collapsed">USWW</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="menu">
+      <ng-container *ngFor="let item of menuItems">
+        <li class="menu-item" *ngIf="isMenuItemVisible(item)">
+          <a
+            *ngIf="!item.children"
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            class="menu-link"
+          >
+            <i class="bi {{ item.icon }}"></i>
+            <span class="menu-text" *ngIf="!collapsed">{{ item.title }}</span>
+          </a>
+
+          <div
+            *ngIf="item.children"
+            class="menu-link has-submenu"
+            [ngClass]="{'active': item.expanded}"
+            (click)="toggleMenuItem(item)"
+          >
+            <i class="bi {{ item.icon }}"></i>
+            <span class="menu-text" *ngIf="!collapsed">{{ item.title }}</span>
+            <i *ngIf="!collapsed" class="bi dropdown-icon" [ngClass]="item.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+          </div>
+
+          <ul class="submenu" *ngIf="item.children && item.expanded && !collapsed">
+            <li *ngFor="let child of item.children" class="submenu-item">
+              <a [routerLink]="child.route" routerLinkActive="active" class="submenu-link">
+                {{ child.title }}
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ng-container>
+    </ul>
+  </nav>
+</aside>

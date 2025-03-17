@@ -3,7 +3,7 @@ package adrianles.usww.service.impl;
 import adrianles.usww.api.dto.dictionary.TicketCategoryDTO;
 import adrianles.usww.api.mapper.dictionary.TicketCategoryMapper;
 import adrianles.usww.domain.entity.dictionary.TicketCategory;
-import adrianles.usww.domain.repositiory.dictionary.TicketCategoryRepository;
+import adrianles.usww.domain.repository.dictionary.TicketCategoryRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.service.facade.TicketCategoryService;
 import lombok.RequiredArgsConstructor;

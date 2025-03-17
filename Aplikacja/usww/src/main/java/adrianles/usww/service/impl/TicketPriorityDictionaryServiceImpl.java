@@ -3,7 +3,7 @@ package adrianles.usww.service.impl;
 import adrianles.usww.api.dto.dictionary.TicketPriorityDTO;
 import adrianles.usww.api.mapper.dictionary.TicketPriorityMapper;
 import adrianles.usww.domain.entity.dictionary.TicketPriority;
-import adrianles.usww.domain.repositiory.dictionary.TicketPriorityRepository;
+import adrianles.usww.domain.repository.dictionary.TicketPriorityRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.service.facade.TicketPriorityDictionaryService;
 import lombok.RequiredArgsConstructor;

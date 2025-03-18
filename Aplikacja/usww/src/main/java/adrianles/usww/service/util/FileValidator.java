@@ -8,8 +8,15 @@ import java.util.Arrays;
 public class FileValidator {
 
     public static void validateFile(MultipartFile file) {
+        validateFileContent(file);
         validateFileSize(file);
         validateContentType(file);
+    }
+
+    private static void validateFileContent(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
     }
 
     private static void validateFileSize(MultipartFile file) {

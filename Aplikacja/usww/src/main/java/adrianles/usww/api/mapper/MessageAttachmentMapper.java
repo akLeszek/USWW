@@ -16,7 +16,7 @@ public class MessageAttachmentMapper {
         attachmentDTO.setId(attachment.getId());
         attachmentDTO.setMessageId(attachment.getMessage().getId());
         attachmentDTO.setAttachment(attachment.getAttachment());
-        attachmentDTO.setFileName(attachment.getFileName());
+        attachmentDTO.setFileName(attachment.getFilename());
         return attachmentDTO;
     }
 }

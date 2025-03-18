@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Ticket, TicketMessage, TicketService} from '../services/ticket.service';
+import {MessageAttachment, Ticket, TicketMessage, TicketService} from '../services/ticket.service';
 import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
 import {AuthService} from '../../auth/services/auth.service';
 
@@ -25,7 +25,7 @@ export class TicketDetailComponent implements OnInit {
   categories: Dictionary[] = [];
   statuses: Dictionary[] = [];
   priorities: Dictionary[] = [];
-  messageAttachments: { [key: number]: any[] } = {};
+  messageAttachments: { [key: number]: MessageAttachment[] } = {};
 
   selectedStatusId: number | undefined | null = null;
   selectedPriorityId: number | undefined | null = null;
@@ -158,7 +158,7 @@ export class TicketDetailComponent implements OnInit {
 
   loadMessageAttachments(messageId: number): void {
     this.ticketService.getMessageAttachments(messageId).subscribe({
-      next: (attachments) => {
+      next: (attachments: MessageAttachment[]) => {
         console.log(`Loaded attachments for message ${messageId}:`, attachments);
         this.messageAttachments[messageId] = attachments;
       },
@@ -264,7 +264,9 @@ export class TicketDetailComponent implements OnInit {
     });
   }
 
-  downloadAttachment(attachmentId: number): void {
+  downloadAttachment(attachmentId?: number): void {
+    if (attachmentId === undefined) return;
+
     const attachment = this.findAttachment(attachmentId);
 
     this.ticketService.getAttachment(attachmentId).subscribe({
@@ -465,5 +467,15 @@ export class TicketDetailComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  hasAttachments(messageId?: number): boolean {
+    return messageId !== undefined &&
+      this.messageAttachments[messageId] !== undefined &&
+      this.messageAttachments[messageId].length > 0;
+  }
+
+  getMessageAttachments(messageId?: number): MessageAttachment[] {
+    return messageId !== undefined ? (this.messageAttachments[messageId] || []) : [];
   }
 }

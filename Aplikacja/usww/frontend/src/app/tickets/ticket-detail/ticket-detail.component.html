@@ -132,10 +132,10 @@
                 <div class="message-content">
                   {{ message.messageText }}
                 </div>
-                <div *ngIf="messageAttachments[message.id] && messageAttachments[message.id].length > 0" class="message-attachments mt-2">
+                <div *ngIf="hasAttachments(message.id)" class="message-attachments mt-2">
                   <div class="attachment-label mb-1">Załączniki:</div>
                   <div class="d-flex flex-wrap">
-                    <div *ngFor="let attachment of messageAttachments[message.id]" class="attachment-item me-2 mb-2">
+                    <div *ngFor="let attachment of getMessageAttachments(message.id)" class="attachment-item me-2 mb-2">
                       <button
                         class="btn btn-sm btn-outline-primary"
                         (click)="downloadAttachment(attachment.id)">
@@ -165,7 +165,8 @@
                   placeholder="Wpisz swoją odpowiedź..."
                   [ngClass]="{'is-invalid': messageForm.get('messageText')?.invalid && messageForm.get('messageText')?.touched}"
                 ></textarea>
-                <div *ngIf="messageForm.get('messageText')?.invalid && messageForm.get('messageText')?.touched" class="invalid-feedback">
+                <div *ngIf="messageForm.get('messageText')?.invalid && messageForm.get('messageText')?.touched"
+                     class="invalid-feedback">
                   Treść odpowiedzi jest wymagana.
                 </div>
               </div>
@@ -193,7 +194,8 @@
                   class="btn btn-primary"
                   [disabled]="messageForm.invalid || messageSending || fileError"
                 >
-                  <span *ngIf="messageSending" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                  <span *ngIf="messageSending" class="spinner-border spinner-border-sm me-1" role="status"
+                        aria-hidden="true"></span>
                   Wyślij odpowiedź
                 </button>
               </div>

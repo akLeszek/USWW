@@ -20,7 +20,7 @@ public class MessageAttachment extends AbstractEntity {
     private TicketMessage message;
 
     @Column(length = 255)
-    private String fileName;
+    private String filename;
 
     @Lob
     private byte[] attachment;

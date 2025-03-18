@@ -48,7 +48,7 @@ public class MessageAttachmentServiceImpl implements MessageAttachmentService {
         MessageAttachment attachment = new MessageAttachment();
         attachment.setMessage(message);
         attachment.setAttachment(file.getBytes());
-        attachment.setFileName(file.getOriginalFilename());
+        attachment.setFilename(file.getOriginalFilename());
 
         MessageAttachment savedAttachment = messageAttachmentRepository.save(attachment);
         return messageAttachmentMapper.toDto(savedAttachment);

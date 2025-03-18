@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Ticket, TicketMessage, TicketService } from '../services/ticket.service';
-import { Dictionary, DictionaryService } from '../../shared/services/dictionary.service';
-import { AuthService } from '../../auth/services/auth.service';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ActivatedRoute, Router, RouterModule} from '@angular/router';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {Ticket, TicketMessage, TicketService} from '../services/ticket.service';
+import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
+import {AuthService} from '../../auth/services/auth.service';
 
 @Component({
   selector: 'app-ticket-detail',
@@ -25,11 +25,10 @@ export class TicketDetailComponent implements OnInit {
   categories: Dictionary[] = [];
   statuses: Dictionary[] = [];
   priorities: Dictionary[] = [];
+  messageAttachments: { [key: number]: any[] } = {};
 
-  // Zmienne dla selektorów - zmieniono typy aby obsługiwały undefined
   selectedStatusId: number | undefined | null = null;
   selectedPriorityId: number | undefined | null = null;
-
   messageForm: FormGroup;
 
   loading = true;
@@ -37,6 +36,10 @@ export class TicketDetailComponent implements OnInit {
   updating = false;
   success = '';
   error = '';
+  fileError = '';
+
+  allowedFileTypes = '';
+  maxFileSize = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -50,6 +53,9 @@ export class TicketDetailComponent implements OnInit {
       messageText: ['', [Validators.required]],
       attachment: [null]
     });
+
+    this.allowedFileTypes = this.ticketService.getReadableAllowedFileTypes();
+    this.maxFileSize = this.ticketService.getReadableMaxFileSize();
   }
 
   ngOnInit(): void {
@@ -74,21 +80,16 @@ export class TicketDetailComponent implements OnInit {
     console.log('Loading data for ticket ID:', this.ticketId);
     this.loading = true;
 
-    // Ładowanie słowników
     this.loadDictionaries();
 
-    // Ładowanie szczegółów zgłoszenia
     this.ticketService.getTicket(this.ticketId).subscribe({
       next: (ticket) => {
         console.log('Loaded ticket details:', ticket);
         this.ticket = ticket;
 
-        // Inicjalizacja wartości selektorów
-        // Używamy sprawdzania typu, aby uniknąć błędów typów
         this.selectedStatusId = ticket.statusId !== undefined ? ticket.statusId : null;
         this.selectedPriorityId = ticket.priorityId !== undefined ? ticket.priorityId : null;
 
-        // Ładowanie wiadomości dla zgłoszenia
         this.loadMessages();
       },
       error: (error) => {
@@ -100,7 +101,6 @@ export class TicketDetailComponent implements OnInit {
   }
 
   loadDictionaries(): void {
-    // Ładowanie kategorii
     this.dictionaryService.getTicketCategories().subscribe({
       next: (categories) => {
         console.log('Loaded categories:', categories);
@@ -111,7 +111,6 @@ export class TicketDetailComponent implements OnInit {
       }
     });
 
-    // Ładowanie statusów
     this.dictionaryService.getTicketStatuses().subscribe({
       next: (statuses) => {
         console.log('Loaded statuses:', statuses);
@@ -122,7 +121,6 @@ export class TicketDetailComponent implements OnInit {
       }
     });
 
-    // Ładowanie priorytetów
     this.dictionaryService.getTicketPriorities().subscribe({
       next: (priorities) => {
         console.log('Loaded priorities:', priorities);
@@ -141,6 +139,13 @@ export class TicketDetailComponent implements OnInit {
         this.messages = messages.sort((a, b) =>
           new Date(a.insertDate || '').getTime() - new Date(b.insertDate || '').getTime()
         );
+
+        this.messages.forEach(message => {
+          if (message.id) {
+            this.loadMessageAttachments(message.id);
+          }
+        });
+
         this.loading = false;
       },
       error: (error) => {
@@ -151,9 +156,30 @@ export class TicketDetailComponent implements OnInit {
     });
   }
 
+  loadMessageAttachments(messageId: number): void {
+    this.ticketService.getMessageAttachments(messageId).subscribe({
+      next: (attachments) => {
+        console.log(`Loaded attachments for message ${messageId}:`, attachments);
+        this.messageAttachments[messageId] = attachments;
+      },
+      error: (error) => {
+        console.error(`Error loading attachments for message ${messageId}:`, error);
+      }
+    });
+  }
+
   onFileChange(event: any): void {
+    this.fileError = '';
+
     if (event.target.files.length > 0) {
       const file = event.target.files[0];
+      const validation = this.ticketService.validateFile(file);
+      if (!validation.valid) {
+        this.fileError = validation.errorMessage || 'Nieprawidłowy plik';
+        event.target.value = '';
+        return;
+      }
+
       this.messageForm.patchValue({
         attachment: file
       });
@@ -168,6 +194,7 @@ export class TicketDetailComponent implements OnInit {
     this.messageSending = true;
     this.success = '';
     this.error = '';
+    this.fileError = '';
 
     const currentUser = this.authService.currentUserValue;
     if (!currentUser) {
@@ -187,7 +214,32 @@ export class TicketDetailComponent implements OnInit {
     this.ticketService.createTicketMessage(messageData).subscribe({
       next: (message) => {
         console.log('Message sent successfully:', message);
-        // Sukces - dodaj wiadomość do listy i wyczyść formularz
+
+        const attachment = this.messageForm.value.attachment;
+        if (message.id && attachment) {
+          this.ticketService.addAttachment(message.id, attachment).subscribe({
+            next: (attachmentData) => {
+              console.log('Attachment added successfully:', attachmentData);
+
+              if (!this.messageAttachments[message.id!]) {
+                this.messageAttachments[message.id!] = [];
+              }
+
+              this.messageAttachments[message.id!].push(attachmentData);
+            },
+            error: (error) => {
+              console.error('Error adding attachment:', error);
+              let errorMessage = 'Wiadomość została wysłana, ale nie udało się dodać załącznika.';
+
+              if (error.error && typeof error.error === 'string') {
+                errorMessage += ' ' + error.error;
+              }
+
+              this.error = errorMessage;
+            }
+          });
+        }
+
         this.success = 'Wiadomość została wysłana.';
         this.messages.push(message);
         this.messageForm.reset({
@@ -195,7 +247,11 @@ export class TicketDetailComponent implements OnInit {
           attachment: null
         });
 
-        // Odśwież listę wiadomości
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
+        }
+
         this.loadMessages();
 
         this.messageSending = false;
@@ -206,6 +262,40 @@ export class TicketDetailComponent implements OnInit {
         this.messageSending = false;
       }
     });
+  }
+
+  downloadAttachment(attachmentId: number): void {
+    const attachment = this.findAttachment(attachmentId);
+
+    this.ticketService.getAttachment(attachmentId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+
+        const fileName = attachment && attachment.fileName ?
+          attachment.fileName : `attachment-${attachmentId}`;
+        a.download = fileName;
+
+        document.body.appendChild(a);
+        a.click();
+
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      },
+      error: (error) => {
+        console.error('Error downloading attachment:', error);
+        this.error = 'Nie udało się pobrać załącznika.';
+      }
+    });
+  }
+
+  findAttachment(attachmentId: number): any {
+    for (const messageId in this.messageAttachments) {
+      const found = this.messageAttachments[messageId].find(a => a.id === attachmentId);
+      if (found) return found;
+    }
+    return null;
   }
 
   updateTicketStatus(statusId: number | undefined | null): void {
@@ -224,7 +314,7 @@ export class TicketDetailComponent implements OnInit {
       next: (ticket) => {
         console.log('Status updated successfully:', ticket);
         this.ticket = ticket;
-        this.selectedStatusId = ticket.statusId; // Aktualizacja wybranej wartości
+        this.selectedStatusId = ticket.statusId;
         this.success = 'Status zgłoszenia został zaktualizowany.';
         this.updating = false;
       },
@@ -252,7 +342,7 @@ export class TicketDetailComponent implements OnInit {
       next: (ticket) => {
         console.log('Priority updated successfully:', ticket);
         this.ticket = ticket;
-        this.selectedPriorityId = ticket.priorityId; // Aktualizacja wybranej wartości
+        this.selectedPriorityId = ticket.priorityId;
         this.success = 'Priorytet zgłoszenia został zaktualizowany.';
         this.updating = false;
       },
@@ -371,6 +461,9 @@ export class TicketDetailComponent implements OnInit {
   formatDate(dateString?: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'});
+    return date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 }

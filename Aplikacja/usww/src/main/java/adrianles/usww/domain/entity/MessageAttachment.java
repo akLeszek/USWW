@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 @Entity
 @Table(name = "MESSAGE_ATTACHMENT")
@@ -17,6 +18,9 @@ public class MessageAttachment extends AbstractEntity {
     @JoinColumn(name = "message_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_message_attachment_ticket_message"))
     private TicketMessage message;
+
+    @Column(length = 255)
+    private String fileName;
 
     @Lob
     private byte[] attachment;

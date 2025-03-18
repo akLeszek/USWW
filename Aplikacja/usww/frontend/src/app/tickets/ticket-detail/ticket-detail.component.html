@@ -132,7 +132,19 @@
                 <div class="message-content">
                   {{ message.messageText }}
                 </div>
-                <!-- Display attachments if any -->
+                <div *ngIf="messageAttachments[message.id] && messageAttachments[message.id].length > 0" class="message-attachments mt-2">
+                  <div class="attachment-label mb-1">Załączniki:</div>
+                  <div class="d-flex flex-wrap">
+                    <div *ngFor="let attachment of messageAttachments[message.id]" class="attachment-item me-2 mb-2">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="downloadAttachment(attachment.id)">
+                        <i class="bi bi-file-earmark"></i>
+                        {{ attachment.fileName || 'Załącznik #' + attachment.id }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -165,15 +177,21 @@
                   class="form-control"
                   id="attachment"
                   (change)="onFileChange($event)"
+                  [ngClass]="{'is-invalid': fileError}"
                 >
-                <div class="form-text">Dozwolone formaty: PDF, JPG, PNG</div>
+                <div class="form-text">
+                  Dozwolone formaty: {{ allowedFileTypes }}, maksymalny rozmiar: {{ maxFileSize }}
+                </div>
+                <div *ngIf="fileError" class="invalid-feedback">
+                  {{ fileError }}
+                </div>
               </div>
 
               <div class="d-flex justify-content-end">
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  [disabled]="messageForm.invalid || messageSending"
+                  [disabled]="messageForm.invalid || messageSending || fileError"
                 >
                   <span *ngIf="messageSending" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                   Wyślij odpowiedź

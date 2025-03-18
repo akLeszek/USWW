@@ -100,6 +100,7 @@ IF OBJECT_ID (N'MESSAGE_ATTACHMENT', N'U') IS NULL BEGIN
     CREATE TABLE MESSAGE_ATTACHMENT (
         id INT IDENTITY(1, 1) PRIMARY KEY,
         message_id INT NOT NULL,
+        filename VARCHAR(255),
         attachment VARBINARY(2000),
         CONSTRAINT fk_message_attachment_ticket_message FOREIGN KEY (message_id) REFERENCES TICKET_MESSAGE (id)
     );

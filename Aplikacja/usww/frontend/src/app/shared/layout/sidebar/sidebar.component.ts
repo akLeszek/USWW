@@ -34,38 +34,38 @@ export class SidebarComponent implements OnInit {
       icon: 'bi-ticket-perforated',
       children: [
         {
+          title: 'Lista zgłoszeń',
+          route: '/tickets',
+          icon: ''
+        },
+        {
           title: 'Nowe zgłoszenie',
           route: '/tickets/new',
           icon: ''
         }
-        // {
-        //   title: 'Aktywne zgłoszenia',
-        //   route: '/tickets/active'
-        // },
-        // {
-        //   title: 'Historia zgłoszeń',
-        //   route: '/tickets/history'
-        // }
       ]
     },
     {
       title: 'Administracja',
       icon: 'bi-gear',
       roles: ['ADMIN'],
-      // children: [
-      //   {
-      //     title: 'Użytkownicy',
-      //     route: '/admin/users'
-      //   },
-      //   {
-      //     title: 'Kategorie zgłoszeń',
-      //     route: '/admin/categories'
-      //   },
-      //   {
-      //     title: 'Statusy zgłoszeń',
-      //     route: '/admin/statuses'
-      //   }
-      // ]
+      children: [
+        {
+          title: 'Użytkownicy',
+          route: '/admin/users',
+          icon: ''
+        },
+        {
+          title: 'Kategorie zgłoszeń',
+          route: '/admin/categories',
+          icon: ''
+        },
+        {
+          title: 'Statusy zgłoszeń',
+          route: '/admin/statuses',
+          icon: ''
+        }
+      ]
     }
   ];
 

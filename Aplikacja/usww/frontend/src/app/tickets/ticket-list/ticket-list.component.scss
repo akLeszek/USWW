@@ -1,0 +1,55 @@
+.card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 15px 20px;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  i {
+    margin-left: 5px;
+    font-size: 0.8rem;
+  }
+}
+
+.ticket-table {
+  margin-bottom: 0;
+
+  th {
+    font-weight: 600;
+  }
+}
+
+.ticket-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+  }
+}
+
+.ticket-title {
+  font-weight: 500;
+}
+
+// Niestandardowe style dla stron paginacji
+::ng-deep .pagination {
+  margin-bottom: 0;
+
+  .page-link {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+}

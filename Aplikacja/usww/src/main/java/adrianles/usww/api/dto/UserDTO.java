@@ -20,7 +20,6 @@ public class UserDTO {
     private String lastLogin;
     @NotNull(message = "User group cannot be null")
     private Integer groupId;
-    @NotNull(message = "Organization unit cannot be null")
     private Integer organizationUnitId;
     private boolean archive;
     private String generatedPassword;

@@ -7,6 +7,7 @@ export interface Dictionary {
   id: number;
   idn: string;
   name: string;
+  requiresOrganizationUnit?: boolean;
 }
 
 @Injectable({

@@ -10,6 +10,7 @@ import adrianles.usww.domain.repositiory.dictionary.OrganizationUnitRepository;
 import adrianles.usww.domain.repositiory.dictionary.UserGroupRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.service.facade.UserService;
+import adrianles.usww.utils.UserGroupUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO createUser(UserDTO userDTO) {
+        validateUserData(userDTO);
+
         User user = new User();
         user.setLogin(userDTO.getLogin());
 
@@ -68,6 +71,15 @@ public class UserServiceImpl implements UserService {
         return savedUserDTO;
     }
 
+    private void validateUserData(UserDTO userDTO) {
+        UserGroup userGroup = userGroupRepository.findById(userDTO.getGroupId())
+                .orElseThrow(() -> new ResourceNotFoundException("User group " + userDTO.getGroupId() + " does not exist"));
+
+        if (UserGroupUtils.requiresOrganizationUnit(userGroup) && userDTO.getOrganizationUnitId() == null) {
+            throw new IllegalArgumentException("Organization unit is required for that user group");
+        }
+    }
+
     @Override
     public UserDTO getUserBasicInfo(Integer id) {
         User user = findUserById(id);
@@ -75,6 +87,10 @@ public class UserServiceImpl implements UserService {
     }
 
     private OrganizationUnit getOrganizationUnit(UserDTO userDTO) {
+        if (userDTO.getOrganizationUnitId() == null) {
+            return null;
+        }
+
         return organizationUnitRepository.findById(userDTO.getOrganizationUnitId())
                 .orElseThrow(() -> new ResourceNotFoundException("Jednostka organizacyjna nie istnieje"));
     }

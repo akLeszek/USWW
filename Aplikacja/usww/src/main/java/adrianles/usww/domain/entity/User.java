@@ -44,7 +44,7 @@ public class User extends AbstractEntity {
     private UserGroup userGroup;
 
     @ManyToOne
-    @JoinColumn(name = "organization_unit_id", nullable = false,
+    @JoinColumn(name = "organization_unit_id",
             foreignKey = @ForeignKey(name = "fk_user_organization_unit"))
     private OrganizationUnit organizationUnit;
 

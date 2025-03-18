@@ -4,8 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { UserService } from '../../services/user.service';
-import { DictionaryService } from '../../../shared/services/dictionary.service';
-import { Dictionary } from '../../../shared/services/dictionary.service';
+import { DictionaryService, Dictionary } from '../../../shared/services/dictionary.service';
 
 @Component({
   selector: 'app-user-form',
@@ -19,12 +18,13 @@ import { Dictionary } from '../../../shared/services/dictionary.service';
   styleUrls: ['./user-form.component.scss']
 })
 export class UserFormComponent implements OnInit {
-  userForm: FormGroup;
+  userForm!: FormGroup;
   userGroups: Dictionary[] = [];
   organizationUnits: Dictionary[] = [];
   isEditMode = false;
   userId: number | null = null;
   loading = false;
+  submitting = false;
   error = '';
   success = '';
 
@@ -35,6 +35,10 @@ export class UserFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router
   ) {
+    this.initForm();
+  }
+
+  initForm(): void {
     this.userForm = this.fb.group({
       login: ['', [
         Validators.required,
@@ -53,9 +57,38 @@ export class UserFormComponent implements OnInit {
         Validators.pattern(/^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ-]+$/)
       ]],
       groupId: ['', Validators.required],
-      organizationUnitId: ['', Validators.required],
+      organizationUnitId: [''],
       loginBan: [false]
     });
+
+    // Nasłuchuj zmian w polu groupId
+    this.userForm.get('groupId')?.valueChanges.subscribe(groupId => {
+      this.updateOrganizationUnitValidation(groupId);
+    });
+  }
+
+  updateOrganizationUnitValidation(groupId: number | string): void {
+    if (!groupId) return;
+
+    const group = this.userGroups.find(g => g.id === Number(groupId));
+    if (!group) return;
+
+    const organizationUnitField = this.userForm.get('organizationUnitId');
+
+    if (group.requiresOrganizationUnit) {
+      organizationUnitField?.setValidators([Validators.required]);
+    } else {
+      organizationUnitField?.clearValidators();
+    }
+
+    organizationUnitField?.updateValueAndValidity();
+  }
+
+  // Pomocnicza metoda do sprawdzania wymagalności jednostki
+  isOrganizationUnitRequired(groupId: number | string): boolean {
+    if (!groupId) return false;
+    const group = this.userGroups.find(g => g.id === Number(groupId));
+    return group?.requiresOrganizationUnit || false;
   }
 
   ngOnInit(): void {
@@ -89,6 +122,7 @@ export class UserFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Błąd ładowania grup użytkowników', error);
+          this.error = 'Nie udało się załadować grup użytkowników';
           reject(error);
         }
       });
@@ -104,6 +138,7 @@ export class UserFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Błąd ładowania jednostek organizacyjnych', error);
+          this.error = 'Nie udało się załadować jednostek organizacyjnych';
           reject(error);
         }
       });
@@ -128,6 +163,9 @@ export class UserFormComponent implements OnInit {
         // Wyłącz edycję loginu w trybie edycji
         this.userForm.get('login')?.disable();
 
+        // Odśwież walidację jednostki organizacyjnej
+        this.updateOrganizationUnitValidation(user.groupId);
+
         this.loading = false;
       },
       error: (error) => {
@@ -143,7 +181,7 @@ export class UserFormComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
+    this.submitting = true;
     this.error = '';
     this.success = '';
 
@@ -159,31 +197,35 @@ export class UserFormComponent implements OnInit {
       this.userService.updateUser(this.userId, userData).subscribe({
         next: () => {
           this.success = 'Dane użytkownika zostały zaktualizowane';
-          this.loading = false;
+          this.submitting = false;
           setTimeout(() => {
             this.router.navigate(['/admin/users']);
           }, 2000);
         },
         error: (error) => {
           this.error = error.error?.message || 'Nie udało się zaktualizować użytkownika';
-          this.loading = false;
+          this.submitting = false;
         }
       });
     } else {
       this.userService.createUser(userData).subscribe({
-        next: () => {
-          this.success = 'Użytkownik został utworzony';
-          this.loading = false;
+        next: (response) => {
+          this.success = `Użytkownik został utworzony. Login: ${response.login}, Domyślne hasło: ${response.login}123`;
+          this.submitting = false;
           setTimeout(() => {
             this.router.navigate(['/admin/users']);
-          }, 2000);
+          }, 3000);
         },
         error: (error) => {
           this.error = error.error?.message || 'Nie udało się utworzyć użytkownika';
-          this.loading = false;
+          this.submitting = false;
         }
       });
     }
+  }
+
+  cancelForm(): void {
+    this.router.navigate(['/admin/users']);
   }
 
   // Funkcja do oznaczenia wszystkich pól formularza jako dotknięte
@@ -195,10 +237,6 @@ export class UserFormComponent implements OnInit {
         this.markFormGroupTouched(control);
       }
     });
-  }
-
-  cancelForm(): void {
-    this.router.navigate(['/admin/users']);
   }
 
   // Metody do wyświetlania komunikatów o błędach

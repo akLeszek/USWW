@@ -7,4 +7,10 @@ public interface ExtendedUserDetails extends UserDetails {
     boolean isFirstLogin();
 
     Integer getUserId();
+
+    boolean isAdmin();
+
+    boolean isOperator();
+
+    boolean isStudent();
 }

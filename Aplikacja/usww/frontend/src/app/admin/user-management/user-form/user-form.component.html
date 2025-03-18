@@ -19,18 +19,20 @@
           </div>
 
           <!-- Komunikaty -->
-          <div *ngIf="error" class="alert alert-danger">
+          <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
             {{ error }}
+            <button type="button" class="btn-close" (click)="error = ''"></button>
           </div>
-          <div *ngIf="success" class="alert alert-success">
+          <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
             {{ success }}
+            <button type="button" class="btn-close" (click)="success = ''"></button>
           </div>
 
           <!-- Formularz -->
           <form [formGroup]="userForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label for="login" class="form-label">Login</label>
+                <label for="login" class="form-label">Login *</label>
                 <input
                   type="text"
                   class="form-control"
@@ -47,7 +49,7 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label for="forename" class="form-label">Imię</label>
+                <label for="forename" class="form-label">Imię *</label>
                 <input
                   type="text"
                   class="form-control"
@@ -64,7 +66,7 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label for="surname" class="form-label">Nazwisko</label>
+                <label for="surname" class="form-label">Nazwisko *</label>
                 <input
                   type="text"
                   class="form-control"
@@ -81,7 +83,7 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label for="groupId" class="form-label">Grupa użytkowników</label>
+                <label for="groupId" class="form-label">Grupa użytkowników *</label>
                 <select
                   class="form-select"
                   id="groupId"
@@ -105,7 +107,10 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label for="organizationUnitId" class="form-label">Jednostka organizacyjna</label>
+                <label for="organizationUnitId" class="form-label">
+                  Jednostka organizacyjna
+                  <span *ngIf="isOrganizationUnitRequired(userForm.get('groupId')?.value)">*</span>
+                </label>
                 <select
                   class="form-select"
                   id="organizationUnitId"
@@ -124,7 +129,10 @@
                   </option>
                 </select>
                 <div class="invalid-feedback" *ngIf="userForm.get('organizationUnitId')?.errors?.['required']">
-                  Jednostka organizacyjna jest wymagana
+                  Jednostka organizacyjna jest wymagana dla tej grupy użytkowników
+                </div>
+                <div class="form-text" *ngIf="!isOrganizationUnitRequired(userForm.get('groupId')?.value) && userForm.get('groupId')?.value">
+                  Dla tej grupy jednostka organizacyjna nie jest wymagana
                 </div>
               </div>
 
@@ -154,14 +162,18 @@
               <button
                 type="submit"
                 class="btn btn-primary"
-                [disabled]="userForm.invalid || loading"
+                [disabled]="userForm.invalid || submitting"
               >
                 <span
-                  *ngIf="loading"
+                  *ngIf="submitting"
                   class="spinner-border spinner-border-sm me-1"
                 ></span>
                 {{ isEditMode ? 'Aktualizuj' : 'Dodaj' }} użytkownika
               </button>
+            </div>
+
+            <div class="form-text text-end mt-2">
+              <span>* - pole wymagane</span>
             </div>
           </form>
         </div>

@@ -1,6 +1,7 @@
 package adrianles.usww.security.userdetails;
 
 import adrianles.usww.domain.entity.User;
+import adrianles.usww.utils.UserGroupUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -54,5 +55,20 @@ public class CustomUserDetails implements ExtendedUserDetails {
 
     public Integer getUserId() {
         return user.getId();
+    }
+
+    @Override
+    public boolean isAdmin() {
+        return UserGroupUtils.isAdmin(user.getUserGroup());
+    }
+
+    @Override
+    public boolean isOperator() {
+        return UserGroupUtils.isOperator(user.getUserGroup());
+    }
+
+    @Override
+    public boolean isStudent() {
+        return UserGroupUtils.isStudent(user.getUserGroup());
     }
 }

@@ -1,0 +1,29 @@
+.btn-group-sm > .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.badge {
+  min-width: 80px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.9rem;
+  }
+
+  .btn-group-sm > .btn {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+  }
+}

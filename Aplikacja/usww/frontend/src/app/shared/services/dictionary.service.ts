@@ -15,8 +15,7 @@ export interface Dictionary {
 export class DictionaryService {
   private apiUrl = `${environment.apiUrl}/dictionaries`;
 
-  constructor(private http: HttpClient) {
-  }
+  constructor(private http: HttpClient) {}
 
   getTicketCategories(): Observable<Dictionary[]> {
     return this.http.get<Dictionary[]>(`${this.apiUrl}/categories`);
@@ -28,5 +27,13 @@ export class DictionaryService {
 
   getTicketPriorities(): Observable<Dictionary[]> {
     return this.http.get<Dictionary[]>(`${this.apiUrl}/priorities`);
+  }
+
+  getUserGroups(): Observable<Dictionary[]> {
+    return this.http.get<Dictionary[]>(`${this.apiUrl}/user-groups`);
+  }
+
+  getOrganizationUnits(): Observable<Dictionary[]> {
+    return this.http.get<Dictionary[]>(`${this.apiUrl}/organization-units`);
   }
 }

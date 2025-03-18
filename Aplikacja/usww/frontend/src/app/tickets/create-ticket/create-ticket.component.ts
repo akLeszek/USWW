@@ -1,10 +1,10 @@
-import {Component, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Router, RouterModule} from '@angular/router';
-import {Ticket, TicketService} from '../services/ticket.service';
-import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
-import {AuthService} from '../../auth/services/auth.service';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { Ticket, TicketService } from '../services/ticket.service';
+import { Dictionary, DictionaryService } from '../../shared/services/dictionary.service';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
   selector: 'app-create-ticket',
@@ -99,6 +99,8 @@ export class CreateTicketComponent implements OnInit {
       return;
     }
 
+    console.log('Current user:', currentUser);
+
     const ticketData: Ticket = {
       title: this.ticketForm.value.title,
       categoryId: parseInt(this.ticketForm.value.categoryId),
@@ -106,8 +108,11 @@ export class CreateTicketComponent implements OnInit {
       studentId: currentUser.userId
     };
 
+    console.log('Creating ticket with data:', ticketData);
+
     this.ticketService.createTicket(ticketData).subscribe({
       next: (ticket) => {
+        console.log('Ticket created successfully:', ticket);
         if (this.ticketForm.value.message && ticket.id) {
           const messageData = {
             messageText: this.ticketForm.value.message,
@@ -115,8 +120,11 @@ export class CreateTicketComponent implements OnInit {
             senderId: currentUser.userId
           };
 
+          console.log('Creating message with data:', messageData);
+
           this.ticketService.createTicketMessage(messageData).subscribe({
-            next: () => {
+            next: (message) => {
+              console.log('Message created successfully:', message);
               this.handleSuccess();
             },
             error: (error) => {

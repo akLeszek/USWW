@@ -66,19 +66,25 @@
                 <div class="col-md-4 mb-3">
                   <label class="form-label">Status zgłoszenia</label>
                   <div class="d-flex">
-                    <select class="form-select me-2" [disabled]="updating" [value]="ticket.statusId">
-                      <option *ngFor="let status of statuses" [value]="status.id">{{ status.name }}</option>
+                    <select [(ngModel)]="selectedStatusId" class="form-select me-2" [disabled]="updating">
+                      <option *ngFor="let status of statuses" [ngValue]="status.id">{{ status.name }}</option>
                     </select>
-                    <button class="btn btn-outline-primary" [disabled]="updating">Zmień</button>
+                    <button class="btn btn-outline-primary" [disabled]="updating"
+                            (click)="updateTicketStatus(selectedStatusId)">
+                      Zmień
+                    </button>
                   </div>
                 </div>
                 <div class="col-md-4 mb-3">
                   <label class="form-label">Priorytet</label>
                   <div class="d-flex">
-                    <select class="form-select me-2" [disabled]="updating" [value]="ticket.priorityId">
-                      <option *ngFor="let priority of priorities" [value]="priority.id">{{ priority.name }}</option>
+                    <select [(ngModel)]="selectedPriorityId" class="form-select me-2" [disabled]="updating">
+                      <option *ngFor="let priority of priorities" [ngValue]="priority.id">{{ priority.name }}</option>
                     </select>
-                    <button class="btn btn-outline-primary" [disabled]="updating">Zmień</button>
+                    <button class="btn btn-outline-primary" [disabled]="updating"
+                            (click)="updateTicketPriority(selectedPriorityId)">
+                      Zmień
+                    </button>
                   </div>
                 </div>
                 <div class="col-md-4 mb-3 d-flex flex-column">

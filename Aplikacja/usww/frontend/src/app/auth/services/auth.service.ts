@@ -1,12 +1,12 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {BehaviorSubject, Observable, tap} from 'rxjs';
-import {environment} from '../../../environments/environment';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 interface LoginResponse {
   token: string;
+  userId: number;
   requirePasswordChange?: boolean;
-  userId?: number;
 }
 
 interface PasswordChangeRequest {
@@ -42,19 +42,19 @@ export class AuthService {
       .pipe(
         tap(response => {
           if (!response.requirePasswordChange) {
-            this.setCurrentUserFromResponse(response, username);
+            localStorage.setItem('currentUser', JSON.stringify({
+              username,
+              userId: response.userId,
+              token: response.token
+            }));
+            this.currentUserSubject.next({
+              username,
+              userId: response.userId,
+              token: response.token
+            });
           }
         })
       );
-  }
-
-  setCurrentUserFromResponse(response: LoginResponse, username: string) {
-    localStorage.setItem('currentUser', JSON.stringify({
-      username,
-      userId: response.userId,
-      token: response.token
-    }));
-    this.currentUserSubject.next({username, userId: response.userId, token: response.token});
   }
 
   changePassword(userId: number, currentPassword: string, newPassword: string): Observable<PasswordChangeResponse> {
@@ -64,7 +64,14 @@ export class AuthService {
     ).pipe(
       tap(response => {
         const username = this.currentUserValue?.username;
-        this.setCurrentUserFromResponse(response, username);
+        if (username && response.token) {
+          localStorage.setItem('currentUser', JSON.stringify({
+            username,
+            userId: userId,
+            token: response.token
+          }));
+          this.currentUserSubject.next({username, userId, token: response.token});
+        }
       })
     );
   }

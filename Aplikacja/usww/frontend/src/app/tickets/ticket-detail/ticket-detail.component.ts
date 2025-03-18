@@ -1,10 +1,10 @@
-import {Component, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ActivatedRoute, Router, RouterModule} from '@angular/router';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Ticket, TicketMessage, TicketService} from '../services/ticket.service';
-import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
-import {AuthService} from '../../auth/services/auth.service';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Ticket, TicketMessage, TicketService } from '../services/ticket.service';
+import { Dictionary, DictionaryService } from '../../shared/services/dictionary.service';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
   selector: 'app-ticket-detail',
@@ -12,7 +12,8 @@ import {AuthService} from '../../auth/services/auth.service';
   imports: [
     CommonModule,
     RouterModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    FormsModule
   ],
   templateUrl: './ticket-detail.component.html',
   styleUrls: ['./ticket-detail.component.scss']
@@ -24,6 +25,10 @@ export class TicketDetailComponent implements OnInit {
   categories: Dictionary[] = [];
   statuses: Dictionary[] = [];
   priorities: Dictionary[] = [];
+
+  // Zmienne dla selektorów - zmieniono typy aby obsługiwały undefined
+  selectedStatusId: number | undefined | null = null;
+  selectedPriorityId: number | undefined | null = null;
 
   messageForm: FormGroup;
 
@@ -48,18 +53,25 @@ export class TicketDetailComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log('TicketDetailComponent ngOnInit');
+
     this.route.paramMap.subscribe(params => {
+      console.log('Route params:', params);
       const id = params.get('id');
+
       if (id) {
+        console.log('Got ticket ID:', id);
         this.ticketId = +id;
         this.loadData();
       } else {
+        console.error('No ticket ID found in route');
         this.router.navigate(['/tickets']);
       }
     });
   }
 
   loadData(): void {
+    console.log('Loading data for ticket ID:', this.ticketId);
     this.loading = true;
 
     // Ładowanie słowników
@@ -68,14 +80,20 @@ export class TicketDetailComponent implements OnInit {
     // Ładowanie szczegółów zgłoszenia
     this.ticketService.getTicket(this.ticketId).subscribe({
       next: (ticket) => {
+        console.log('Loaded ticket details:', ticket);
         this.ticket = ticket;
+
+        // Inicjalizacja wartości selektorów
+        // Używamy sprawdzania typu, aby uniknąć błędów typów
+        this.selectedStatusId = ticket.statusId !== undefined ? ticket.statusId : null;
+        this.selectedPriorityId = ticket.priorityId !== undefined ? ticket.priorityId : null;
 
         // Ładowanie wiadomości dla zgłoszenia
         this.loadMessages();
       },
       error: (error) => {
-        this.error = 'Nie udało się załadować szczegółów zgłoszenia.';
         console.error('Error loading ticket details:', error);
+        this.error = 'Nie udało się załadować szczegółów zgłoszenia.';
         this.loading = false;
       }
     });
@@ -85,6 +103,7 @@ export class TicketDetailComponent implements OnInit {
     // Ładowanie kategorii
     this.dictionaryService.getTicketCategories().subscribe({
       next: (categories) => {
+        console.log('Loaded categories:', categories);
         this.categories = categories;
       },
       error: (error) => {
@@ -95,6 +114,7 @@ export class TicketDetailComponent implements OnInit {
     // Ładowanie statusów
     this.dictionaryService.getTicketStatuses().subscribe({
       next: (statuses) => {
+        console.log('Loaded statuses:', statuses);
         this.statuses = statuses;
       },
       error: (error) => {
@@ -105,6 +125,7 @@ export class TicketDetailComponent implements OnInit {
     // Ładowanie priorytetów
     this.dictionaryService.getTicketPriorities().subscribe({
       next: (priorities) => {
+        console.log('Loaded priorities:', priorities);
         this.priorities = priorities;
       },
       error: (error) => {
@@ -116,14 +137,15 @@ export class TicketDetailComponent implements OnInit {
   loadMessages(): void {
     this.ticketService.getTicketMessages(this.ticketId).subscribe({
       next: (messages) => {
+        console.log('Loaded messages:', messages);
         this.messages = messages.sort((a, b) =>
           new Date(a.insertDate || '').getTime() - new Date(b.insertDate || '').getTime()
         );
         this.loading = false;
       },
       error: (error) => {
-        this.error = 'Nie udało się załadować wiadomości dla zgłoszenia.';
         console.error('Error loading ticket messages:', error);
+        this.error = 'Nie udało się załadować wiadomości dla zgłoszenia.';
         this.loading = false;
       }
     });
@@ -157,11 +179,14 @@ export class TicketDetailComponent implements OnInit {
     const messageData: TicketMessage = {
       messageText: this.messageForm.value.messageText,
       ticketId: this.ticketId,
-      senderId: currentUser.id
+      senderId: currentUser.userId
     };
+
+    console.log('Sending message:', messageData);
 
     this.ticketService.createTicketMessage(messageData).subscribe({
       next: (message) => {
+        console.log('Message sent successfully:', message);
         // Sukces - dodaj wiadomość do listy i wyczyść formularz
         this.success = 'Wiadomość została wysłana.';
         this.messages.push(message);
@@ -176,15 +201,15 @@ export class TicketDetailComponent implements OnInit {
         this.messageSending = false;
       },
       error: (error) => {
-        this.error = 'Nie udało się wysłać wiadomości. Spróbuj ponownie.';
         console.error('Error sending message:', error);
+        this.error = 'Nie udało się wysłać wiadomości. Spróbuj ponownie.';
         this.messageSending = false;
       }
     });
   }
 
-  updateTicketStatus(statusId: number): void {
-    if (!this.ticket) return;
+  updateTicketStatus(statusId: number | undefined | null): void {
+    if (!this.ticket || statusId === null || statusId === undefined) return;
 
     this.updating = true;
 
@@ -193,22 +218,26 @@ export class TicketDetailComponent implements OnInit {
       statusId: statusId
     };
 
+    console.log('Updating ticket status:', updatedTicket);
+
     this.ticketService.updateTicket(this.ticketId, updatedTicket).subscribe({
       next: (ticket) => {
+        console.log('Status updated successfully:', ticket);
         this.ticket = ticket;
+        this.selectedStatusId = ticket.statusId; // Aktualizacja wybranej wartości
         this.success = 'Status zgłoszenia został zaktualizowany.';
         this.updating = false;
       },
       error: (error) => {
-        this.error = 'Nie udało się zaktualizować statusu zgłoszenia.';
         console.error('Error updating ticket status:', error);
+        this.error = 'Nie udało się zaktualizować statusu zgłoszenia.';
         this.updating = false;
       }
     });
   }
 
-  updateTicketPriority(priorityId: number): void {
-    if (!this.ticket) return;
+  updateTicketPriority(priorityId: number | undefined | null): void {
+    if (!this.ticket || priorityId === null || priorityId === undefined) return;
 
     this.updating = true;
 
@@ -217,15 +246,19 @@ export class TicketDetailComponent implements OnInit {
       priorityId: priorityId
     };
 
+    console.log('Updating ticket priority:', updatedTicket);
+
     this.ticketService.updateTicket(this.ticketId, updatedTicket).subscribe({
       next: (ticket) => {
+        console.log('Priority updated successfully:', ticket);
         this.ticket = ticket;
+        this.selectedPriorityId = ticket.priorityId; // Aktualizacja wybranej wartości
         this.success = 'Priorytet zgłoszenia został zaktualizowany.';
         this.updating = false;
       },
       error: (error) => {
-        this.error = 'Nie udało się zaktualizować priorytetu zgłoszenia.';
         console.error('Error updating ticket priority:', error);
+        this.error = 'Nie udało się zaktualizować priorytetu zgłoszenia.';
         this.updating = false;
       }
     });
@@ -236,15 +269,18 @@ export class TicketDetailComponent implements OnInit {
 
     this.updating = true;
 
+    console.log('Archiving ticket:', this.ticketId);
+
     this.ticketService.archiveTicket(this.ticketId).subscribe({
       next: (ticket) => {
+        console.log('Ticket archived successfully:', ticket);
         this.ticket = ticket;
         this.success = 'Zgłoszenie zostało zarchiwizowane.';
         this.updating = false;
       },
       error: (error) => {
-        this.error = 'Nie udało się zarchiwizować zgłoszenia.';
         console.error('Error archiving ticket:', error);
+        this.error = 'Nie udało się zarchiwizować zgłoszenia.';
         this.updating = false;
       }
     });
@@ -255,15 +291,18 @@ export class TicketDetailComponent implements OnInit {
 
     this.updating = true;
 
+    console.log('Restoring ticket:', this.ticketId);
+
     this.ticketService.restoreTicket(this.ticketId).subscribe({
       next: (ticket) => {
+        console.log('Ticket restored successfully:', ticket);
         this.ticket = ticket;
         this.success = 'Zgłoszenie zostało przywrócone.';
         this.updating = false;
       },
       error: (error) => {
-        this.error = 'Nie udało się przywrócić zgłoszenia.';
         console.error('Error restoring ticket:', error);
+        this.error = 'Nie udało się przywrócić zgłoszenia.';
         this.updating = false;
       }
     });
@@ -332,9 +371,6 @@ export class TicketDetailComponent implements OnInit {
   formatDate(dateString?: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'});
   }
 }

@@ -1,0 +1,172 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Zarządzanie użytkownikami</h5>
+          <button class="btn btn-primary" routerLink="/admin/users/new">
+            <i class="bi bi-plus-circle"></i> Dodaj użytkownika
+          </button>
+        </div>
+        <div class="card-body">
+          <!-- Komunikaty -->
+          <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+            {{ error }}
+            <button type="button" class="btn-close" (click)="error = ''"></button>
+          </div>
+
+          <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
+            {{ success }}
+            <button type="button" class="btn-close" (click)="success = ''"></button>
+          </div>
+
+          <!-- Filtry -->
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Filtruj po loginie"
+                [(ngModel)]="filterLogin"
+                (ngModelChange)="applyFilters()"
+              >
+            </div>
+            <div class="col-md-4">
+              <select
+                class="form-select"
+                [(ngModel)]="filterGroup"
+                (ngModelChange)="applyFilters()"
+              >
+                <option value="">Wszystkie grupy</option>
+                <option
+                  *ngFor="let group of userGroups"
+                  [value]="group.id"
+                >
+                  {{ group.name }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <select
+                class="form-select"
+                [(ngModel)]="filterOrganizationUnit"
+                (ngModelChange)="applyFilters()"
+              >
+                <option value="">Wszystkie jednostki</option>
+                <option
+                  *ngFor="let unit of organizationUnits"
+                  [value]="unit.id"
+                >
+                  {{ unit.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Ładowanie -->
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Ładowanie...</span>
+            </div>
+          </div>
+
+          <!-- Tabela użytkowników -->
+          <div *ngIf="!loading" class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Login</th>
+                <th>Imię</th>
+                <th>Nazwisko</th>
+                <th>Grupa</th>
+                <th>Jednostka</th>
+                <th>Status</th>
+                <th>Akcje</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let user of currentPageUsers">
+                <td>{{ user.id }}</td>
+                <td>{{ user.login }}</td>
+                <td>{{ user.forename }}</td>
+                <td>{{ user.surname }}</td>
+                <td>{{ getUserGroupName(user.groupId) }}</td>
+                <td>{{ getOrganizationUnitName(user.organizationUnitId) }}</td>
+                <td>
+                    <span
+                      class="badge"
+                      [ngClass]="{
+                        'bg-success': !user.loginBan,
+                        'bg-danger': user.loginBan
+                      }"
+                    >
+                      {{ user.loginBan ? 'Zablokowany' : 'Aktywny' }}
+                    </span>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button
+                      class="btn btn-outline-primary"
+                      routerLink="/admin/users/{{ user.id }}/edit"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button
+                      *ngIf="!user.loginBan"
+                      class="btn btn-outline-danger"
+                      (click)="blockUser(user.id)"
+                      [disabled]="processingUserId === user.id"
+                    >
+                      <span *ngIf="processingUserId === user.id" class="spinner-border spinner-border-sm me-1"></span>
+                      <i class="bi bi-lock"></i>
+                    </button>
+                    <button
+                      *ngIf="user.loginBan"
+                      class="btn btn-outline-success"
+                      (click)="unblockUser(user.id)"
+                      [disabled]="processingUserId === user.id"
+                    >
+                      <span *ngIf="processingUserId === user.id" class="spinner-border spinner-border-sm me-1"></span>
+                      <i class="bi bi-unlock"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Brak wyników -->
+          <div *ngIf="!loading && filteredUsers.length === 0" class="alert alert-info text-center">
+            Brak użytkowników spełniających kryteria wyszukiwania.
+            <button class="btn btn-sm btn-outline-primary ms-2" (click)="resetFilters()">
+              Wyczyść filtry
+            </button>
+          </div>
+
+          <!-- Paginacja -->
+          <div *ngIf="!loading && filteredUsers.length > 0"
+               class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+              <span class="text-muted">
+                Pokazano {{ (page - 1) * pageSize + 1 }} -
+                {{ Math.min((page - 1) * pageSize + currentPageUsers.length, collectionSize) }}
+                z {{ collectionSize }} użytkowników
+              </span>
+            </div>
+            <ngb-pagination
+              [collectionSize]="collectionSize"
+              [(page)]="page"
+              [pageSize]="pageSize"
+              [maxSize]="5"
+              [rotate]="true"
+              [boundaryLinks]="true"
+              aria-label="Nawigacja po stronach"
+            ></ngb-pagination>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

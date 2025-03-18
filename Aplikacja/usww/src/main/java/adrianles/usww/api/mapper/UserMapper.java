@@ -2,11 +2,9 @@ package adrianles.usww.api.mapper;
 
 import adrianles.usww.api.dto.UserDTO;
 import adrianles.usww.domain.entity.User;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class UserMapper {
 
     public UserDTO toDto(User user) {

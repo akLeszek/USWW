@@ -1,0 +1,171 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            {{ isEditMode ? 'Edycja użytkownika' : 'Dodaj nowego użytkownika' }}
+          </h5>
+          <button class="btn btn-sm btn-outline-secondary" routerLink="/admin/users">
+            <i class="bi bi-arrow-left"></i> Wróć
+          </button>
+        </div>
+        <div class="card-body">
+          <!-- Ładowanie -->
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Ładowanie...</span>
+            </div>
+          </div>
+
+          <!-- Komunikaty -->
+          <div *ngIf="error" class="alert alert-danger">
+            {{ error }}
+          </div>
+          <div *ngIf="success" class="alert alert-success">
+            {{ success }}
+          </div>
+
+          <!-- Formularz -->
+          <form [formGroup]="userForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="login" class="form-label">Login</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="login"
+                  formControlName="login"
+                  [ngClass]="{'is-invalid':
+                    userForm.get('login')?.invalid &&
+                    (userForm.get('login')?.dirty || userForm.get('login')?.touched)
+                  }"
+                >
+                <div class="invalid-feedback" *ngIf="getLoginErrorMessage()">
+                  {{ getLoginErrorMessage() }}
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="forename" class="form-label">Imię</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="forename"
+                  formControlName="forename"
+                  [ngClass]="{'is-invalid':
+                    userForm.get('forename')?.invalid &&
+                    (userForm.get('forename')?.dirty || userForm.get('forename')?.touched)
+                  }"
+                >
+                <div class="invalid-feedback" *ngIf="getForenameErrorMessage()">
+                  {{ getForenameErrorMessage() }}
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="surname" class="form-label">Nazwisko</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="surname"
+                  formControlName="surname"
+                  [ngClass]="{'is-invalid':
+                    userForm.get('surname')?.invalid &&
+                    (userForm.get('surname')?.dirty || userForm.get('surname')?.touched)
+                  }"
+                >
+                <div class="invalid-feedback" *ngIf="getSurnameErrorMessage()">
+                  {{ getSurnameErrorMessage() }}
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="groupId" class="form-label">Grupa użytkowników</label>
+                <select
+                  class="form-select"
+                  id="groupId"
+                  formControlName="groupId"
+                  [ngClass]="{'is-invalid':
+                    userForm.get('groupId')?.invalid &&
+                    (userForm.get('groupId')?.dirty || userForm.get('groupId')?.touched)
+                  }"
+                >
+                  <option value="">Wybierz grupę</option>
+                  <option
+                    *ngFor="let group of userGroups"
+                    [value]="group.id"
+                  >
+                    {{ group.name }}
+                  </option>
+                </select>
+                <div class="invalid-feedback" *ngIf="userForm.get('groupId')?.errors?.['required']">
+                  Grupa użytkowników jest wymagana
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="organizationUnitId" class="form-label">Jednostka organizacyjna</label>
+                <select
+                  class="form-select"
+                  id="organizationUnitId"
+                  formControlName="organizationUnitId"
+                  [ngClass]="{'is-invalid':
+                    userForm.get('organizationUnitId')?.invalid &&
+                    (userForm.get('organizationUnitId')?.dirty || userForm.get('organizationUnitId')?.touched)
+                  }"
+                >
+                  <option value="">Wybierz jednostkę</option>
+                  <option
+                    *ngFor="let unit of organizationUnits"
+                    [value]="unit.id"
+                  >
+                    {{ unit.name }}
+                  </option>
+                </select>
+                <div class="invalid-feedback" *ngIf="userForm.get('organizationUnitId')?.errors?.['required']">
+                  Jednostka organizacyjna jest wymagana
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3 d-flex align-items-end">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="loginBan"
+                    formControlName="loginBan"
+                  >
+                  <label class="form-check-label" for="loginBan">
+                    Zablokuj konto użytkownika
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-3">
+              <button
+                type="button"
+                class="btn btn-secondary me-2"
+                (click)="cancelForm()"
+              >
+                Anuluj
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="userForm.invalid || loading"
+              >
+                <span
+                  *ngIf="loading"
+                  class="spinner-border spinner-border-sm me-1"
+                ></span>
+                {{ isEditMode ? 'Aktualizuj' : 'Dodaj' }} użytkownika
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

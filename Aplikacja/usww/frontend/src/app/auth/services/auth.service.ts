@@ -5,8 +5,8 @@ import { environment } from '../../../environments/environment';
 
 interface LoginResponse {
   token: string;
+  userId: number;
   requirePasswordChange?: boolean;
-  userId?: number;
 }
 
 interface PasswordChangeRequest {
@@ -44,9 +44,14 @@ export class AuthService {
           if (!response.requirePasswordChange) {
             localStorage.setItem('currentUser', JSON.stringify({
               username,
+              userId: response.userId,
               token: response.token
             }));
-            this.currentUserSubject.next({username, token: response.token});
+            this.currentUserSubject.next({
+              username,
+              userId: response.userId,
+              token: response.token
+            });
           }
         })
       );
@@ -59,11 +64,14 @@ export class AuthService {
     ).pipe(
       tap(response => {
         const username = this.currentUserValue?.username;
-        localStorage.setItem('currentUser', JSON.stringify({
-          username,
-          token: response.token
-        }));
-        this.currentUserSubject.next({username, token: response.token});
+        if (username && response.token) {
+          localStorage.setItem('currentUser', JSON.stringify({
+            username,
+            userId: userId,
+            token: response.token
+          }));
+          this.currentUserSubject.next({username, userId, token: response.token});
+        }
       })
     );
   }

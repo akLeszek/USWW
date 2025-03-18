@@ -1,0 +1,67 @@
+.card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 15px 20px;
+}
+
+.ticket-details {
+  .detail-item {
+    margin-bottom: 10px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .detail-label {
+    font-weight: 500;
+    color: #6c757d;
+    margin-right: 5px;
+  }
+
+  .detail-value {
+    color: #212529;
+  }
+}
+
+.messages {
+  .message {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .sender-name {
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .message-date {
+    color: #6c757d;
+    font-size: 0.85rem;
+  }
+
+  .message-content {
+    white-space: pre-line;
+  }
+}
+
+.ticket-actions {
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}

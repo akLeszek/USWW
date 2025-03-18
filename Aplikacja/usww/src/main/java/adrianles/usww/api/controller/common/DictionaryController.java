@@ -1,11 +1,7 @@
 package adrianles.usww.api.controller.common;
 
-import adrianles.usww.api.dto.dictionary.TicketCategoryDTO;
-import adrianles.usww.api.dto.dictionary.TicketPriorityDTO;
-import adrianles.usww.api.dto.dictionary.TicketStatusDTO;
-import adrianles.usww.service.facade.TicketCategoryService;
-import adrianles.usww.service.facade.TicketPriorityDictionaryService;
-import adrianles.usww.service.facade.TicketStatusService;
+import adrianles.usww.api.dto.dictionary.*;
+import adrianles.usww.service.facade.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +18,8 @@ public class DictionaryController {
     private final TicketCategoryService ticketCategoryService;
     private final TicketStatusService ticketStatusService;
     private final TicketPriorityDictionaryService ticketPriorityDictionaryService;
+    private final UserGroupService userGroupService;
+    private final OrganizationUnitService organizationUnitService;
 
     @GetMapping("/categories")
     public ResponseEntity<List<TicketCategoryDTO>> getAllCategories() {
@@ -66,5 +64,15 @@ public class DictionaryController {
     @GetMapping("/priorities/idn/{idn}")
     public ResponseEntity<TicketPriorityDTO> getTicketPriorityByIdn(@PathVariable String idn) {
         return ResponseEntity.ok(ticketPriorityDictionaryService.getTicketPriorityByIdn(idn));
+    }
+
+    @GetMapping("/user-groups")
+    public ResponseEntity<List<UserGroupDTO>> getAllUserGroups() {
+        return ResponseEntity.ok(userGroupService.getAllUserGroups());
+    }
+
+    @GetMapping("/organization-units")
+    public ResponseEntity<List<OrganizationUnitDTO>> getAllOrganizationUnits() {
+        return ResponseEntity.ok(organizationUnitService.getAllOrganizationUnits());
     }
 }

@@ -5,7 +5,20 @@ import { RouterModule } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { UserService } from '../../services/user.service';
-import { DictionaryService } from '../../../shared/services/dictionary.service';
+import { DictionaryService, Dictionary } from '../../../shared/services/dictionary.service';
+
+// Interfejs dla użytkownika
+interface User {
+  id: number;
+  login: string;
+  forename: string;
+  surname: string;
+  groupId: number;
+  organizationUnitId: number;
+  loginBan: boolean;
+  archive: boolean;
+  lastLogin?: string;
+}
 
 @Component({
   selector: 'app-user-list',
@@ -20,12 +33,15 @@ import { DictionaryService } from '../../../shared/services/dictionary.service';
   styleUrls: ['./user-list.component.scss']
 })
 export class UserListComponent implements OnInit {
-  users: any[] = [];
-  userGroups: any[] = [];
-  organizationUnits: any[] = [];
+  users: User[] = [];
+  filteredUsers: User[] = [];
+  userGroups: Dictionary[] = [];
+  organizationUnits: Dictionary[] = [];
 
   loading = true;
+  processingUserId: number | null = null;
   error = '';
+  success = '';
 
   // Filtry
   filterLogin = '';
@@ -36,6 +52,8 @@ export class UserListComponent implements OnInit {
   page = 1;
   pageSize = 10;
   collectionSize = 0;
+
+  Math = Math;
 
   constructor(
     private userService: UserService,
@@ -86,7 +104,7 @@ export class UserListComponent implements OnInit {
   }
 
   applyFilters(): void {
-    const filteredUsers = this.users.filter(user => {
+    this.filteredUsers = this.users.filter(user => {
       const loginMatch = !this.filterLogin ||
         user.login.toLowerCase().includes(this.filterLogin.toLowerCase());
 
@@ -99,7 +117,7 @@ export class UserListComponent implements OnInit {
       return loginMatch && groupMatch && organizationUnitMatch;
     });
 
-    this.collectionSize = filteredUsers.length;
+    this.collectionSize = this.filteredUsers.length;
   }
 
   resetFilters(): void {
@@ -111,53 +129,54 @@ export class UserListComponent implements OnInit {
 
   getUserGroupName(groupId: number): string {
     const group = this.userGroups.find(g => g.id === groupId);
-    return group ? group.name : 'Nieznana';
+    return group ? group.name : 'Nieznana grupa';
   }
 
   getOrganizationUnitName(unitId: number): string {
     const unit = this.organizationUnits.find(u => u.id === unitId);
-    return unit ? unit.name : 'Nieznana';
+    return unit ? unit.name : 'Nieznana jednostka';
   }
 
   blockUser(userId: number): void {
+    this.error = '';
+    this.success = '';
+    this.processingUserId = userId;
+
     this.userService.blockUser(userId).subscribe({
       next: () => {
         const user = this.users.find(u => u.id === userId);
         if (user) user.loginBan = true;
+        this.success = 'Użytkownik został zablokowany pomyślnie';
+        this.processingUserId = null;
       },
       error: (error) => {
         this.error = 'Nie udało się zablokować użytkownika';
+        this.processingUserId = null;
       }
     });
   }
 
   unblockUser(userId: number): void {
+    this.error = '';
+    this.success = '';
+    this.processingUserId = userId;
+
     this.userService.unblockUser(userId).subscribe({
       next: () => {
         const user = this.users.find(u => u.id === userId);
         if (user) user.loginBan = false;
+        this.success = 'Użytkownik został odblokowany pomyślnie';
+        this.processingUserId = null;
       },
       error: (error) => {
         this.error = 'Nie udało się odblokować użytkownika';
+        this.processingUserId = null;
       }
     });
   }
 
   get currentPageUsers() {
-    const filteredUsers = this.users.filter(user => {
-      const loginMatch = !this.filterLogin ||
-        user.login.toLowerCase().includes(this.filterLogin.toLowerCase());
-
-      const groupMatch = !this.filterGroup ||
-        user.groupId === parseInt(this.filterGroup);
-
-      const organizationUnitMatch = !this.filterOrganizationUnit ||
-        user.organizationUnitId === parseInt(this.filterOrganizationUnit);
-
-      return loginMatch && groupMatch && organizationUnitMatch;
-    });
-
     const startIndex = (this.page - 1) * this.pageSize;
-    return filteredUsers.slice(startIndex, startIndex + this.pageSize);
+    return this.filteredUsers.slice(startIndex, startIndex + this.pageSize);
   }
 }

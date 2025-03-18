@@ -2,53 +2,58 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { Dictionary } from '../../shared/services/dictionary.service';
+
+export interface User {
+  id: number;
+  login: string;
+  forename: string;
+  surname: string;
+  groupId: number;
+  organizationUnitId: number;
+  loginBan: boolean;
+  archive: boolean;
+  lastLogin?: string;
+  firstLogin?: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
   private apiUrl = `${environment.apiUrl}/admin/users`;
-  private dictionaryApiUrl = `${environment.apiUrl}/dictionaries`;
 
   constructor(private http: HttpClient) {}
 
-  getAllUsers(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  getAllUsers(): Observable<User[]> {
+    return this.http.get<User[]>(this.apiUrl);
   }
 
-  getUserGroups(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.dictionaryApiUrl}/user-groups`);
+  blockUser(userId: number): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/${userId}/block`, {});
   }
 
-  getOrganizationUnits(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.dictionaryApiUrl}/organization-units`);
+  unblockUser(userId: number): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/${userId}/unblock`, {});
   }
 
-  blockUser(userId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${userId}/block`, {});
+  archiveUser(userId: number): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/${userId}/archive`, {});
   }
 
-  unblockUser(userId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${userId}/unblock`, {});
+  restoreUser(userId: number): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/${userId}/restore`, {});
   }
 
-  archiveUser(userId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${userId}/archive`, {});
+  createUser(userData: Partial<User>): Observable<User> {
+    return this.http.post<User>(this.apiUrl, userData);
   }
 
-  restoreUser(userId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${userId}/restore`, {});
+  getUserById(userId: number): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/${userId}`);
   }
 
-  createUser(userData: any): Observable<any> {
-    return this.http.post(this.apiUrl, userData);
-  }
-
-  getUserById(userId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${userId}`);
-  }
-
-  updateUser(userId: number, userData: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${userId}`, userData);
+  updateUser(userId: number, userData: Partial<User>): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/${userId}`, userData);
   }
 }

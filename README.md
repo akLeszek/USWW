@@ -87,9 +87,3 @@ Aplikacja/usww/
 3. Ustaw zmienne środowiskowe
 4. Uruchom backend: `./gradlew bootRun`
 5. Uruchom frontend: `ng serve`
-
-## Autor
-Adrian Leś
-Wyższa Szkoła Technologii Informatycznych w Katowicach
-Kierunek: Informatyka
-Rok akademicki: 2023/2024

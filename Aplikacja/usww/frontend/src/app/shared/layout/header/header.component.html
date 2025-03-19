@@ -1,0 +1,21 @@
+<header class="header">
+  <div class="header-left">
+    <button class="sidebar-toggle" (click)="onToggleSidebar()">
+      <i class="bi bi-list"></i>
+    </button>
+    <h2 class="app-title">System Komunikacji Student-Dziekanat</h2>
+  </div>
+
+  <div class="header-right">
+    <div ngbDropdown class="user-menu">
+      <button class="user-button" id="userDropdown" ngbDropdownToggle>
+        <i class="bi bi-person-circle"></i>
+        <span class="username">Użytkownik</span>
+      </button>
+      <div ngbDropdownMenu aria-labelledby="userDropdown">
+        <button ngbDropdownItem>Profil</button>
+        <button ngbDropdownItem (click)="logout()">Wyloguj</button>
+      </div>
+    </div>
+  </div>
+</header>

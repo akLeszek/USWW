@@ -1,0 +1,130 @@
+<div class="dashboard-container">
+  <h1 class="dashboard-title">Dashboard</h1>
+
+  <div class="dashboard-welcome">
+    <p>Witaj w systemie komunikacji student-dziekanat.</p>
+  </div>
+
+  <div class="dashboard-content">
+    <!-- Statystyki -->
+    <div class="row gy-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+          <div class="stat-card-content">
+            <h2 class="stat-card-title">Aktywne zgłoszenia</h2>
+            <p class="stat-card-value">{{ statistics.activeTickets }}</p>
+          </div>
+          <div class="stat-card-icon">
+            <i class="bi bi-ticket-perforated-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+          <div class="stat-card-content">
+            <h2 class="stat-card-title">Zamknięte zgłoszenia</h2>
+            <p class="stat-card-value">{{ statistics.closedTickets }}</p>
+          </div>
+          <div class="stat-card-icon">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+          <div class="stat-card-content">
+            <h2 class="stat-card-title">Oczekujące zgłoszenia</h2>
+            <p class="stat-card-value">{{ statistics.pendingTickets }}</p>
+          </div>
+          <div class="stat-card-icon">
+            <i class="bi bi-hourglass-split"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+          <div class="stat-card-content">
+            <h2 class="stat-card-title">Wszystkie zgłoszenia</h2>
+            <p class="stat-card-value">{{ statistics.totalTickets }}</p>
+          </div>
+          <div class="stat-card-icon">
+            <i class="bi bi-stack"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Szybkie akcje -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="quick-actions">
+          <h2 class="section-title">Szybkie akcje</h2>
+          <div class="btn-group">
+            <a [routerLink]="'/tickets/new'" class="btn btn-primary">Nowe zgłoszenie</a>
+            <a [routerLink]="'/tickets/active'" class="btn btn-outline-primary">Aktywne zgłoszenia</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ostatnie zgłoszenia -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="recent-tickets">
+          <h2 class="section-title">Ostatnie zgłoszenia</h2>
+
+          <div *ngIf="loading" class="text-center p-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Ładowanie...</span>
+            </div>
+          </div>
+
+          <div *ngIf="!loading">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Tytuł</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Kategoria</th>
+                  <th scope="col">Data utworzenia</th>
+                  <th scope="col">Akcje</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let ticket of recentTickets">
+                  <td>{{ ticket.id }}</td>
+                  <td>{{ ticket.title }}</td>
+                  <td>
+                      <span class="badge"
+                            [ngClass]="{
+                              'bg-success': ticket.status === 'Zamknięte',
+                              'bg-primary': ticket.status === 'W trakcie',
+                              'bg-warning': ticket.status === 'Nowe'
+                            }">
+                        {{ ticket.status }}
+                      </span>
+                  </td>
+                  <td>{{ ticket.category }}</td>
+                  <td>{{ ticket.created }}</td>
+                  <td>
+                    <a [routerLink]="['/tickets', ticket.id]" class="btn btn-sm btn-outline-primary">Szczegóły</a>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div *ngIf="recentTickets.length === 0" class="text-center p-4">
+              <p>Brak zgłoszeń do wyświetlenia.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

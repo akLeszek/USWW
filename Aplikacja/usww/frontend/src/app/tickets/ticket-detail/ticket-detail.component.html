@@ -1,0 +1,219 @@
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-lg-10 offset-lg-1">
+      <!-- Loader -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Ładowanie...</span>
+        </div>
+        <p class="mt-2">Ładowanie szczegółów zgłoszenia...</p>
+      </div>
+
+      <!-- Error message -->
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <!-- Success message -->
+      <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+
+      <!-- Ticket details -->
+      <div *ngIf="!loading && ticket">
+        <!-- Header -->
+        <div class="card mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0">Zgłoszenie #{{ ticket.id }}</h5>
+            </div>
+            <div>
+              <button class="btn btn-sm btn-outline-secondary me-2" routerLink="/tickets">
+                <i class="bi bi-arrow-left"></i> Wróć do listy
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <h4>{{ ticket.title }}</h4>
+                <div class="mt-3">
+                  <span class="badge me-2" [ngClass]="getStatusClass(ticket.statusId)">
+                    {{ getStatusName(ticket.statusId) }}
+                  </span>
+                  <span class="badge" [ngClass]="getPriorityClass(ticket.priorityId)">
+                    {{ getPriorityName(ticket.priorityId) }}
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="ticket-details mt-3 mt-md-0">
+                  <div class="detail-item">
+                    <span class="detail-label">Kategoria:</span>
+                    <span class="detail-value">{{ getCategoryName(ticket.categoryId) }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Data utworzenia:</span>
+                    <span class="detail-value">{{ formatDate(ticket.insertedDate) }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Ostatnia aktualizacja:</span>
+                    <span class="detail-value">{{ formatDate(ticket.changeDate) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="ticket-actions mt-4">
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Status zgłoszenia</label>
+                  <div class="d-flex">
+                    <select [(ngModel)]="selectedStatusId" class="form-select me-2" [disabled]="updating">
+                      <option *ngFor="let status of statuses" [ngValue]="status.id">{{ status.name }}</option>
+                    </select>
+                    <button class="btn btn-outline-primary" [disabled]="updating"
+                            (click)="updateTicketStatus(selectedStatusId)">
+                      Zmień
+                    </button>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Priorytet</label>
+                  <div class="d-flex">
+                    <select [(ngModel)]="selectedPriorityId" class="form-select me-2" [disabled]="updating">
+                      <option *ngFor="let priority of priorities" [ngValue]="priority.id">{{ priority.name }}</option>
+                    </select>
+                    <button class="btn btn-outline-primary" [disabled]="updating"
+                            (click)="updateTicketPriority(selectedPriorityId)">
+                      Zmień
+                    </button>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3 d-flex flex-column">
+                  <label class="form-label">Zarządzanie</label>
+                  <div class="d-flex">
+                    <button
+                      *ngIf="!ticket.archive"
+                      class="btn btn-outline-danger me-2"
+                      [disabled]="updating"
+                      (click)="archiveTicket()"
+                    >
+                      <i class="bi bi-archive"></i> Archiwizuj
+                    </button>
+                    <button
+                      *ngIf="ticket.archive"
+                      class="btn btn-outline-success me-2"
+                      [disabled]="updating"
+                      (click)="restoreTicket()"
+                    >
+                      <i class="bi bi-arrow-counterclockwise"></i> Przywróć
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">Historia zgłoszenia</h5>
+          </div>
+          <div class="card-body">
+            <div class="messages">
+              <div *ngIf="messages.length === 0" class="text-center py-4">
+                <p class="text-muted">Brak wiadomości dla tego zgłoszenia.</p>
+              </div>
+
+              <div *ngFor="let message of messages" class="message">
+                <div class="message-header">
+                  <span class="sender-name">Użytkownik #{{ message.senderId }}</span>
+                  <span class="message-date">{{ formatDate(message.insertDate) }}</span>
+                </div>
+                <div class="message-content">
+                  {{ message.messageText }}
+                </div>
+                <div *ngIf="hasAttachments(message.id)" class="message-attachments mt-2">
+                  <div class="attachment-label mb-1">Załączniki:</div>
+                  <div class="d-flex flex-wrap">
+                    <div *ngFor="let attachment of getMessageAttachments(message.id)" class="attachment-item me-2 mb-2">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="downloadAttachment(attachment.id)">
+                        <i class="bi bi-file-earmark"></i>
+                        {{ attachment.fileName || 'Załącznik #' + attachment.id }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reply form if ticket is not archived and not closed -->
+        <div *ngIf="!ticket.archive && !isClosedStatus(ticket.statusId)" class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Odpowiedź</h5>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="messageForm" (ngSubmit)="sendMessage()">
+              <div class="mb-3">
+                <textarea
+                  class="form-control"
+                  formControlName="messageText"
+                  rows="4"
+                  placeholder="Wpisz swoją odpowiedź..."
+                  [ngClass]="{'is-invalid': messageForm.get('messageText')?.invalid && messageForm.get('messageText')?.touched}"
+                ></textarea>
+                <div *ngIf="messageForm.get('messageText')?.invalid && messageForm.get('messageText')?.touched"
+                     class="invalid-feedback">
+                  Treść odpowiedzi jest wymagana.
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="attachment" class="form-label">Załącznik</label>
+                <input
+                  type="file"
+                  class="form-control"
+                  id="attachment"
+                  (change)="onFileChange($event)"
+                  [ngClass]="{'is-invalid': fileError}"
+                >
+                <div class="form-text">
+                  Dozwolone formaty: {{ allowedFileTypes }}, maksymalny rozmiar: {{ maxFileSize }}
+                </div>
+                <div *ngIf="fileError" class="invalid-feedback">
+                  {{ fileError }}
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  [disabled]="messageForm.invalid || messageSending || fileError"
+                >
+                  <span *ngIf="messageSending" class="spinner-border spinner-border-sm me-1" role="status"
+                        aria-hidden="true"></span>
+                  Wyślij odpowiedź
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Info if ticket is archived or closed -->
+        <div *ngIf="ticket.archive || isClosedStatus(ticket.statusId)" class="card bg-light">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-lock" style="font-size: 1.5rem;"></i>
+            <p class="mb-0 mt-2">
+              {{ ticket.archive ? 'To zgłoszenie jest zarchiwizowane.' : 'To zgłoszenie jest zamknięte.' }}
+              <br>Nie można dodawać nowych odpowiedzi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

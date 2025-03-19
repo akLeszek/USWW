@@ -1,0 +1,158 @@
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Lista zgłoszeń</h5>
+          <div>
+            <button class="btn btn-sm btn-outline-secondary me-2" routerLink="/dashboard">
+              <i class="bi bi-house"></i> Dashboard
+            </button>
+            <button class="btn btn-sm btn-primary" routerLink="/tickets/new">
+              <i class="bi bi-plus-circle"></i> Nowe zgłoszenie
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Filtry -->
+          <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+              <label for="filterTitle" class="form-label">Tytuł</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                id="filterTitle"
+                [(ngModel)]="filterTitle"
+                (ngModelChange)="applyFilters()"
+                placeholder="Wyszukaj w tytule"
+              >
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="filterCategory" class="form-label">Kategoria</label>
+              <select
+                class="form-select form-select-sm"
+                id="filterCategory"
+                [(ngModel)]="filterCategory"
+                (ngModelChange)="applyFilters()"
+              >
+                <option value="">Wszystkie kategorie</option>
+                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+              </select>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="filterStatus" class="form-label">Status</label>
+              <select
+                class="form-select form-select-sm"
+                id="filterStatus"
+                [(ngModel)]="filterStatus"
+                (ngModelChange)="applyFilters()"
+              >
+                <option value="">Wszystkie statusy</option>
+                <option *ngFor="let status of statuses" [value]="status.id">{{ status.name }}</option>
+              </select>
+            </div>
+            <div class="col-md-3 mb-3 d-flex align-items-end">
+              <button class="btn btn-sm btn-outline-secondary ms-auto" (click)="resetFilters()">
+                <i class="bi bi-x-circle"></i> Resetuj filtry
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabela zgłoszeń -->
+          <div class="table-responsive">
+            <table class="table table-hover ticket-table">
+              <thead>
+              <tr>
+                <th scope="col" (click)="sort('title')" class="sortable">
+                  Tytuł
+                  <i *ngIf="sortColumn === 'title'" class="bi"
+                     [ngClass]="{'bi-sort-up': sortDirection === 'asc', 'bi-sort-down': sortDirection === 'desc'}">
+                  </i>
+                </th>
+                <th scope="col" (click)="sort('categoryId')" class="sortable">
+                  Kategoria
+                  <i *ngIf="sortColumn === 'categoryId'" class="bi"
+                     [ngClass]="{'bi-sort-up': sortDirection === 'asc', 'bi-sort-down': sortDirection === 'desc'}">
+                  </i>
+                </th>
+                <th scope="col" (click)="sort('statusId')" class="sortable">
+                  Status
+                  <i *ngIf="sortColumn === 'statusId'" class="bi"
+                     [ngClass]="{'bi-sort-up': sortDirection === 'asc', 'bi-sort-down': sortDirection === 'desc'}">
+                  </i>
+                </th>
+                <th scope="col" (click)="sort('priorityId')" class="sortable">
+                  Priorytet
+                  <i *ngIf="sortColumn === 'priorityId'" class="bi"
+                     [ngClass]="{'bi-sort-up': sortDirection === 'asc', 'bi-sort-down': sortDirection === 'desc'}">
+                  </i>
+                </th>
+                <th scope="col" (click)="sort('insertedDate')" class="sortable">
+                  Data utworzenia
+                  <i *ngIf="sortColumn === 'insertedDate'" class="bi"
+                     [ngClass]="{'bi-sort-up': sortDirection === 'asc', 'bi-sort-down': sortDirection === 'desc'}">
+                  </i>
+                </th>
+                <th scope="col">Akcje</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngIf="loading">
+                <td colspan="6" class="text-center py-4">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Ładowanie...</span>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="!loading && filteredTickets.length === 0">
+                <td colspan="6" class="text-center py-4">
+                  Brak zgłoszeń spełniających kryteria wyszukiwania
+                </td>
+              </tr>
+              <tr *ngFor="let ticket of currentPageTickets" [routerLink]="['/tickets', ticket.id]" class="ticket-row">
+                <td class="ticket-title">{{ ticket.title }}</td>
+                <td>{{ getCategoryName(ticket.categoryId) }}</td>
+                <td>
+                    <span class="badge" [ngClass]="getStatusClass(ticket.statusId)">
+                      {{ getStatusName(ticket.statusId) }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge" [ngClass]="getPriorityClass(ticket.priorityId)">
+                      {{ getPriorityName(ticket.priorityId) }}
+                    </span>
+                </td>
+                <td>{{ formatDate(ticket.insertedDate) }}</td>
+                <td>
+                  <a [routerLink]="['/tickets', ticket.id]" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i> Szczegóły
+                  </a>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginacja -->
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="text-muted">
+                Pokazano {{ (page - 1) * pageSize + 1 }} - {{ (page - 1) * pageSize + currentPageTickets.length }}
+                z {{ collectionSize }} zgłoszeń
+              </span>
+            </div>
+            <ngb-pagination
+              [collectionSize]="collectionSize"
+              [(page)]="page"
+              [pageSize]="pageSize"
+              [maxSize]="5"
+              [rotate]="true"
+              [boundaryLinks]="true"
+              aria-label="Nawigacja po stronach"
+            ></ngb-pagination>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

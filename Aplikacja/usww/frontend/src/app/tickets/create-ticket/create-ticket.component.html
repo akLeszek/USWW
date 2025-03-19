@@ -1,0 +1,95 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-10 offset-md-1">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Nowe zgłoszenie</h5>
+          <button type="button" class="btn btn-sm btn-outline-secondary" routerLink="/dashboard">
+            <i class="bi bi-arrow-left"></i> Powrót
+          </button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="success" class="alert alert-success">
+            Zgłoszenie zostało utworzone pomyślnie. Za chwilę zostaniesz przekierowany.
+          </div>
+
+          <div *ngIf="error" class="alert alert-danger">
+            {{ error }}
+          </div>
+
+          <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="title" class="form-label">Tytuł zgłoszenia</label>
+              <input
+                type="text"
+                class="form-control"
+                id="title"
+                formControlName="title"
+                [ngClass]="{'is-invalid': ticketForm.get('title')?.invalid && ticketForm.get('title')?.touched}"
+              >
+              <div *ngIf="ticketForm.get('title')?.errors?.['required'] && ticketForm.get('title')?.touched" class="invalid-feedback">
+                Tytuł jest wymagany.
+              </div>
+              <div *ngIf="ticketForm.get('title')?.errors?.['maxlength'] && ticketForm.get('title')?.touched" class="invalid-feedback">
+                Tytuł nie może być dłuższy niż 30 znaków.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="categoryId" class="form-label">Kategoria</label>
+              <select
+                class="form-select"
+                id="categoryId"
+                formControlName="categoryId"
+                [ngClass]="{'is-invalid': ticketForm.get('categoryId')?.invalid && ticketForm.get('categoryId')?.touched}"
+              >
+                <option value="">Wybierz kategorię</option>
+                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+              </select>
+              <div *ngIf="ticketForm.get('categoryId')?.errors?.['required'] && ticketForm.get('categoryId')?.touched" class="invalid-feedback">
+                Kategoria jest wymagana.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="message" class="form-label">Treść zgłoszenia</label>
+              <textarea
+                class="form-control"
+                id="message"
+                formControlName="message"
+                rows="5"
+                [ngClass]="{'is-invalid': ticketForm.get('message')?.invalid && ticketForm.get('message')?.touched}"
+              ></textarea>
+              <div *ngIf="ticketForm.get('message')?.errors?.['required'] && ticketForm.get('message')?.touched" class="invalid-feedback">
+                Treść zgłoszenia jest wymagana.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="attachment" class="form-label">Załącznik</label>
+              <input
+                type="file"
+                class="form-control"
+                id="attachment"
+                (change)="onFileChange($event)"
+              >
+              <div class="form-text">Dozwolone formaty: PDF, JPG, PNG</div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+              <button type="button" class="btn btn-secondary me-2" routerLink="/dashboard">Anuluj</button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="ticketForm.invalid || loading"
+              >
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                Utwórz zgłoszenie
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

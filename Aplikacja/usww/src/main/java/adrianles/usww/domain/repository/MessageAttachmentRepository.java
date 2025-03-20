@@ -1,4 +1,4 @@
-package adrianles.usww.domain.repositiory;
+package adrianles.usww.domain.repository;
 
 import adrianles.usww.domain.entity.MessageAttachment;
 import org.springframework.data.jpa.repository.JpaRepository;

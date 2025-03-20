@@ -3,7 +3,7 @@ package adrianles.usww.service.impl;
 import adrianles.usww.api.dto.dictionary.OrganizationUnitDTO;
 import adrianles.usww.api.mapper.dictionary.OrganizationUnitMapper;
 import adrianles.usww.domain.entity.dictionary.OrganizationUnit;
-import adrianles.usww.domain.repositiory.dictionary.OrganizationUnitRepository;
+import adrianles.usww.domain.repository.dictionary.OrganizationUnitRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.service.facade.OrganizationUnitService;
 import lombok.RequiredArgsConstructor;

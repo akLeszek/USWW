@@ -1,6 +1,7 @@
-package adrianles.usww.domain.repositiory.dictionary;
+package adrianles.usww.domain.repository.dictionary;
 
 import adrianles.usww.domain.entity.dictionary.OrganizationUnit;
+import adrianles.usww.domain.repository.dictionary.DictionaryRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

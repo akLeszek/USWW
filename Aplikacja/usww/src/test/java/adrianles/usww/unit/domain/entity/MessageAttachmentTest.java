@@ -1,5 +1,9 @@
-package adrianles.usww.domain.entity;
+package adrianles.usww.unit.domain.entity;
 
+import adrianles.usww.domain.entity.MessageAttachment;
+import adrianles.usww.domain.entity.Ticket;
+import adrianles.usww.domain.entity.TicketMessage;
+import adrianles.usww.domain.entity.User;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
@@ -63,6 +67,7 @@ public class MessageAttachmentTest {
         byte[] attachmentData = "New attachment data".getBytes();
         MessageAttachment fullAttachment = new MessageAttachment(
                 message,
+                "testAttachment",
                 attachmentData
         );
 

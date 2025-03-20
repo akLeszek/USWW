@@ -3,7 +3,7 @@ package adrianles.usww.service.impl;
 import adrianles.usww.api.dto.dictionary.UserGroupDTO;
 import adrianles.usww.api.mapper.dictionary.UserGroupMapper;
 import adrianles.usww.domain.entity.dictionary.UserGroup;
-import adrianles.usww.domain.repositiory.dictionary.UserGroupRepository;
+import adrianles.usww.domain.repository.dictionary.UserGroupRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.service.facade.UserGroupService;
 import lombok.RequiredArgsConstructor;

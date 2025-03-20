@@ -1,5 +1,6 @@
-package adrianles.usww.domain.entity.dictionary;
+package adrianles.usww.unit.domain.dictionary;
 
+import adrianles.usww.domain.entity.dictionary.*;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;

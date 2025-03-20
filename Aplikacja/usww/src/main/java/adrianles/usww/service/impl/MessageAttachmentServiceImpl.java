@@ -27,7 +27,8 @@ public class MessageAttachmentServiceImpl implements MessageAttachmentService {
 
     @Override
     public List<MessageAttachmentDTO> getAllAttachmentsByMessageId(Integer messageId) {
-        return messageAttachmentRepository.findByMessageId(messageId).stream()
+        List<MessageAttachment> attachments = messageAttachmentRepository.findByMessageId(messageId);
+        return attachments.stream()
                 .map(messageAttachmentMapper::toDto)
                 .collect(Collectors.toList());
     }

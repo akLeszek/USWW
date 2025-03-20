@@ -111,13 +111,13 @@ public class TicketTest {
         assertThat(violations).isNotEmpty();
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage())
-                .contains("size must be between 0 and 30");
+                .contains("Ticket title cannot exceed 30 characters");
     }
 
     @Test
     @DisplayName("Powinien poprawnie przejść walidację dla maksymalnej dozwolonej długości pola title")
     void shouldPassValidationWithMaxLengthTitle() {
-        String exactLengthTitle = "Dokładnie trzydzieści znaków!!!";
+        String exactLengthTitle = "Dokładnie trzydzieści znaków!!";
         assertThat(exactLengthTitle.length()).isEqualTo(30);
 
         ticket.setTitle(exactLengthTitle);

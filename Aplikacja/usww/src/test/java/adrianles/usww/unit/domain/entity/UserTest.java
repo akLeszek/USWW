@@ -103,7 +103,7 @@ public class UserTest {
         assertThat(violations).isNotEmpty();
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage())
-                .contains("size must be between 0 and 32");
+                .contains("Login cannot exceed 32 characters");
     }
 
     @Test
@@ -115,7 +115,7 @@ public class UserTest {
         assertThat(violations).isNotEmpty();
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage())
-                .contains("size must be between 0 and 32");
+                .contains("Forename cannot exceed 32 characters");
     }
 
     @Test
@@ -127,7 +127,7 @@ public class UserTest {
         assertThat(violations).isNotEmpty();
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage())
-                .contains("size must be between 0 and 64");
+                .contains("Surname cannot exceed 64 characters");
     }
 
     @Test
@@ -276,8 +276,8 @@ public class UserTest {
         // Zmiana grupy na TECH (operator)
         UserGroup techGroup = new UserGroup();
         techGroup.setId(2);
-        techGroup.setIdn("TECH");
-        techGroup.setName("Technicy");
+        techGroup.setIdn("OPERATOR");
+        techGroup.setName("Operatorzy");
         user.setUserGroup(techGroup);
 
         assertThat(UserGroupUtils.isAdmin(user.getUserGroup())).isFalse();

@@ -5,6 +5,7 @@ import adrianles.usww.domain.entity.dictionary.TicketPriority;
 import adrianles.usww.domain.entity.dictionary.TicketStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,6 +47,7 @@ public class Ticket extends AbstractEntity {
     private TicketPriority priority;
 
     @NotNull(message = "Ticket title cannot be null")
+    @Size(max = 30, message = "Ticket title cannot exceed 30 characters")
     @Column(nullable = false, length = 30)
     private String title;
 

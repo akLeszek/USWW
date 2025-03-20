@@ -1,7 +1,9 @@
-package adrianles.usww.domain.entity;
+package adrianles.usww.unit.domain.entity;
 
+import adrianles.usww.domain.entity.User;
 import adrianles.usww.domain.entity.dictionary.OrganizationUnit;
 import adrianles.usww.domain.entity.dictionary.UserGroup;
+import adrianles.usww.utils.UserGroupUtils;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -93,6 +95,42 @@ public class UserTest {
     }
 
     @Test
+    @DisplayName("Powinien zwrócić błąd walidacji dla zbyt długiego loginu")
+    void shouldFailValidationWhenLoginIsTooLong() {
+        user.setLogin("a".repeat(33)); // 33 znaki, max to 32
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertThat(violations).isNotEmpty();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.iterator().next().getMessage())
+                .contains("size must be between 0 and 32");
+    }
+
+    @Test
+    @DisplayName("Powinien zwrócić błąd walidacji dla zbyt długiego imienia")
+    void shouldFailValidationWhenForenameIsTooLong() {
+        user.setForename("a".repeat(33)); // 33 znaki, max to 32
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertThat(violations).isNotEmpty();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.iterator().next().getMessage())
+                .contains("size must be between 0 and 32");
+    }
+
+    @Test
+    @DisplayName("Powinien zwrócić błąd walidacji dla zbyt długiego nazwiska")
+    void shouldFailValidationWhenSurnameIsTooLong() {
+        user.setSurname("a".repeat(65)); // 65 znaków, max to 64
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertThat(violations).isNotEmpty();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.iterator().next().getMessage())
+                .contains("size must be between 0 and 64");
+    }
+
+    @Test
     @DisplayName("Powinien poprawnie przejść walidację dla wszystkich wymaganych pól")
     void shouldPassValidationWithAllRequiredFields() {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
@@ -100,9 +138,19 @@ public class UserTest {
     }
 
     @Test
+    @DisplayName("Powinien poprawnie przejść walidację dla maksymalnych długości pól")
+    void shouldPassValidationWithMaxLengthFields() {
+        user.setLogin("a".repeat(32));
+        user.setForename("b".repeat(32));
+        user.setSurname("c".repeat(64));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
     @DisplayName("Powinien poprawnie wykorzystać konstruktory")
     void shouldUseConstructors() {
-        // given
         User emptyUser = new User();
 
         User fullUser = new User(
@@ -179,5 +227,72 @@ public class UserTest {
         assertThat(user).isNotEqualTo(new Object());
         assertThat(user).isNotEqualTo(user2);
         assertThat(user.hashCode()).isNotEqualTo(user2.hashCode());
+    }
+
+    @Test
+    @DisplayName("Powinien prawidłowo zwalidować relację z UserGroup")
+    void shouldValidateUserGroupRelation() {
+        // test usunięcia wymaganej grupy
+        user.setUserGroup(null);
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertThat(violations).isNotEmpty();
+
+        // przywrócenie grupy
+        user.setUserGroup(userGroup);
+        violations = validator.validate(user);
+        assertThat(violations).isEmpty();
+
+        // sprawdzenie właściwości grupy
+        assertThat(user.getUserGroup().getIdn()).isEqualTo("ADMIN");
+        assertThat(user.getUserGroup().getName()).isEqualTo("Administratorzy");
+    }
+
+    @Test
+    @DisplayName("Powinien prawidłowo obsługiwać relację z OrganizationUnit")
+    void shouldHandleOrganizationUnitRelation() {
+        // organizationUnit nie jest wymagane, więc można je usunąć
+        user.setOrganizationUnit(null);
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertThat(violations).isEmpty();
+
+        // przywrócenie organizationUnit
+        user.setOrganizationUnit(organizationUnit);
+        assertThat(user.getOrganizationUnit()).isEqualTo(organizationUnit);
+
+        // sprawdzenie właściwości jednostki organizacyjnej
+        assertThat(user.getOrganizationUnit().getIdn()).isEqualTo("IT");
+        assertThat(user.getOrganizationUnit().getName()).isEqualTo("Dział IT");
+    }
+
+    @Test
+    @DisplayName("Powinien obsługiwać funkcje warunków dotyczących grupy użytkownika")
+    void shouldHandleUserGroupConditions() {
+        // Test dla grupy ADMIN
+        assertThat(UserGroupUtils.isAdmin(user.getUserGroup())).isTrue();
+        assertThat(UserGroupUtils.isOperator(user.getUserGroup())).isFalse();
+        assertThat(UserGroupUtils.isStudent(user.getUserGroup())).isFalse();
+
+        // Zmiana grupy na TECH (operator)
+        UserGroup techGroup = new UserGroup();
+        techGroup.setId(2);
+        techGroup.setIdn("TECH");
+        techGroup.setName("Technicy");
+        user.setUserGroup(techGroup);
+
+        assertThat(UserGroupUtils.isAdmin(user.getUserGroup())).isFalse();
+        assertThat(UserGroupUtils.isOperator(user.getUserGroup())).isTrue();
+        assertThat(UserGroupUtils.isStudent(user.getUserGroup())).isFalse();
+
+        // Zmiana grupy na STUDENT
+        UserGroup studentGroup = new UserGroup();
+        studentGroup.setId(3);
+        studentGroup.setIdn("STUDENT");
+        studentGroup.setName("Studenci");
+        user.setUserGroup(studentGroup);
+
+        assertThat(UserGroupUtils.isAdmin(user.getUserGroup())).isFalse();
+        assertThat(UserGroupUtils.isOperator(user.getUserGroup())).isFalse();
+        assertThat(UserGroupUtils.isStudent(user.getUserGroup())).isTrue();
     }
 }

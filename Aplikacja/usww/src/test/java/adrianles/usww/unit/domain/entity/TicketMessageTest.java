@@ -1,5 +1,9 @@
-package adrianles.usww.domain.entity;
+package adrianles.usww.unit.domain.entity;
 
+import adrianles.usww.domain.entity.MessageAttachment;
+import adrianles.usww.domain.entity.Ticket;
+import adrianles.usww.domain.entity.TicketMessage;
+import adrianles.usww.domain.entity.User;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -40,6 +44,12 @@ public class TicketMessageTest {
         ticketMessage.setMessageText("Treść wiadomości testowej");
         ticketMessage.setInsertDate(LocalDateTime.now());
         ticketMessage.setArchive(false);
+
+        MessageAttachment attachment = new MessageAttachment();
+        attachment.setId(1);
+        attachment.setMessage(ticketMessage);
+        attachment.setFilename("test.pdf");
+        attachment.setAttachment("Przykładowa treść dokumentu".getBytes());
     }
 
     @Test
@@ -146,5 +156,51 @@ public class TicketMessageTest {
 
         assertThat(ticketMessage).isNotEqualTo(message2);
         assertThat(ticketMessage.hashCode()).isNotEqualTo(message2.hashCode());
+    }
+
+    @Test
+    @DisplayName("Powinien poprawnie obsługiwać powiązanie z załącznikami")
+    void shouldHandleAttachmentRelation() {
+        // Gdy tworzymy załącznik powiązany z wiadomością
+        MessageAttachment attachment1 = new MessageAttachment();
+        attachment1.setId(1);
+        attachment1.setMessage(ticketMessage);
+        attachment1.setFilename("document.pdf");
+        attachment1.setAttachment("Zawartość PDF".getBytes());
+
+        MessageAttachment attachment2 = new MessageAttachment();
+        attachment2.setId(2);
+        attachment2.setMessage(ticketMessage);
+        attachment2.setFilename("image.jpg");
+        attachment2.setAttachment("Dane obrazu".getBytes());
+
+        // Weryfikacja poprawności powiązania
+        assertThat(attachment1.getMessage()).isEqualTo(ticketMessage);
+        assertThat(attachment2.getMessage()).isEqualTo(ticketMessage);
+
+        // Weryfikacja poprawności danych załączników
+        assertThat(attachment1.getFilename()).isEqualTo("document.pdf");
+        assertThat(attachment2.getFilename()).isEqualTo("image.jpg");
+    }
+
+    @Test
+    @DisplayName("Powinien poprawnie obsługiwać cykl życia wiadomości")
+    void shouldHandleMessageLifecycle() {
+        // Początkowa wiadomość
+        assertThat(ticketMessage.isArchive()).isFalse();
+
+        // Archiwizacja wiadomości
+        ticketMessage.setArchive(true);
+        assertThat(ticketMessage.isArchive()).isTrue();
+
+        // Aktualizacja treści wiadomości
+        String updatedText = "Zaktualizowana treść wiadomości";
+        ticketMessage.setMessageText(updatedText);
+        assertThat(ticketMessage.getMessageText()).isEqualTo(updatedText);
+
+        // Zmiana daty wstawiania
+        LocalDateTime newDateTime = LocalDateTime.now().plusDays(1);
+        ticketMessage.setInsertDate(newDateTime);
+        assertThat(ticketMessage.getInsertDate()).isEqualTo(newDateTime);
     }
 }

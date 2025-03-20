@@ -1,5 +1,7 @@
-package adrianles.usww.domain.entity;
+package adrianles.usww.unit.domain.entity;
 
+import adrianles.usww.domain.entity.Ticket;
+import adrianles.usww.domain.entity.User;
 import adrianles.usww.domain.entity.dictionary.TicketCategory;
 import adrianles.usww.domain.entity.dictionary.TicketPriority;
 import adrianles.usww.domain.entity.dictionary.TicketStatus;
@@ -99,6 +101,32 @@ public class TicketTest {
     }
 
     @Test
+    @DisplayName("Powinien zwrócić błąd walidacji dla przekroczenia maksymalnej długości pola title")
+    void shouldFailValidationWhenTitleExceedsMaxLength() {
+        String tooLongTitle = "Ten tytuł jest zdecydowanie zbyt długi i przekracza maksymalną dozwoloną długość 30 znaków";
+        ticket.setTitle(tooLongTitle);
+
+        Set<ConstraintViolation<Ticket>> violations = validator.validate(ticket);
+
+        assertThat(violations).isNotEmpty();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.iterator().next().getMessage())
+                .contains("size must be between 0 and 30");
+    }
+
+    @Test
+    @DisplayName("Powinien poprawnie przejść walidację dla maksymalnej dozwolonej długości pola title")
+    void shouldPassValidationWithMaxLengthTitle() {
+        String exactLengthTitle = "Dokładnie trzydzieści znaków!!!";
+        assertThat(exactLengthTitle.length()).isEqualTo(30);
+
+        ticket.setTitle(exactLengthTitle);
+
+        Set<ConstraintViolation<Ticket>> violations = validator.validate(ticket);
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
     @DisplayName("Powinien poprawnie przejść walidację dla wszystkich wymaganych pól")
     void shouldPassValidationWithAllRequiredFields() {
         Set<ConstraintViolation<Ticket>> violations = validator.validate(ticket);
@@ -187,5 +215,118 @@ public class TicketTest {
 
         assertThat(ticket).isNotEqualTo(ticket2);
         assertThat(ticket.hashCode()).isNotEqualTo(ticket2.hashCode());
+    }
+
+    @Test
+    @DisplayName("Powinien poprawnie obsługiwać relację z operatorem")
+    void shouldHandleOperatorRelationship() {
+        User newOperator = new User();
+        newOperator.setId(3);
+        newOperator.setLogin("new_operator");
+
+        ticket.setOperator(newOperator);
+
+        assertThat(ticket.getOperator()).isEqualTo(newOperator);
+        assertThat(ticket.getOperator().getId()).isEqualTo(3);
+        assertThat(ticket.getOperator().getLogin()).isEqualTo("new_operator");
+
+        ticket.setOperator(null);
+        assertThat(ticket.getOperator()).isNull();
+    }
+
+    @Test
+    @DisplayName("Powinien poprawnie obsługiwać relację ze studentem")
+    void shouldHandleStudentRelationship() {
+        User newStudent = new User();
+        newStudent.setId(4);
+        newStudent.setLogin("new_student");
+
+        ticket.setStudent(newStudent);
+
+        assertThat(ticket.getStudent()).isEqualTo(newStudent);
+        assertThat(ticket.getStudent().getId()).isEqualTo(4);
+        assertThat(ticket.getStudent().getLogin()).isEqualTo("new_student");
+
+        ticket.setStudent(null);
+        assertThat(ticket.getStudent()).isNull();
+    }
+
+    @Test
+    @DisplayName("Powinien poprawnie obsługiwać relację ze statusem")
+    void shouldHandleStatusRelationship() {
+        TicketStatus newStatus = new TicketStatus();
+        newStatus.setId(2);
+        newStatus.setIdn("ZAMKNIETE");
+        newStatus.setName("Zamknięte");
+
+        ticket.setStatus(newStatus);
+
+        assertThat(ticket.getStatus()).isEqualTo(newStatus);
+        assertThat(ticket.getStatus().getId()).isEqualTo(2);
+        assertThat(ticket.getStatus().getIdn()).isEqualTo("ZAMKNIETE");
+        assertThat(ticket.getStatus().getName()).isEqualTo("Zamknięte");
+    }
+
+    @Test
+    @DisplayName("Powinien poprawnie obsługiwać relację z kategorią")
+    void shouldHandleCategoryRelationship() {
+        TicketCategory newCategory = new TicketCategory();
+        newCategory.setId(2);
+        newCategory.setIdn("INNE");
+        newCategory.setName("Inne zgłoszenia");
+
+        ticket.setCategory(newCategory);
+
+        assertThat(ticket.getCategory()).isEqualTo(newCategory);
+        assertThat(ticket.getCategory().getId()).isEqualTo(2);
+        assertThat(ticket.getCategory().getIdn()).isEqualTo("INNE");
+        assertThat(ticket.getCategory().getName()).isEqualTo("Inne zgłoszenia");
+    }
+
+    @Test
+    @DisplayName("Powinien poprawnie obsługiwać relację z priorytetem")
+    void shouldHandlePriorityRelationship() {
+        TicketPriority newPriority = new TicketPriority();
+        newPriority.setId(2);
+        newPriority.setIdn("HIGH");
+        newPriority.setName("Wysoki");
+
+        ticket.setPriority(newPriority);
+
+        assertThat(ticket.getPriority()).isEqualTo(newPriority);
+        assertThat(ticket.getPriority().getId()).isEqualTo(2);
+        assertThat(ticket.getPriority().getIdn()).isEqualTo("HIGH");
+        assertThat(ticket.getPriority().getName()).isEqualTo("Wysoki");
+
+        ticket.setPriority(null);
+        assertThat(ticket.getPriority()).isNull();
+    }
+
+    @Test
+    @DisplayName("Powinien poprawnie obsłużyć zmianę statusu archiwizacji")
+    void shouldHandleArchiveStatusChange() {
+        assertThat(ticket.isArchive()).isFalse();
+
+        ticket.setArchive(true);
+        assertThat(ticket.isArchive()).isTrue();
+
+        ticket.setArchive(false);
+        assertThat(ticket.isArchive()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Powinien poprawnie obsłużyć aktualizację dat")
+    void shouldHandleDateUpdates() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime yesterday = now.minusDays(1);
+        LocalDateTime tomorrow = now.plusDays(1);
+
+        ticket.setInsertedDate(yesterday);
+        ticket.setChangeDate(now);
+        ticket.setLastActivityDate(tomorrow);
+
+        assertThat(ticket.getInsertedDate()).isEqualTo(yesterday);
+        assertThat(ticket.getChangeDate()).isEqualTo(now);
+        assertThat(ticket.getLastActivityDate()).isEqualTo(tomorrow);
     }
 }

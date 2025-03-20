@@ -3,7 +3,7 @@ package adrianles.usww.service.impl;
 import adrianles.usww.api.dto.UserDTO;
 import adrianles.usww.api.mapper.UserMapper;
 import adrianles.usww.domain.entity.User;
-import adrianles.usww.domain.repositiory.UserRepository;
+import adrianles.usww.domain.repository.UserRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.service.facade.UserPasswordService;
 import lombok.RequiredArgsConstructor;

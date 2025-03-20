@@ -1,22 +1,23 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.2.4'
-	id 'io.spring.dependency-management' version '1.1.4'
-	id 'com.github.node-gradle.node' version '7.1.0'
+    id 'java'
+    id 'org.springframework.boot' version '3.2.4'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'com.github.node-gradle.node' version '7.1.0'
+	id 'jacoco'
 }
 
 group = 'adrianles'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_17
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    sourceCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
@@ -28,6 +29,9 @@ dependencies {
 
 	// Database
 	implementation 'com.microsoft.sqlserver:mssql-jdbc'
+
+	// Dodane - baza H2 dla testów
+	testImplementation 'com.h2database:h2'
 
 	// Utilities
 	implementation 'org.projectlombok:lombok'
@@ -41,20 +45,65 @@ dependencies {
 	// Development and Test
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api'
+	testImplementation 'org.junit.jupiter:junit-jupiter-params' // Dodane - parametryzowane testy
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Dodane - dodatkowe biblioteki testowe
+	testImplementation 'org.mockito:mockito-core'
+	testImplementation 'org.mockito:mockito-junit-jupiter'
+	testImplementation 'org.assertj:assertj-core'
+	testImplementation 'org.springframework.security:spring-security-test'
 }
 
-//tasks.named('test') {
-//	useJUnitPlatform()
-//	testLogging {
-//		events "passed", "skipped", "failed"
-//		showExceptions true
-//		exceptionFormat "full"
-//		showCauses true
-//		showStackTraces true
-//		showStandardStreams = false
-//	}
-//}
+project.ext.isTestMode = project.hasProperty('testMode') ? project.getProperty('testMode').toBoolean() : false
+
+tasks.named('test') {
+	useJUnitPlatform()
+	testLogging {
+		events "passed", "skipped", "failed"
+		showExceptions true
+		exceptionFormat "full"
+		showCauses true
+		showStackTraces true
+		showStandardStreams = true // Zmienione na true dla lepszego debugowania
+	}
+
+	failFast = false
+
+	// Dodane - raportowanie pokrycia kodu
+	finalizedBy jacocoTestReport
+
+	doFirst {
+		project.ext.isTestMode = true
+	}
+}
+
+tasks.register('fastTest') {
+	group = 'verification'
+	description = 'Runs tests quickly without building Angular frontend'
+
+	doFirst {
+		project.ext.isTestMode = true
+		println 'Running tests in fast mode without Angular frontend build'
+	}
+
+	finalizedBy test
+}
+
+jacoco {
+	toolVersion = "0.8.9"
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = true
+		html.required = true
+		html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
+	}
+}
 
 node {
 	version = '22.0.0'
@@ -70,11 +119,15 @@ tasks.register('buildAngular', NpmTask) {
 }
 
 tasks.register('copyAngularToStatic', Copy) {
-	dependsOn buildAngular
-	from "${projectDir}/frontend/dist/frontend/browser"
-	into layout.buildDirectory.dir('resources/main/static').get().asFile
+    dependsOn buildAngular
+    from "${projectDir}/frontend/dist/frontend/browser"
+    into layout.buildDirectory.dir('resources/main/static').get().asFile
+
+	onlyIf { !project.ext.isTestMode }
 }
 
 tasks.named('processResources') {
-	dependsOn copyAngularToStatic
+	if (!project.ext.isTestMode) {
+		dependsOn copyAngularToStatic
+	}
 }

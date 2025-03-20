@@ -71,3 +71,4 @@ Desktop.ini
 .vscode/
 /Aplikacja/usww/build/test-results/
 /Aplikacja/usww/build/
+*.bak

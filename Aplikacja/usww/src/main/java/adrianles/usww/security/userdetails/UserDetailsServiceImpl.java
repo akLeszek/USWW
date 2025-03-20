@@ -1,7 +1,7 @@
 package adrianles.usww.security.userdetails;
 
 import adrianles.usww.domain.entity.User;
-import adrianles.usww.domain.repositiory.UserRepository;
+import adrianles.usww.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

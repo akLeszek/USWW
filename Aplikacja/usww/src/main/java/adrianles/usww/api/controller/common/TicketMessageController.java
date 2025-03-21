@@ -45,8 +45,8 @@ public class TicketMessageController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
-        String filename = attachment.getFileName() != null ?
-                attachment.getFileName() : "attachment-" + attachmentId;
+        String filename = attachment.getFilename() != null ?
+                attachment.getFilename() : "attachment-" + attachmentId;
         headers.setContentDispositionFormData("attachment", filename);
 
         return new ResponseEntity<>(attachment.getAttachment(), headers, HttpStatus.OK);

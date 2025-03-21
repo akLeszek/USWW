@@ -12,6 +12,6 @@ import lombok.Setter;
 public class MessageAttachmentDTO {
     private Integer id;
     private Integer messageId;
-    private String fileName;
+    private String filename;
     private byte[] attachment;
 }

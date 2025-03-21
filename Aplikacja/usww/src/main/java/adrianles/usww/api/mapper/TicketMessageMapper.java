@@ -15,9 +15,19 @@ public class TicketMessageMapper {
         TicketMessageDTO ticketMessageDto = new TicketMessageDTO();
         ticketMessageDto.setId(ticketMessage.getId());
         ticketMessageDto.setMessageText(ticketMessage.getMessageText());
-        ticketMessageDto.setInsertDate(ticketMessage.getInsertDate().toString());
-        ticketMessageDto.setTicketId(ticketMessage.getTicket().getId());
-        ticketMessageDto.setSenderId(ticketMessage.getSender().getId());
+
+        if (ticketMessage.getInsertDate() != null) {
+            ticketMessageDto.setInsertDate(ticketMessage.getInsertDate().toString());
+        }
+
+        if (ticketMessage.getTicket() != null) {
+            ticketMessageDto.setTicketId(ticketMessage.getTicket().getId());
+        }
+
+        if (ticketMessage.getSender() != null) {
+            ticketMessageDto.setSenderId(ticketMessage.getSender().getId());
+        }
+
         return ticketMessageDto;
     }
 }

@@ -3,7 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.2.4'
     id 'io.spring.dependency-management' version '1.1.4'
     id 'com.github.node-gradle.node' version '7.1.0'
-	id 'jacoco'
+    id 'jacoco'
 }
 
 group = 'adrianles'
@@ -21,111 +21,103 @@ repositories {
 }
 
 dependencies {
-	// Spring Boot dependencies
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-	// Database
-	implementation 'com.microsoft.sqlserver:mssql-jdbc'
+    implementation 'com.microsoft.sqlserver:mssql-jdbc'
 
-	// Dodane - baza H2 dla test�w
-	testImplementation 'com.h2database:h2'
+    implementation 'org.projectlombok:lombok'
+    implementation 'org.apache.commons:commons-lang3'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+    implementation 'io.jsonwebtoken:jjwt:0.12.6'
 
-	// Utilities
-	implementation 'org.projectlombok:lombok'
-	implementation 'org.apache.commons:commons-lang3'
-	implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
-	implementation 'io.jsonwebtoken:jjwt:0.12.6'
+    annotationProcessor 'org.projectlombok:lombok'
 
-	// Annotation processors
-	annotationProcessor 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	// Development and Test
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.junit.jupiter:junit-jupiter-api'
-	testImplementation 'org.junit.jupiter:junit-jupiter-params' // Dodane - parametryzowane testy
-	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'com.h2database:h2'
 
-	// Dodane - dodatkowe biblioteki testowe
-	testImplementation 'org.mockito:mockito-core'
-	testImplementation 'org.mockito:mockito-junit-jupiter'
-	testImplementation 'org.assertj:assertj-core'
-	testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 project.ext.isTestMode = project.hasProperty('testMode') ? project.getProperty('testMode').toBoolean() : false
 
 tasks.named('test') {
-	useJUnitPlatform()
-	testLogging {
-		events "passed", "skipped", "failed"
-		showExceptions true
-		exceptionFormat "full"
-		showCauses true
-		showStackTraces true
-		showStandardStreams = true // Zmienione na true dla lepszego debugowania
-	}
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+        showExceptions true
+        exceptionFormat "full"
+        showCauses true
+        showStackTraces true
+        showStandardStreams = true // Zmienione na true dla lepszego debugowania
+    }
 
-	failFast = false
-	
-	// Dodane - raportowanie pokrycia kodu
-	finalizedBy jacocoTestReport
+    failFast = false
 
-	doFirst {
-		project.ext.isTestMode = true
-	}
+    finalizedBy jacocoTestReport
+
+    doFirst {
+        project.ext.isTestMode = true
+    }
 }
 
 tasks.register('fastTest') {
-	group = 'verification'
-	description = 'Runs tests quickly without building Angular frontend'
+    group = 'verification'
+    description = 'Runs tests quickly without building Angular frontend'
 
-	doFirst {
-		project.ext.isTestMode = true
-		println 'Running tests in fast mode without Angular frontend build'
-	}
+    doFirst {
+        project.ext.isTestMode = true
+        println 'Running tests in fast mode without Angular frontend build'
+    }
 
-	finalizedBy test
+    finalizedBy test
 }
 
 jacoco {
-	toolVersion = "0.8.9"
+    toolVersion = "0.8.9"
 }
 
 jacocoTestCoverageVerification {
-	violationRules {
-		rule {
-			limit {
-				minimum = 0.7 // 70% pokrycia
-			}
-		}
-	}
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.7 // 70% pokrycia
+            }
+        }
+    }
 }
 
 jacocoTestReport {
-	dependsOn test
-	reports {
-		xml.required = true
-		html.required = true
-		html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
-	}
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
+    }
 }
 
 node {
-	version = '22.0.0'
-	download = true
-	workDir = layout.buildDirectory.dir('nodejs').get().asFile
-	npmWorkDir = layout.buildDirectory.dir('npm').get().asFile
+    version = '22.0.0'
+    download = true
+    workDir = layout.buildDirectory.dir('nodejs').get().asFile
+    npmWorkDir = layout.buildDirectory.dir('npm').get().asFile
 }
 
 tasks.register('buildAngular', NpmTask) {
-	dependsOn npmInstall
-	workingDir = file("${projectDir}/frontend")
-	args = ['run', 'build']
+    dependsOn npmInstall
+    workingDir = file("${projectDir}/frontend")
+    args = ['run', 'build']
 }
 
 tasks.register('copyAngularToStatic', Copy) {
@@ -133,11 +125,11 @@ tasks.register('copyAngularToStatic', Copy) {
     from "${projectDir}/frontend/dist/frontend/browser"
     into layout.buildDirectory.dir('resources/main/static').get().asFile
 
-	onlyIf { !project.ext.isTestMode }
+    onlyIf { !project.ext.isTestMode }
 }
 
 tasks.named('processResources') {
-	if (!project.ext.isTestMode) {
-		dependsOn copyAngularToStatic
-	}
+    if (!project.ext.isTestMode) {
+        dependsOn copyAngularToStatic
+    }
 }

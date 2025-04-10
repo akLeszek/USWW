@@ -7,14 +7,13 @@
   </div>
 
   <div class="header-right">
-    <div ngbDropdown class="user-menu">
+    <div ngbDropdown class="user-menu" *ngIf="userLogin">
       <button class="user-button" id="userDropdown" ngbDropdownToggle>
         <i class="bi bi-person-circle"></i>
-        <span class="username">Użytkownik</span>
+        <span class="username">{{ userLogin }}</span>
       </button>
       <div ngbDropdownMenu aria-labelledby="userDropdown">
-        <button ngbDropdownItem>Profil</button>
-        <button ngbDropdownItem (click)="logout()">Wyloguj</button>
+        <button ngbDropdownItem>Profil</button> <button ngbDropdownItem (click)="logout()">Wyloguj</button>
       </div>
     </div>
   </div>

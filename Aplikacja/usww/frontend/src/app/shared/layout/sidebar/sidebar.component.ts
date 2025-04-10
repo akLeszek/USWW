@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {RouterModule} from '@angular/router';
 import {AuthService} from '../../../auth/services/auth.service';
 import {NgClass, NgForOf, NgIf} from '@angular/common';
@@ -19,10 +19,8 @@ interface MenuItem {
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
   @Input() collapsed = false;
-  userRole: string = '';
-
   menuItems: MenuItem[] = [
     {
       title: 'Dashboard',
@@ -72,16 +70,14 @@ export class SidebarComponent implements OnInit {
   constructor(private authService: AuthService) {
   }
 
-  ngOnInit() {
-    this.userRole = 'ADMIN';
-  }
-
   toggleMenuItem(item: MenuItem) {
     item.expanded = !item.expanded;
   }
 
   isMenuItemVisible(item: MenuItem): boolean {
-    if (!item.roles) return true;
-    return item.roles.includes(this.userRole);
+    if (!item.roles || item.roles.length === 0) {
+      return true;
+    }
+    return item.roles.some(role => this.authService.hasRole(role));
   }
 }

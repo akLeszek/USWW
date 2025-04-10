@@ -41,9 +41,13 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public Page<TicketDTO> getFilteredTickets(TicketFilterCriteriaDTO criteria, Pageable pageable) {
-        Specification<Ticket> spec = TicketSpecifications.buildSpecification(criteria);
-        return ticketRepository.findAll(spec, pageable).map(ticketMapper::toDto);
+    public Page<TicketDTO> getFilteredTickets(
+            TicketFilterCriteriaDTO criteria,
+            Pageable pageable) {
+        Specification<Ticket> spec =
+                TicketSpecifications.buildSpecification(criteria);
+        return ticketRepository.findAll(spec, pageable)
+                .map(ticketMapper::toDto);
     }
 
     @Override

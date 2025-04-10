@@ -30,7 +30,7 @@ dependencies {
 	// Database
 	implementation 'com.microsoft.sqlserver:mssql-jdbc'
 
-	// Dodane - baza H2 dla testów
+	// Dodane - baza H2 dla testï¿½w
 	testImplementation 'com.h2database:h2'
 
 	// Utilities
@@ -71,7 +71,7 @@ tasks.named('test') {
 	}
 
 	failFast = false
-
+	
 	// Dodane - raportowanie pokrycia kodu
 	finalizedBy jacocoTestReport
 
@@ -94,6 +94,16 @@ tasks.register('fastTest') {
 
 jacoco {
 	toolVersion = "0.8.9"
+}
+
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			limit {
+				minimum = 0.7 // 70% pokrycia
+			}
+		}
+	}
 }
 
 jacocoTestReport {

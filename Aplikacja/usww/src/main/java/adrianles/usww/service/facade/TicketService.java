@@ -24,4 +24,14 @@ public interface TicketService {
 
     @Transactional
     void updateLastActivityDate(Integer ticketId);
+
+    int countActiveTicketsByUser(Integer userId, boolean isAdmin, boolean isOperator);
+
+    int countClosedTicketsByUser(Integer userId, boolean isAdmin, boolean isOperator);
+
+    int countPendingTicketsByUser(Integer userId, boolean isAdmin, boolean isOperator);
+
+    int countAllTicketsByUser(Integer userId, boolean isAdmin, boolean isOperator);
+
+    List<TicketDTO> getRecentTicketsByUser(Integer userId, boolean isAdmin, boolean isOperator, int limit);
 }

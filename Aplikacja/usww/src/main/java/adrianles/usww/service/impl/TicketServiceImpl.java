@@ -14,7 +14,9 @@ import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.service.facade.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,5 +130,79 @@ public class TicketServiceImpl implements TicketService {
             ticket.setPriority(ticketPriorityRepository.findByIdn("MEDIUM")
                     .orElseThrow(() -> new ResourceNotFoundException("Default priority not found")));
         }
+    }
+
+    @Override
+    public int countActiveTicketsByUser(Integer userId, boolean isAdmin, boolean isOperator) {
+        if (isAdmin) {
+            return ticketRepository.countByArchiveFalseAndStatusIdNot(getClosedStatusId());
+        } else if (isOperator) {
+            return ticketRepository.countByOperatorIdAndArchiveFalseAndStatusIdNot(userId, getClosedStatusId());
+        } else {
+            return ticketRepository.countByStudentIdAndArchiveFalseAndStatusIdNot(userId, getClosedStatusId());
+        }
+    }
+
+    @Override
+    public int countClosedTicketsByUser(Integer userId, boolean isAdmin, boolean isOperator) {
+        if (isAdmin) {
+            return ticketRepository.countByStatusId(getClosedStatusId());
+        } else if (isOperator) {
+            return ticketRepository.countByOperatorIdAndStatusId(userId, getClosedStatusId());
+        } else {
+            return ticketRepository.countByStudentIdAndStatusId(userId, getClosedStatusId());
+        }
+    }
+
+    @Override
+    public int countPendingTicketsByUser(Integer userId, boolean isAdmin, boolean isOperator) {
+        if (isAdmin) {
+            return ticketRepository.countByStatusId(getNewStatusId());
+        } else if (isOperator) {
+            return ticketRepository.countByOperatorIdAndStatusId(userId, getNewStatusId());
+        } else {
+            return ticketRepository.countByStudentIdAndStatusId(userId, getNewStatusId());
+        }
+    }
+
+    @Override
+    public int countAllTicketsByUser(Integer userId, boolean isAdmin, boolean isOperator) {
+        if (isAdmin) {
+            return (int) ticketRepository.count();
+        } else if (isOperator) {
+            return ticketRepository.countByOperatorId(userId);
+        } else {
+            return ticketRepository.countByStudentId(userId);
+        }
+    }
+
+    @Override
+    public List<TicketDTO> getRecentTicketsByUser(Integer userId, boolean isAdmin, boolean isOperator, int limit) {
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "lastActivityDate"));
+
+        Page<Ticket> recentTickets;
+        if (isAdmin) {
+            recentTickets = ticketRepository.findAll(pageable);
+        } else if (isOperator) {
+            recentTickets = ticketRepository.findByOperatorId(userId, pageable);
+        } else {
+            recentTickets = ticketRepository.findByStudentId(userId, pageable);
+        }
+
+        return recentTickets.stream()
+                .map(ticketMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    private Integer getClosedStatusId() {
+        return ticketStatusRepository.findByIdn("CLOSED")
+                .orElseThrow(() -> new ResourceNotFoundException("Status CLOSED not found"))
+                .getId();
+    }
+
+    private Integer getNewStatusId() {
+        return ticketStatusRepository.findByIdn("NEW")
+                .orElseThrow(() -> new ResourceNotFoundException("Status NEW not found"))
+                .getId();
     }
 }

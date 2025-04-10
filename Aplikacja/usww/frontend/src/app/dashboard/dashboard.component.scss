@@ -78,7 +78,21 @@
 
 .btn-group {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
+}
+
+.table th {
+  user-select: none;
+}
+
+.bi-arrow-repeat-animate {
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
@@ -98,5 +112,9 @@
     width: 50px;
     height: 50px;
     font-size: 1.25rem;
+  }
+
+  .btn-group {
+    flex-direction: column;
   }
 }

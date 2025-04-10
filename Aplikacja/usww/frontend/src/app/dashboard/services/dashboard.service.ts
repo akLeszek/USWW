@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, timer, of } from 'rxjs';
-import { catchError, shareReplay, tap, switchMap, takeUntil, finalize } from 'rxjs/operators';
+import { catchError, shareReplay, tap, switchMap, takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface DashboardStatistics {
@@ -41,7 +41,7 @@ export class DashboardService {
 
   // Kontrola automatycznego odświeżania
   private refreshTrigger = new BehaviorSubject<boolean>(true);
-  private stopAutoRefresh = new BehaviorSubject<boolean>(false);
+  private stopAutoRefresh$ = new BehaviorSubject<boolean>(false);
 
   // Cache API
   private statisticsCache$?: Observable<DashboardStatistics>;
@@ -101,10 +101,10 @@ export class DashboardService {
   }
 
   startAutoRefresh(intervalMs = 30000): void {
-    this.stopAutoRefresh.next(false);
+    this.stopAutoRefresh$.next(false);
 
     timer(intervalMs, intervalMs).pipe(
-      takeUntil(this.stopAutoRefresh),
+      takeUntil(this.stopAutoRefresh$),
       switchMap(() => {
         this.refreshAllData();
         return of(true);
@@ -112,8 +112,19 @@ export class DashboardService {
     ).subscribe();
   }
 
+  /**
+   * Publiczna metoda do zatrzymania automatycznego odświeżania
+   * Używana przez komponenty
+   */
+  stopAutoRefresh(): void {
+    this.stopAutoRefresh$.next(true);
+  }
+
+  /**
+   * @deprecated Używaj stopAutoRefresh() zamiast tej metody
+   */
   stopAutoRefreshTask(): void {
-    this.stopAutoRefresh.next(true);
+    this.stopAutoRefresh$.next(true);
   }
 
   getStatusClass(statusId: number): string {

@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,21 +25,25 @@ public class TicketMessageController {
     private final MessageAttachmentService messageAttachmentService;
 
     @GetMapping("/ticket/{ticketId}")
+    @PreAuthorize("hasPermission(#ticketId, 'Ticket', 'READ')")
     public ResponseEntity<List<TicketMessageDTO>> getTicketMessage(@PathVariable("ticketId") int ticketId) {
         return ResponseEntity.ok(ticketMessageService.getAllMessagesByTicketId(ticketId));
     }
 
     @PostMapping
+    @PreAuthorize("hasPermission(#ticketMessageDTO.ticketId, 'Ticket', 'WRITE')")
     public ResponseEntity<TicketMessageDTO> addTicketMessage(@Valid @RequestBody TicketMessageDTO ticketMessageDTO) {
         return ResponseEntity.ok(ticketMessageService.createMessage(ticketMessageDTO));
     }
 
     @GetMapping("/{messageId}/attachments")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<MessageAttachmentDTO>> getMessageAttachments(@PathVariable("messageId") int messageId) {
         return ResponseEntity.ok(messageAttachmentService.getAllAttachmentsByMessageId(messageId));
     }
 
     @GetMapping("/attachments/{attachmentId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> getAttachment(@PathVariable("attachmentId") int attachmentId) {
         MessageAttachmentDTO attachment = messageAttachmentService.getAttachmentById(attachmentId);
 
@@ -53,6 +58,7 @@ public class TicketMessageController {
     }
 
     @PostMapping("/{messageId}/attachments")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MessageAttachmentDTO> addAttachment(
             @PathVariable("messageId") int messageId,
             @RequestParam("file") MultipartFile file) throws IOException {
@@ -60,6 +66,7 @@ public class TicketMessageController {
     }
 
     @DeleteMapping("/attachments/{attachmentId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> deleteAttachment(@PathVariable("attachmentId") int attachmentId) {
         messageAttachmentService.deleteAttachment(attachmentId);
         return ResponseEntity.noContent().build();

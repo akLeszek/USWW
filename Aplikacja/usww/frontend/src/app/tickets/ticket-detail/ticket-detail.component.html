@@ -1,7 +1,6 @@
 <div class="container-fluid">
   <div class="row mb-4">
     <div class="col-lg-10 offset-lg-1">
-      <!-- Loader -->
       <div *ngIf="loading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Ładowanie...</span>
@@ -9,15 +8,11 @@
         <p class="mt-2">Ładowanie szczegółów zgłoszenia...</p>
       </div>
 
-      <!-- Error message -->
       <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-      <!-- Success message -->
       <div *ngIf="success" class="alert alert-success">{{ success }}</div>
 
-      <!-- Ticket details -->
       <div *ngIf="!loading && ticket">
-        <!-- Header -->
         <div class="card mb-4">
           <div class="card-header d-flex justify-content-between align-items-center">
             <div>
@@ -60,10 +55,9 @@
               </div>
             </div>
 
-            <!-- Action buttons -->
             <div class="ticket-actions mt-4">
               <div class="row">
-                <div class="col-md-4 mb-3">
+                <div class="col-md-4 mb-3" *ngIf="canChangeStatus()">
                   <label class="form-label">Status zgłoszenia</label>
                   <div class="d-flex">
                     <select [(ngModel)]="selectedStatusId" class="form-select me-2" [disabled]="updating">
@@ -75,7 +69,8 @@
                     </button>
                   </div>
                 </div>
-                <div class="col-md-4 mb-3">
+
+                <div class="col-md-4 mb-3" *ngIf="canChangePriority()">
                   <label class="form-label">Priorytet</label>
                   <div class="d-flex">
                     <select [(ngModel)]="selectedPriorityId" class="form-select me-2" [disabled]="updating">
@@ -87,11 +82,12 @@
                     </button>
                   </div>
                 </div>
+
                 <div class="col-md-4 mb-3 d-flex flex-column">
                   <label class="form-label">Zarządzanie</label>
                   <div class="d-flex">
                     <button
-                      *ngIf="!ticket.archive"
+                      *ngIf="canArchiveTicket()"
                       class="btn btn-outline-danger me-2"
                       [disabled]="updating"
                       (click)="archiveTicket()"
@@ -99,7 +95,7 @@
                       <i class="bi bi-archive"></i> Archiwizuj
                     </button>
                     <button
-                      *ngIf="ticket.archive"
+                      *ngIf="canRestoreTicket()"
                       class="btn btn-outline-success me-2"
                       [disabled]="updating"
                       (click)="restoreTicket()"
@@ -113,7 +109,6 @@
           </div>
         </div>
 
-        <!-- Messages -->
         <div class="card mb-4">
           <div class="card-header">
             <h5 class="mb-0">Historia zgłoszenia</h5>
@@ -150,8 +145,7 @@
           </div>
         </div>
 
-        <!-- Reply form if ticket is not archived and not closed -->
-        <div *ngIf="!ticket.archive && !isClosedStatus(ticket.statusId)" class="card">
+        <div *ngIf="canAddMessage()" class="card">
           <div class="card-header">
             <h5 class="mb-0">Odpowiedź</h5>
           </div>
@@ -204,7 +198,7 @@
         </div>
 
         <!-- Info if ticket is archived or closed -->
-        <div *ngIf="ticket.archive || isClosedStatus(ticket.statusId)" class="card bg-light">
+        <div *ngIf="!canAddMessage()" class="card bg-light">
           <div class="card-body text-center py-4">
             <i class="bi bi-lock" style="font-size: 1.5rem;"></i>
             <p class="mb-0 mt-2">

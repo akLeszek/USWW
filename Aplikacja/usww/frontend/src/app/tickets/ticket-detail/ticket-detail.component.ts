@@ -5,6 +5,7 @@ import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {MessageAttachment, Ticket, TicketMessage, TicketService} from '../services/ticket.service';
 import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
 import {AuthService} from '../../auth/services/auth.service';
+import {HasPermissionDirective, HasRoleDirective} from '../../shared/directives/permission.directive';
 
 @Component({
   selector: 'app-ticket-detail',
@@ -13,7 +14,9 @@ import {AuthService} from '../../auth/services/auth.service';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    HasPermissionDirective,
+    HasRoleDirective
   ],
   templateUrl: './ticket-detail.component.html',
   styleUrls: ['./ticket-detail.component.scss']
@@ -59,32 +62,25 @@ export class TicketDetailComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('TicketDetailComponent ngOnInit');
-
     this.route.paramMap.subscribe(params => {
-      console.log('Route params:', params);
       const id = params.get('id');
 
       if (id) {
-        console.log('Got ticket ID:', id);
         this.ticketId = +id;
         this.loadData();
       } else {
-        console.error('No ticket ID found in route');
         this.router.navigate(['/tickets']);
       }
     });
   }
 
   loadData(): void {
-    console.log('Loading data for ticket ID:', this.ticketId);
     this.loading = true;
 
     this.loadDictionaries();
 
     this.ticketService.getTicket(this.ticketId).subscribe({
       next: (ticket) => {
-        console.log('Loaded ticket details:', ticket);
         this.ticket = ticket;
 
         this.selectedStatusId = ticket.statusId !== undefined ? ticket.statusId : null;
@@ -93,7 +89,6 @@ export class TicketDetailComponent implements OnInit {
         this.loadMessages();
       },
       error: (error) => {
-        console.error('Error loading ticket details:', error);
         this.error = 'Nie udało się załadować szczegółów zgłoszenia.';
         this.loading = false;
       }
@@ -103,7 +98,6 @@ export class TicketDetailComponent implements OnInit {
   loadDictionaries(): void {
     this.dictionaryService.getTicketCategories().subscribe({
       next: (categories) => {
-        console.log('Loaded categories:', categories);
         this.categories = categories;
       },
       error: (error) => {
@@ -113,7 +107,6 @@ export class TicketDetailComponent implements OnInit {
 
     this.dictionaryService.getTicketStatuses().subscribe({
       next: (statuses) => {
-        console.log('Loaded statuses:', statuses);
         this.statuses = statuses;
       },
       error: (error) => {
@@ -123,7 +116,6 @@ export class TicketDetailComponent implements OnInit {
 
     this.dictionaryService.getTicketPriorities().subscribe({
       next: (priorities) => {
-        console.log('Loaded priorities:', priorities);
         this.priorities = priorities;
       },
       error: (error) => {
@@ -135,7 +127,6 @@ export class TicketDetailComponent implements OnInit {
   loadMessages(): void {
     this.ticketService.getTicketMessages(this.ticketId).subscribe({
       next: (messages) => {
-        console.log('Loaded messages:', messages);
         this.messages = messages.sort((a, b) =>
           new Date(a.insertDate || '').getTime() - new Date(b.insertDate || '').getTime()
         );
@@ -149,7 +140,6 @@ export class TicketDetailComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading ticket messages:', error);
         this.error = 'Nie udało się załadować wiadomości dla zgłoszenia.';
         this.loading = false;
       }
@@ -159,7 +149,6 @@ export class TicketDetailComponent implements OnInit {
   loadMessageAttachments(messageId: number): void {
     this.ticketService.getMessageAttachments(messageId).subscribe({
       next: (attachments: MessageAttachment[]) => {
-        console.log(`Loaded attachments for message ${messageId}:`, attachments);
         this.messageAttachments[messageId] = attachments;
       },
       error: (error) => {
@@ -209,18 +198,12 @@ export class TicketDetailComponent implements OnInit {
       senderId: currentUser.userId
     };
 
-    console.log('Sending message:', messageData);
-
     this.ticketService.createTicketMessage(messageData).subscribe({
       next: (message) => {
-        console.log('Message sent successfully:', message);
-
         const attachment = this.messageForm.value.attachment;
         if (message.id && attachment) {
           this.ticketService.addAttachment(message.id, attachment).subscribe({
             next: (attachmentData) => {
-              console.log('Attachment added successfully:', attachmentData);
-
               if (!this.messageAttachments[message.id!]) {
                 this.messageAttachments[message.id!] = [];
               }
@@ -228,13 +211,10 @@ export class TicketDetailComponent implements OnInit {
               this.messageAttachments[message.id!].push(attachmentData);
             },
             error: (error) => {
-              console.error('Error adding attachment:', error);
               let errorMessage = 'Wiadomość została wysłana, ale nie udało się dodać załącznika.';
-
               if (error.error && typeof error.error === 'string') {
                 errorMessage += ' ' + error.error;
               }
-
               this.error = errorMessage;
             }
           });
@@ -253,11 +233,9 @@ export class TicketDetailComponent implements OnInit {
         }
 
         this.loadMessages();
-
         this.messageSending = false;
       },
       error: (error) => {
-        console.error('Error sending message:', error);
         this.error = 'Nie udało się wysłać wiadomości. Spróbuj ponownie.';
         this.messageSending = false;
       }
@@ -286,7 +264,6 @@ export class TicketDetailComponent implements OnInit {
         document.body.removeChild(a);
       },
       error: (error) => {
-        console.error('Error downloading attachment:', error);
         this.error = 'Nie udało się pobrać załącznika.';
       }
     });
@@ -301,7 +278,7 @@ export class TicketDetailComponent implements OnInit {
   }
 
   updateTicketStatus(statusId: number | undefined | null): void {
-    if (!this.ticket || statusId === null || statusId === undefined) return;
+    if (!this.ticket || statusId === null || statusId === undefined || !this.canChangeStatus()) return;
 
     this.updating = true;
 
@@ -310,18 +287,14 @@ export class TicketDetailComponent implements OnInit {
       statusId: statusId
     };
 
-    console.log('Updating ticket status:', updatedTicket);
-
     this.ticketService.updateTicket(this.ticketId, updatedTicket).subscribe({
       next: (ticket) => {
-        console.log('Status updated successfully:', ticket);
         this.ticket = ticket;
         this.selectedStatusId = ticket.statusId;
         this.success = 'Status zgłoszenia został zaktualizowany.';
         this.updating = false;
       },
       error: (error) => {
-        console.error('Error updating ticket status:', error);
         this.error = 'Nie udało się zaktualizować statusu zgłoszenia.';
         this.updating = false;
       }
@@ -329,7 +302,7 @@ export class TicketDetailComponent implements OnInit {
   }
 
   updateTicketPriority(priorityId: number | undefined | null): void {
-    if (!this.ticket || priorityId === null || priorityId === undefined) return;
+    if (!this.ticket || priorityId === null || priorityId === undefined || !this.canChangePriority()) return;
 
     this.updating = true;
 
@@ -338,18 +311,14 @@ export class TicketDetailComponent implements OnInit {
       priorityId: priorityId
     };
 
-    console.log('Updating ticket priority:', updatedTicket);
-
     this.ticketService.updateTicket(this.ticketId, updatedTicket).subscribe({
       next: (ticket) => {
-        console.log('Priority updated successfully:', ticket);
         this.ticket = ticket;
         this.selectedPriorityId = ticket.priorityId;
         this.success = 'Priorytet zgłoszenia został zaktualizowany.';
         this.updating = false;
       },
       error: (error) => {
-        console.error('Error updating ticket priority:', error);
         this.error = 'Nie udało się zaktualizować priorytetu zgłoszenia.';
         this.updating = false;
       }
@@ -357,21 +326,17 @@ export class TicketDetailComponent implements OnInit {
   }
 
   archiveTicket(): void {
-    if (!this.ticket || this.updating) return;
+    if (!this.ticket || this.updating || !this.canArchiveTicket()) return;
 
     this.updating = true;
 
-    console.log('Archiving ticket:', this.ticketId);
-
     this.ticketService.archiveTicket(this.ticketId).subscribe({
       next: (ticket) => {
-        console.log('Ticket archived successfully:', ticket);
         this.ticket = ticket;
         this.success = 'Zgłoszenie zostało zarchiwizowane.';
         this.updating = false;
       },
       error: (error) => {
-        console.error('Error archiving ticket:', error);
         this.error = 'Nie udało się zarchiwizować zgłoszenia.';
         this.updating = false;
       }
@@ -379,21 +344,17 @@ export class TicketDetailComponent implements OnInit {
   }
 
   restoreTicket(): void {
-    if (!this.ticket || this.updating) return;
+    if (!this.ticket || this.updating || !this.canRestoreTicket()) return;
 
     this.updating = true;
 
-    console.log('Restoring ticket:', this.ticketId);
-
     this.ticketService.restoreTicket(this.ticketId).subscribe({
       next: (ticket) => {
-        console.log('Ticket restored successfully:', ticket);
         this.ticket = ticket;
         this.success = 'Zgłoszenie zostało przywrócone.';
         this.updating = false;
       },
       error: (error) => {
-        console.error('Error restoring ticket:', error);
         this.error = 'Nie udało się przywrócić zgłoszenia.';
         this.updating = false;
       }
@@ -406,6 +367,42 @@ export class TicketDetailComponent implements OnInit {
     return status?.idn === 'CLOSED';
   }
 
+  canEditTicket(): boolean {
+    if (!this.ticket) return false;
+
+    return this.authService.canModifyResource(this.ticket.id!, 'Ticket') &&
+      !this.ticket.archive &&
+      !this.isClosedStatus(this.ticket.statusId);
+  }
+
+  canChangeStatus(): boolean {
+    return this.authService.isAdmin() || this.authService.isOperator();
+  }
+
+  canChangePriority(): boolean {
+    return this.authService.isAdmin() || this.authService.isOperator();
+  }
+
+  canArchiveTicket(): boolean {
+    if (!this.ticket) return false;
+
+    return (this.authService.isAdmin() || this.authService.isOperator()) &&
+      !this.ticket.archive;
+  }
+
+  canRestoreTicket(): boolean {
+    if (!this.ticket) return false;
+
+    return this.authService.isAdmin() && this.ticket.archive;
+  }
+
+  canAddMessage(): boolean {
+    if (!this.ticket) return false;
+
+    return !this.ticket.archive && !this.isClosedStatus(this.ticket.statusId);
+  }
+
+  // Metody pomocnicze dla widoku
   getCategoryName(categoryId?: number): string {
     if (!categoryId) return '';
     const category = this.categories.find(c => c.id === categoryId);
@@ -455,6 +452,8 @@ export class TicketDetailComponent implements OnInit {
         return 'bg-warning';
       case 'HIGH':
         return 'bg-danger';
+      case 'CRITICAL':
+        return 'bg-danger text-white';
       default:
         return 'bg-secondary';
     }

@@ -8,14 +8,25 @@
             <button class="btn btn-sm btn-outline-secondary me-2" routerLink="/dashboard">
               <i class="bi bi-house"></i> Dashboard
             </button>
-            <button class="btn btn-sm btn-primary" routerLink="/tickets/new">
+            <button *ngIf="canCreateTicket()" class="btn btn-sm btn-primary" routerLink="/tickets/new">
               <i class="bi bi-plus-circle"></i> Nowe zgłoszenie
             </button>
           </div>
         </div>
         <div class="card-body">
+          <!-- Komunikaty -->
+          <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+            {{ error }}
+            <button type="button" class="btn-close" (click)="error = ''"></button>
+          </div>
+
+          <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
+            {{ success }}
+            <button type="button" class="btn-close" (click)="success = ''"></button>
+          </div>
+
           <!-- Filtry -->
-          <div class="row mb-4">
+          <div class="row mb-3">
             <div class="col-md-3 mb-3">
               <label for="filterTitle" class="form-label">Tytuł</label>
               <input
@@ -27,6 +38,7 @@
                 placeholder="Wyszukaj w tytule"
               >
             </div>
+
             <div class="col-md-3 mb-3">
               <label for="filterCategory" class="form-label">Kategoria</label>
               <select
@@ -39,6 +51,7 @@
                 <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
               </select>
             </div>
+
             <div class="col-md-3 mb-3">
               <label for="filterStatus" class="form-label">Status</label>
               <select
@@ -48,9 +61,40 @@
                 (ngModelChange)="applyFilters()"
               >
                 <option value="">Wszystkie statusy</option>
-                <option *ngFor="let status of statuses" [value]="status.id">{{ status.name }}</option>
+                <option *ngFor="let status of getAvailableStatuses()" [value]="status.id">{{ status.name }}</option>
               </select>
             </div>
+
+            <!-- Filtr przypisania - tylko dla admina i operatora -->
+            <div class="col-md-3 mb-3" *ngIf="canFilterByAssignment()">
+              <label for="filterAssignment" class="form-label">Przypisanie</label>
+              <select
+                class="form-select form-select-sm"
+                id="filterAssignment"
+                [(ngModel)]="filterAssignment"
+                (ngModelChange)="applyFilters()"
+              >
+                <option value="">Wszystkie</option>
+                <option value="assigned">Przypisane</option>
+                <option value="unassigned">Nieprzypisane</option>
+                <option value="mine" *ngIf="authService.isOperator()">Moje zgłoszenia</option>
+              </select>
+            </div>
+
+            <!-- Filtr priorytetu -->
+            <div class="col-md-3 mb-3" *ngIf="authService.isAdmin() || authService.isOperator()">
+              <label for="filterPriority" class="form-label">Priorytet</label>
+              <select
+                class="form-select form-select-sm"
+                id="filterPriority"
+                [(ngModel)]="filterPriority"
+                (ngModelChange)="applyFilters()"
+              >
+                <option value="">Wszystkie priorytety</option>
+                <option *ngFor="let priority of priorities" [value]="priority.id">{{ priority.name }}</option>
+              </select>
+            </div>
+
             <div class="col-md-3 mb-3 d-flex align-items-end">
               <button class="btn btn-sm btn-outline-secondary ms-auto" (click)="resetFilters()">
                 <i class="bi bi-x-circle"></i> Resetuj filtry
@@ -58,8 +102,15 @@
             </div>
           </div>
 
+          <!-- Ładowanie -->
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Ładowanie...</span>
+            </div>
+          </div>
+
           <!-- Tabela zgłoszeń -->
-          <div class="table-responsive">
+          <div *ngIf="!loading" class="table-responsive">
             <table class="table table-hover ticket-table">
               <thead>
               <tr>
@@ -93,23 +144,22 @@
                      [ngClass]="{'bi-sort-up': sortDirection === 'asc', 'bi-sort-down': sortDirection === 'desc'}">
                   </i>
                 </th>
+                <th scope="col" *ngIf="authService.isAdmin() || authService.isOperator()" (click)="sort('operatorId')" class="sortable">
+                  Operator
+                  <i *ngIf="sortColumn === 'operatorId'" class="bi"
+                     [ngClass]="{'bi-sort-up': sortDirection === 'asc', 'bi-sort-down': sortDirection === 'desc'}">
+                  </i>
+                </th>
                 <th scope="col">Akcje</th>
               </tr>
               </thead>
               <tbody>
-              <tr *ngIf="loading">
-                <td colspan="6" class="text-center py-4">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Ładowanie...</span>
-                  </div>
-                </td>
-              </tr>
               <tr *ngIf="!loading && filteredTickets.length === 0">
-                <td colspan="6" class="text-center py-4">
+                <td colspan="7" class="text-center py-4">
                   Brak zgłoszeń spełniających kryteria wyszukiwania
                 </td>
               </tr>
-              <tr *ngFor="let ticket of currentPageTickets" [routerLink]="['/tickets', ticket.id]" class="ticket-row">
+              <tr *ngFor="let ticket of currentPageTickets">
                 <td class="ticket-title">{{ ticket.title }}</td>
                 <td>{{ getCategoryName(ticket.categoryId) }}</td>
                 <td>
@@ -123,21 +173,53 @@
                     </span>
                 </td>
                 <td>{{ formatDate(ticket.insertedDate) }}</td>
+                <td *ngIf="authService.isAdmin() || authService.isOperator()">
+                  {{ ticket.operatorId ? getOperatorName(ticket.operatorId) : 'Nieprzypisany' }}
+                </td>
                 <td>
-                  <a [routerLink]="['/tickets', ticket.id]" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-eye"></i> Szczegóły
-                  </a>
+                  <div class="btn-group btn-group-sm">
+                    <a [routerLink]="['/tickets', ticket.id]" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye"></i> Szczegóły
+                    </a>
+                    <button
+                      *ngIf="canAssignTicket() && (!ticket.operatorId || ticket.operatorId === defaultOperatorId)"
+                      class="btn btn-sm btn-outline-secondary"
+                      (click)="assignToMe(ticket.id)"
+                      [disabled]="processingTicketId === ticket.id"
+                    >
+                      <span *ngIf="processingTicketId === ticket.id" class="spinner-border spinner-border-sm me-1"></span>
+                      <i class="bi bi-person-plus"></i>
+                    </button>
+                    <button
+                      *ngIf="authService.isAdmin() && !ticket.archive"
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="archiveTicket(ticket.id)"
+                      [disabled]="processingTicketId === ticket.id"
+                    >
+                      <i class="bi bi-archive"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
               </tbody>
             </table>
           </div>
 
+          <!-- Brak wyników -->
+          <div *ngIf="!loading && filteredTickets.length === 0" class="alert alert-info text-center">
+            Brak zgłoszeń spełniających kryteria wyszukiwania.
+            <button class="btn btn-sm btn-outline-primary ms-2" (click)="resetFilters()">
+              Wyczyść filtry
+            </button>
+          </div>
+
           <!-- Paginacja -->
-          <div class="d-flex justify-content-between align-items-center">
+          <div *ngIf="!loading && filteredTickets.length > 0"
+               class="d-flex justify-content-between align-items-center mt-3">
             <div>
               <span class="text-muted">
-                Pokazano {{ (page - 1) * pageSize + 1 }} - {{ (page - 1) * pageSize + currentPageTickets.length }}
+                Pokazano {{ (page - 1) * pageSize + 1 }} -
+                {{ Math.min((page - 1) * pageSize + currentPageTickets.length, collectionSize) }}
                 z {{ collectionSize }} zgłoszeń
               </span>
             </div>

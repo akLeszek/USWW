@@ -1,3 +1,5 @@
+// Aplikacja/usww/frontend/src/app/admin/user-management/user-list/user-list.component.ts
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -5,9 +7,10 @@ import { RouterModule } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { UserService } from '../../services/user.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { DictionaryService, Dictionary } from '../../../shared/services/dictionary.service';
+import { HasPermissionDirective, HasRoleDirective } from '../../../shared/directives/permission.directive';
 
-// Interfejs dla użytkownika
 interface User {
   id: number;
   login: string;
@@ -27,7 +30,9 @@ interface User {
     CommonModule,
     FormsModule,
     RouterModule,
-    NgbModule
+    NgbModule,
+    HasPermissionDirective,
+    HasRoleDirective
   ],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
@@ -43,12 +48,10 @@ export class UserListComponent implements OnInit {
   error = '';
   success = '';
 
-  // Filtry
   filterLogin = '';
   filterGroup = '';
   filterOrganizationUnit = '';
 
-  // Parametry paginacji
   page = 1;
   pageSize = 10;
   collectionSize = 0;
@@ -57,7 +60,8 @@ export class UserListComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private dictionaryService: DictionaryService
+    private dictionaryService: DictionaryService,
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -170,6 +174,73 @@ export class UserListComponent implements OnInit {
       },
       error: (error) => {
         this.error = 'Nie udało się odblokować użytkownika';
+        this.processingUserId = null;
+      }
+    });
+  }
+
+  canCreateUser(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  canEditUser(user: User): boolean {
+    return this.authService.isAdmin() ||
+      (this.authService.currentUserValue?.userId === user.id);
+  }
+
+  canBlockUser(user: User): boolean {
+    if (!this.authService.isAdmin()) return false;
+
+    // Admin nie może blokować sam siebie
+    return user.id !== this.authService.currentUserValue?.userId;
+  }
+
+  canUnblockUser(user: User): boolean {
+    return this.authService.isAdmin();
+  }
+
+  canResetPassword(user: User): boolean {
+    return this.authService.isAdmin();
+  }
+
+  canArchiveUser(user: User): boolean {
+    return this.authService.isAdmin() && user.id !== this.authService.currentUserValue?.userId;
+  }
+
+  resetPassword(userId: number): void {
+    this.error = '';
+    this.success = '';
+    this.processingUserId = userId;
+
+    this.userService.resetPassword(userId).subscribe({
+      next: (response) => {
+        this.success = `Hasło zostało zresetowane. Nowe hasło: ${response.generatedPassword}`;
+        this.processingUserId = null;
+      },
+      error: (error) => {
+        this.error = 'Nie udało się zresetować hasła użytkownika';
+        this.processingUserId = null;
+      }
+    });
+  }
+
+  archiveUser(userId: number): void {
+    this.error = '';
+    this.success = '';
+    this.processingUserId = userId;
+
+    this.userService.archiveUser(userId).subscribe({
+      next: () => {
+        const user = this.users.find(u => u.id === userId);
+        if (user) {
+          user.archive = true;
+          user.loginBan = true;
+        }
+        this.success = 'Użytkownik został zarchiwizowany pomyślnie';
+        this.processingUserId = null;
+      },
+      error: (error) => {
+        this.error = 'Nie udało się zarchiwizować użytkownika';
         this.processingUserId = null;
       }
     });

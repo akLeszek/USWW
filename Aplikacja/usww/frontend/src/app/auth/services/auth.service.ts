@@ -162,4 +162,30 @@ export class AuthService {
       })
     );
   }
+
+  public hasPermission(resource: string, permission: string): boolean {
+    const currentUser = this.currentUserValue;
+    if (!currentUser) return false;
+
+    if (this.isAdmin()) return true;
+
+    if (resource === 'Ticket') {
+      if (this.isOperator()) {
+        return ['READ', 'WRITE', 'ASSIGN'].includes(permission);
+      }
+      if (this.isStudent()) {
+        return ['READ', 'CREATE'].includes(permission);
+      }
+    }
+
+    return false;
+  }
+
+  public canAccessResource(resourceId: number, resourceType: string): boolean {
+    return this.isAdmin() ? true : this.hasPermission(resourceType, 'READ');
+  }
+
+  public canModifyResource(resourceId: number, resourceType: string): boolean {
+    return this.isAdmin() ? true : this.hasPermission(resourceType, 'WRITE');
+  }
 }

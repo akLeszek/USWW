@@ -4,7 +4,7 @@
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="mb-0">Zarządzanie użytkownikami</h5>
-          <button class="btn btn-primary" routerLink="/admin/users/new">
+          <button *appHasRole="'ADMIN'" class="btn btn-primary" routerLink="/admin/users/new">
             <i class="bi bi-plus-circle"></i> Dodaj użytkownika
           </button>
         </div>
@@ -106,14 +106,18 @@
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm" role="group">
+                    <!-- Edycja - dla admina lub własnego konta -->
                     <button
+                      *ngIf="canEditUser(user)"
                       class="btn btn-outline-primary"
                       routerLink="/admin/users/{{ user.id }}/edit"
                     >
                       <i class="bi bi-pencil"></i>
                     </button>
+
+                    <!-- Blokowanie - tylko dla admina, nie można blokować samego siebie -->
                     <button
-                      *ngIf="!user.loginBan"
+                      *ngIf="canBlockUser(user)"
                       class="btn btn-outline-danger"
                       (click)="blockUser(user.id)"
                       [disabled]="processingUserId === user.id"
@@ -121,14 +125,37 @@
                       <span *ngIf="processingUserId === user.id" class="spinner-border spinner-border-sm me-1"></span>
                       <i class="bi bi-lock"></i>
                     </button>
+
+                    <!-- Odblokowanie - tylko dla admina -->
                     <button
-                      *ngIf="user.loginBan"
+                      *ngIf="canUnblockUser(user) && user.loginBan"
                       class="btn btn-outline-success"
                       (click)="unblockUser(user.id)"
                       [disabled]="processingUserId === user.id"
                     >
                       <span *ngIf="processingUserId === user.id" class="spinner-border spinner-border-sm me-1"></span>
                       <i class="bi bi-unlock"></i>
+                    </button>
+
+                    <!-- Opcje resetowania hasła - tylko dla admina -->
+                    <button
+                      *appHasRole="'ADMIN'"
+                      class="btn btn-outline-warning"
+                      (click)="resetUserPassword(user.id)"
+                      [disabled]="processingUserId === user.id"
+                    >
+                      <i class="bi bi-key"></i>
+                    </button>
+
+                    <!-- Opcje archiwizacji/przywracania - tylko dla admina -->
+                    <button
+                      *appHasRole="'ADMIN'"
+                      class="btn btn-outline-secondary"
+                      [ngClass]="{'btn-outline-danger': !user.archive, 'btn-outline-success': user.archive}"
+                      (click)="user.archive ? restoreUser(user.id) : archiveUser(user.id)"
+                      [disabled]="processingUserId === user.id"
+                    >
+                      <i class="bi" [ngClass]="{'bi-archive': !user.archive, 'bi-arrow-counterclockwise': user.archive}"></i>
                     </button>
                   </div>
                 </td>

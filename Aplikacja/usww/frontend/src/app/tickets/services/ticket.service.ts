@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {environment} from '../../../environments/environment';
+import {User} from '../../admin/services/user.service';
 
 export interface Ticket {
   id?: number;
@@ -114,8 +115,8 @@ export class TicketService {
     return this.http.put<Ticket>(`${this.apiUrl}/${id}`, ticket);
   }
 
-  archiveTicket(id: number): Observable<Ticket> {
-    return this.http.post<Ticket>(`${this.apiUrl}/${id}/archive`, {});
+  archiveTicket(ticketId: number): Observable<Ticket> {
+    return this.http.post<Ticket>(`${this.apiUrl}/${ticketId}/archive`, {});
   }
 
   restoreTicket(id: number): Observable<Ticket> {
@@ -177,5 +178,17 @@ export class TicketService {
     }
 
     return {valid: true};
+  }
+
+  getOperators(): Observable<User[]> {
+    return this.http.get<User[]>(`${environment.apiUrl}/users/operators`);
+  }
+
+  assignTicketToOperator(ticketId: number, operatorId: number): Observable<Ticket> {
+    return this.http.put<Ticket>(`${this.apiUrl}/${ticketId}/assign/${operatorId}`, {});
+  }
+
+  updateTicketStatus(ticketId: number, statusId: number): Observable<Ticket> {
+    return this.http.put<Ticket>(`${this.apiUrl}/${ticketId}/status/${statusId}`, {});
   }
 }

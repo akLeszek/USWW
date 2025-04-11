@@ -1,15 +1,13 @@
-// Aplikacja/usww/frontend/src/app/admin/user-management/user-list/user-list.component.ts
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {RouterModule} from '@angular/router';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-
-import { UserService } from '../../services/user.service';
-import { AuthService } from '../../../auth/services/auth.service';
-import { DictionaryService, Dictionary } from '../../../shared/services/dictionary.service';
-import { HasPermissionDirective, HasRoleDirective } from '../../../shared/directives/permission.directive';
+import {UserService} from '../../services/user.service';
+import {AuthService} from '../../../auth/services/auth.service';
+import {Dictionary, DictionaryService} from '../../../shared/services/dictionary.service';
+import {HasRoleDirective} from '../../../shared/directives/permission.directive';
 
 interface User {
   id: number;
@@ -21,6 +19,7 @@ interface User {
   loginBan: boolean;
   archive: boolean;
   lastLogin?: string;
+  generatedPassword?: string;
 }
 
 @Component({
@@ -31,7 +30,6 @@ interface User {
     FormsModule,
     RouterModule,
     NgbModule,
-    HasPermissionDirective,
     HasRoleDirective
   ],
   templateUrl: './user-list.component.html',
@@ -62,7 +60,8 @@ export class UserListComponent implements OnInit {
     private userService: UserService,
     private dictionaryService: DictionaryService,
     public authService: AuthService
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -190,8 +189,6 @@ export class UserListComponent implements OnInit {
 
   canBlockUser(user: User): boolean {
     if (!this.authService.isAdmin()) return false;
-
-    // Admin nie może blokować sam siebie
     return user.id !== this.authService.currentUserValue?.userId;
   }
 
@@ -213,11 +210,11 @@ export class UserListComponent implements OnInit {
     this.processingUserId = userId;
 
     this.userService.resetPassword(userId).subscribe({
-      next: (response) => {
+      next: (response: User) => {
         this.success = `Hasło zostało zresetowane. Nowe hasło: ${response.generatedPassword}`;
         this.processingUserId = null;
       },
-      error: (error) => {
+      error: (error: unknown) => {
         this.error = 'Nie udało się zresetować hasła użytkownika';
         this.processingUserId = null;
       }
@@ -249,5 +246,26 @@ export class UserListComponent implements OnInit {
   get currentPageUsers() {
     const startIndex = (this.page - 1) * this.pageSize;
     return this.filteredUsers.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  restoreUser(userId: number): void {
+    this.error = '';
+    this.success = '';
+    this.processingUserId = userId;
+
+    this.userService.restoreUser(userId).subscribe({
+      next: (response: User) => {
+        const user = this.users.find(u => u.id === userId);
+        if (user) {
+          user.archive = false;
+        }
+        this.success = 'Użytkownik został przywrócony pomyślnie';
+        this.processingUserId = null;
+      },
+      error: (error: unknown) => {
+        this.error = 'Nie udało się przywrócić użytkownika';
+        this.processingUserId = null;
+      }
+    });
   }
 }

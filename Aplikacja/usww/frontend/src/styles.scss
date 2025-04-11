@@ -42,3 +42,22 @@ html, body {
 .table-hover tbody tr:hover {
   background-color: rgba(0, 123, 255, 0.05);
 }
+
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 5px;
+  z-index: 9999;
+  max-width: 350px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.toast-notification.showing {
+  opacity: 1;
+  transform: translateY(0);
+}

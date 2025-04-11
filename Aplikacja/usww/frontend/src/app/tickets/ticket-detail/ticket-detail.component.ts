@@ -5,7 +5,6 @@ import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {MessageAttachment, Ticket, TicketMessage, TicketService} from '../services/ticket.service';
 import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
 import {AuthService} from '../../auth/services/auth.service';
-import {HasPermissionDirective, HasRoleDirective} from '../../shared/directives/permission.directive';
 
 @Component({
   selector: 'app-ticket-detail',
@@ -14,9 +13,7 @@ import {HasPermissionDirective, HasRoleDirective} from '../../shared/directives/
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
-    FormsModule,
-    HasPermissionDirective,
-    HasRoleDirective
+    FormsModule
   ],
   templateUrl: './ticket-detail.component.html',
   styleUrls: ['./ticket-detail.component.scss']
@@ -392,8 +389,7 @@ export class TicketDetailComponent implements OnInit {
 
   canRestoreTicket(): boolean {
     if (!this.ticket) return false;
-
-    return this.authService.isAdmin() && this.ticket.archive;
+    return this.authService.isAdmin() && this.ticket.archive === true;
   }
 
   canAddMessage(): boolean {

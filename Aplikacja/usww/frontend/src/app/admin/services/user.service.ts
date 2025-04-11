@@ -1,8 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { Dictionary } from '../../shared/services/dictionary.service';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {environment} from '../../../environments/environment';
 
 export interface User {
   id: number;
@@ -15,6 +14,7 @@ export interface User {
   archive: boolean;
   lastLogin?: string;
   firstLogin?: boolean;
+  generatedPassword?: string;
 }
 
 @Injectable({
@@ -23,7 +23,8 @@ export interface User {
 export class UserService {
   private apiUrl = `${environment.apiUrl}/admin/users`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(this.apiUrl);
@@ -41,10 +42,6 @@ export class UserService {
     return this.http.post<User>(`${this.apiUrl}/${userId}/archive`, {});
   }
 
-  restoreUser(userId: number): Observable<User> {
-    return this.http.post<User>(`${this.apiUrl}/${userId}/restore`, {});
-  }
-
   createUser(userData: Partial<User>): Observable<User> {
     return this.http.post<User>(this.apiUrl, userData);
   }
@@ -55,5 +52,13 @@ export class UserService {
 
   updateUser(userId: number, userData: Partial<User>): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/${userId}`, userData);
+  }
+
+  resetPassword(userId: number): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/${userId}/reset-password`, {});
+  }
+
+  restoreUser(userId: number): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/${userId}/restore`, {});
   }
 }

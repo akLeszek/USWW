@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {RouterModule} from '@angular/router';
+import {ActivatedRoute, RouterModule} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {NgbDropdownModule, NgbModule, NgbPaginationModule} from '@ng-bootstrap/ng-bootstrap';
 import {Subject} from 'rxjs';
@@ -61,6 +61,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
   constructor(
     private ticketService: TicketService,
     private dictionaryService: DictionaryService,
+    private route: ActivatedRoute,
     public authService: AuthService,
     private toastService: ToastService
   ) {
@@ -68,6 +69,13 @@ export class TicketListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDictionaries();
+
+    this.route.url.subscribe(segments => {
+      if (segments.length > 1 && segments[1].path === 'unassigned') {
+        this.filterAssignment = 'unassigned';
+      }
+    });
+
     this.loadTickets();
   }
 

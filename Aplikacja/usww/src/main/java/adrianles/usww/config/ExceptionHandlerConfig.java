@@ -13,14 +13,16 @@ public class ExceptionHandlerConfig {
         ValidationExceptionHandler validationHandler = new ValidationExceptionHandler();
         ResourceNotFoundExceptionHandler resourceNotFoundHandler = new ResourceNotFoundExceptionHandler();
         IllegalArgumentExceptionHandler illegalArgumentHandler = new IllegalArgumentExceptionHandler();
-        LockedExceptionHandler lockedExceptionHandler = new LockedExceptionHandler();
         UnauthorizedAccessExceptionHandler unauthorizedAccessExceptionHandler = new UnauthorizedAccessExceptionHandler();
+        NumberFormatExceptionHandler numberFormatExceptionHandler = new NumberFormatExceptionHandler();
+        LockedExceptionHandler lockedExceptionHandler = new LockedExceptionHandler();
 
         resourceNotFoundHandler.setNext(validationHandler);
         validationHandler.setNext(illegalArgumentHandler);
-        illegalArgumentHandler.setNext(lockedExceptionHandler);
+        illegalArgumentHandler.setNext(unauthorizedAccessExceptionHandler);
+        unauthorizedAccessExceptionHandler.setNext(numberFormatExceptionHandler);
+        numberFormatExceptionHandler.setNext(lockedExceptionHandler);
         lockedExceptionHandler.setNext(defaultHandler);
-        unauthorizedAccessExceptionHandler.setNext(unauthorizedAccessExceptionHandler);
 
         return resourceNotFoundHandler;
     }

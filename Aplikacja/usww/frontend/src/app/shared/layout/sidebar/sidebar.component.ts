@@ -100,29 +100,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
             visible: this.authService.isAdmin()
           }
         ]
-      },
-      {
-        title: 'Statystyki',
-        icon: 'bi-bar-chart',
-        visible: this.authService.isAdmin() || this.authService.isOperator(),
-        children: [
-          {
-            title: 'Raporty ogólne',
-            route: '/statistics/general',
-            visible: this.authService.isAdmin()
-          },
-          {
-            title: 'Raporty wydajności',
-            route: '/statistics/performance',
-            visible: this.authService.isAdmin() || this.authService.isOperator()
-          }
-        ]
-      },
-      {
-        title: 'Ustawienia',
-        icon: 'bi-gear-fill',
-        route: '/settings',
-        visible: true
       }
     ];
   }

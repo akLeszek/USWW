@@ -20,7 +20,7 @@ public class SecuredTicketController {
     @GetMapping("/{id}")
     public ResponseEntity<TicketDTO> getTicketById(@PathVariable int id) {
         if (!authorizationService.canAccessTicket(id)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Brak uprawnień do dostępu do tego zgłoszenia");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Cannot access ticket");
         }
         return ResponseEntity.ok(ticketService.getTicketById(id));
     }
@@ -28,7 +28,7 @@ public class SecuredTicketController {
     @PutMapping("/{id}")
     public ResponseEntity<TicketDTO> updateTicket(@PathVariable int id, @RequestBody TicketDTO ticketDTO) {
         if (!authorizationService.canModifyTicket(id)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Brak uprawnień do modyfikacji tego zgłoszenia");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Cannot modify ticket");
         }
         return ResponseEntity.ok(ticketService.updateTicket(id, ticketDTO));
     }
@@ -36,7 +36,7 @@ public class SecuredTicketController {
     @PostMapping("/{id}/archive")
     public ResponseEntity<TicketDTO> archiveTicket(@PathVariable int id) {
         if (!authorizationService.canArchiveTicket(id)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Brak uprawnień do archiwizacji tego zgłoszenia");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Cannot archive ticket");
         }
         return ResponseEntity.ok().build();
     }

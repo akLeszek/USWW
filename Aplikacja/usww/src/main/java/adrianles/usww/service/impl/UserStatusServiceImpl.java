@@ -75,6 +75,6 @@ public class UserStatusServiceImpl implements UserStatusService {
 
     private User findUserById(Integer id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Użytkownik o id " + id + " nie istnieje"));
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
     }
 }

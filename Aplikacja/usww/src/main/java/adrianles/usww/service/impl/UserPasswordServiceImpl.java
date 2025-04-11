@@ -25,7 +25,7 @@ public class UserPasswordServiceImpl implements UserPasswordService {
         User user = findUserById(userId);
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new IllegalArgumentException("Aktualne hasło jest nieprawidłowe");
+            throw new IllegalArgumentException("Actual password is incorrect");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -51,6 +51,6 @@ public class UserPasswordServiceImpl implements UserPasswordService {
 
     private User findUserById(Integer id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Użytkownik o id " + id + " nie istnieje"));
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
     }
 }

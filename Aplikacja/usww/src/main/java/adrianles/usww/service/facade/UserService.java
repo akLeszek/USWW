@@ -17,5 +17,8 @@ public interface UserService {
     @Transactional
     UserDTO createUser(UserDTO userDTO);
 
+    @Transactional
+    UserDTO updateUser(Integer userId, UserDTO userDTO);
+
     UserDTO getUserBasicInfo(Integer id);
 }

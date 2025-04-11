@@ -12,4 +12,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByLogin(String login);
 
     List<User> findAllByArchiveTrue();
+
+    List<User> findByOrganizationUnitId(Integer organizationUnitId);
 }

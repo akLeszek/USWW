@@ -1,18 +1,15 @@
-// Aplikacja/usww/frontend/src/app/tickets/ticket-list/ticket-list.component.ts
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { NgbModule, NgbPaginationModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {RouterModule} from '@angular/router';
+import {FormsModule} from '@angular/forms';
+import {NgbDropdownModule, NgbModule, NgbPaginationModule} from '@ng-bootstrap/ng-bootstrap';
+import {Subject} from 'rxjs';
 
-import { Ticket, TicketService } from '../services/ticket.service';
-import { Dictionary, DictionaryService } from '../../shared/services/dictionary.service';
-import { AuthService } from '../../auth/services/auth.service';
-import { HasPermissionDirective, HasRoleDirective } from '../../shared/directives/permission.directive';
-import { ToastService } from '../../shared/services/toast.service';
-import { User } from '../../admin/services/user.service';
+import {Ticket, TicketService} from '../services/ticket.service';
+import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
+import {AuthService} from '../../auth/services/auth.service';
+import {ToastService} from '../../shared/services/toast.service';
+import {User} from '../../admin/services/user.service';
 
 @Component({
   selector: 'app-ticket-list',
@@ -23,9 +20,7 @@ import { User } from '../../admin/services/user.service';
     FormsModule,
     NgbModule,
     NgbPaginationModule,
-    NgbDropdownModule,
-    HasPermissionDirective,
-    HasRoleDirective
+    NgbDropdownModule
   ],
   templateUrl: './ticket-list.component.html',
   styleUrls: ['./ticket-list.component.scss']
@@ -68,7 +63,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
     private dictionaryService: DictionaryService,
     public authService: AuthService,
     private toastService: ToastService
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     this.loadDictionaries();
@@ -291,7 +287,10 @@ export class TicketListComponent implements OnInit, OnDestroy {
   formatDate(dateString?: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'});
+    return date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   canCreateTicket(): boolean {

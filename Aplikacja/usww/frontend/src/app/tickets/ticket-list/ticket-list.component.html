@@ -193,7 +193,7 @@
                     <button
                       *ngIf="authService.isAdmin() && !ticket.archive"
                       class="btn btn-sm btn-outline-danger"
-                      (click)="archiveTicket(ticket.id)"
+                      (click)="ticket.id !== undefined && archiveTicket(ticket.id)"
                       [disabled]="processingTicketId === ticket.id"
                     >
                       <i class="bi bi-archive"></i>

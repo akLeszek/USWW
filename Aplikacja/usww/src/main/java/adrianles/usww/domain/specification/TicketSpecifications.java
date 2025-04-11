@@ -2,10 +2,9 @@ package adrianles.usww.domain.specification;
 
 import adrianles.usww.api.dto.TicketFilterCriteriaDTO;
 import adrianles.usww.domain.entity.Ticket;
+import adrianles.usww.domain.entity.User;
 import adrianles.usww.utils.Constants;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
@@ -145,13 +144,41 @@ public class TicketSpecifications {
 
     public static Specification<Ticket> accessibleByUser(Integer userId, Collection<String> userRoles) {
         Specification<Ticket> spec = Specification.where(null);
+
         if (userRoles.contains("ADMIN")) {
             return spec;
         }
+
         if (userRoles.contains("OPERATOR")) {
-            return spec.or(hasOperatorId(userId));
+            return spec.or(hasOperatorId(userId))
+                    .or(hasSameOrganizationUnitAs(userId))
+                    .or(isUnassignedOrDefaultOperator());
         }
 
         return spec.and(hasStudentId(userId));
+    }
+
+    public static Specification<Ticket> hasSameOrganizationUnitAs(Integer userId) {
+        return (root, query, cb) -> {
+            Subquery<Integer> orgUnitSubquery = query.subquery(Integer.class);
+            Root<User> userRoot = orgUnitSubquery.from(User.class);
+
+            orgUnitSubquery.select(userRoot.get("organizationUnit").get("id"))
+                    .where(cb.equal(userRoot.get("id"), userId));
+
+            Join<Ticket, User> studentJoin = root.join("student");
+
+            return cb.and(
+                    cb.isNotNull(studentJoin.get("organizationUnit")),
+                    cb.in(studentJoin.get("organizationUnit").get("id")).value(orgUnitSubquery)
+            );
+        };
+    }
+
+    public static Specification<Ticket> isUnassignedOrDefaultOperator() {
+        return (root, query, cb) -> cb.or(
+                cb.isNull(root.get("operator")),
+                cb.equal(root.get("operator").get("login"), Constants.DEFAULT_OPERATOR_LOGIN)
+        );
     }
 }

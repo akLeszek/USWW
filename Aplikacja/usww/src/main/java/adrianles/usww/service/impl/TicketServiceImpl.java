@@ -57,14 +57,8 @@ public class TicketServiceImpl implements TicketService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        List<Ticket> tickets;
-        if (roles.contains("ADMIN")) {
-            tickets = ticketRepository.findAll();
-        } else if (roles.contains("OPERATOR")) {
-            tickets = ticketRepository.findByOperatorId(userId);
-        } else {
-            tickets = ticketRepository.findByStudentId(userId);
-        }
+        Specification<Ticket> spec = TicketSpecifications.accessibleByUser(userId, roles);
+        List<Ticket> tickets = ticketRepository.findAll(spec);
 
         return tickets.stream()
                 .map(ticketMapper::toDto)

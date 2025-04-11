@@ -2,6 +2,7 @@ package adrianles.usww.domain.specification;
 
 import adrianles.usww.api.dto.TicketFilterCriteriaDTO;
 import adrianles.usww.domain.entity.Ticket;
+import adrianles.usww.utils.Constants;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
@@ -10,6 +11,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 
 public class TicketSpecifications {
 
@@ -30,6 +32,8 @@ public class TicketSpecifications {
 
         if (criteria.getOperatorId() != null) {
             spec = spec.and(hasOperatorId(criteria.getOperatorId()));
+        } else if (Boolean.TRUE.equals(criteria.getUnassigned())) {
+            spec = spec.and(isUnassigned());
         }
 
         if (criteria.getStatusId() != null) {
@@ -62,6 +66,14 @@ public class TicketSpecifications {
 
         if (StringUtils.hasText(criteria.getLastActivityTo())) {
             spec = spec.and(hasLastActivityBefore(criteria.getLastActivityTo()));
+        }
+
+        if (criteria.getStudentOrganizationUnitId() != null) {
+            spec = spec.and(hasStudentOrganizationUnitId(criteria.getStudentOrganizationUnitId()));
+        }
+
+        if (criteria.getOperatorOrganizationUnitId() != null) {
+            spec = spec.and(hasOperatorOrganizationUnitId(criteria.getOperatorOrganizationUnitId()));
         }
 
         return spec;
@@ -114,5 +126,32 @@ public class TicketSpecifications {
     public static Specification<Ticket> hasLastActivityBefore(String toDate) {
         LocalDateTime date = LocalDateTime.parse(toDate, DateTimeFormatter.ISO_DATE_TIME);
         return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("lastActivityDate"), date);
+    }
+
+    public static Specification<Ticket> hasStudentOrganizationUnitId(Integer organizationUnitId) {
+        return (root, query, cb) -> cb.equal(root.get("student").get("organizationUnit").get("id"), organizationUnitId);
+    }
+
+    public static Specification<Ticket> hasOperatorOrganizationUnitId(Integer organizationUnitId) {
+        return (root, query, cb) -> cb.equal(root.get("operator").get("organizationUnit").get("id"), organizationUnitId);
+    }
+
+    public static Specification<Ticket> isUnassigned() {
+        return (root, query, cb) -> cb.or(
+                cb.isNull(root.get("operator")),
+                cb.equal(root.get("operator").get("login"), Constants.DEFAULT_OPERATOR_LOGIN)
+        );
+    }
+
+    public static Specification<Ticket> accessibleByUser(Integer userId, Collection<String> userRoles) {
+        Specification<Ticket> spec = Specification.where(null);
+        if (userRoles.contains("ADMIN")) {
+            return spec;
+        }
+        if (userRoles.contains("OPERATOR")) {
+            return spec.or(hasOperatorId(userId));
+        }
+
+        return spec.and(hasStudentId(userId));
     }
 }

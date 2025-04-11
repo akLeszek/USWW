@@ -23,4 +23,7 @@ public class TicketFilterCriteriaDTO {
     private String lastActivityTo;
     private String sortBy;
     private String sortOrder;
+    private Integer studentOrganizationUnitId;
+    private Integer operatorOrganizationUnitId;
+    private Boolean unassigned;
 }

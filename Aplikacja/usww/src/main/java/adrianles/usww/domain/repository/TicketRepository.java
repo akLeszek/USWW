@@ -46,4 +46,22 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer>, JpaSpe
     Page<Ticket> findByStudentId(Integer studentId, Pageable pageable);
 
     Page<Ticket> findByOperatorId(Integer operatorId, Pageable pageable);
+
+    List<Ticket> findByStudentOrganizationUnitId(Integer organizationUnitId);
+
+    List<Ticket> findByOperatorOrganizationUnitId(Integer organizationUnitId);
+
+    int countByStudentOrganizationUnitId(Integer organizationUnitId);
+
+    int countByOperatorOrganizationUnitId(Integer organizationUnitId);
+
+    Page<Ticket> findByStudentOrganizationUnitId(Integer organizationUnitId, Pageable pageable);
+
+    Page<Ticket> findByOperatorOrganizationUnitId(Integer organizationUnitId, Pageable pageable);
+
+    List<Ticket> findByOperatorIsNullOrOperatorLogin(String login);
+
+    int countByOperatorIsNullOrOperatorLogin(String login);
+
+    Page<Ticket> findByOperatorIsNullOrOperatorLogin(String login, Pageable pageable);
 }

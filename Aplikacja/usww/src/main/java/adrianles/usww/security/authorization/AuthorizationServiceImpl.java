@@ -65,6 +65,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             return userDetails.getUserId().equals(operatorId);
         }
 
+        if (hasRole("STUDENT")) {
+            Integer studentId = ticket.getStudent() != null ? ticket.getStudent().getId() : null;
+            boolean isOwner = userDetails.getUserId().equals(studentId);
+            boolean hasNewStatus = ticket.getStatus() != null &&
+                    "NEW".equals(ticket.getStatus().getIdn());
+            return isOwner && hasNewStatus;
+        }
+
         return false;
     }
 

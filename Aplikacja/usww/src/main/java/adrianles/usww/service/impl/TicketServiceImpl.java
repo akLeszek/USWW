@@ -129,7 +129,32 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = findTicketById(ticketId);
         checkUpdateTicketAccess(ticketId);
 
-        updateTicketFromDTO(ticket, ticketDTO);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        ExtendedUserDetails userDetails = (ExtendedUserDetails) authentication.getPrincipal();
+
+        if (userDetails.isAdmin()) {
+            updateTicketFromDTO(ticket, ticketDTO);
+        } else if (userDetails.isOperator()) {
+            if (ticketDTO.getStatusId() != null) {
+                ticket.setStatus(ticketStatusRepository.findById(ticketDTO.getStatusId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Status not found")));
+            }
+
+            if (ticketDTO.getPriorityId() != null) {
+                ticket.setPriority(ticketPriorityRepository.findById(ticketDTO.getPriorityId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Priority not found")));
+            }
+
+            if (ticketDTO.getCategoryId() != null) {
+                ticket.setCategory(ticketCategoryRepository.findById(ticketDTO.getCategoryId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Category not found")));
+            }
+        } else if (userDetails.isStudent()) {
+            if (ticketDTO.getTitle() != null) {
+                ticket.setTitle(ticketDTO.getTitle());
+            }
+        }
+
         ticket.setChangeDate(LocalDateTime.now());
 
         Ticket updatedTicket = ticketRepository.save(ticket);
@@ -303,8 +328,15 @@ public class TicketServiceImpl implements TicketService {
                 .orElseThrow(() -> new ResourceNotFoundException("Operator not found with id: " + operatorId));
 
         if (!authorizationService.hasRole("ADMIN") &&
-                operator.getUserGroup().getIdn().equals("OPERATOR")) {
+                !operator.getUserGroup().getIdn().equals("OPERATOR")) {
             throw new IllegalArgumentException("Ticket can be assigned only to operators");
+        }
+
+        if (!authorizationService.hasRole("ADMIN") &&
+                operator.getOrganizationUnit() != null &&
+                ticket.getStudent().getOrganizationUnit() != null &&
+                !operator.getOrganizationUnit().getId().equals(ticket.getStudent().getOrganizationUnit().getId())) {
+            throw new IllegalArgumentException("Operator must be from the same organization unit as the student");
         }
 
         ticket.setOperator(operator);

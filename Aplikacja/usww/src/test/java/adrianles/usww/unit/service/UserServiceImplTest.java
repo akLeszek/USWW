@@ -9,7 +9,10 @@ import adrianles.usww.domain.repository.UserRepository;
 import adrianles.usww.domain.repository.dictionary.OrganizationUnitRepository;
 import adrianles.usww.domain.repository.dictionary.UserGroupRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
+import adrianles.usww.security.authorization.AuthorizationService;
+import adrianles.usww.security.userdetails.ExtendedUserDetails;
 import adrianles.usww.service.impl.UserServiceImpl;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,9 +20,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +54,12 @@ class UserServiceImplTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private AuthorizationService authorizationService;
+
+    @Mock
+    private ExtendedUserDetails userDetails;
+
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -53,6 +67,7 @@ class UserServiceImplTest {
     private UserDTO userDTO;
     private UserGroup adminGroup;
     private OrganizationUnit organizationUnit;
+    private Authentication authentication;
 
     @BeforeEach
     void setUp() {
@@ -83,6 +98,24 @@ class UserServiceImplTest {
         userDTO.setSurname("Kowalski");
         userDTO.setGroupId(1);
         userDTO.setOrganizationUnitId(1);
+
+        // Konfiguracja SecurityContext dla testów
+        when(userDetails.getUserId()).thenReturn(1);
+        when(userDetails.isAdmin()).thenReturn(true);
+        when(userDetails.getUsername()).thenReturn("testuser");
+
+        authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                Collections.singletonList(new SimpleGrantedAuthority("ADMIN"))
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -117,6 +150,7 @@ class UserServiceImplTest {
         // given
         when(userRepository.findById(1)).thenReturn(Optional.of(user));
         when(userMapper.toDto(user)).thenReturn(userDTO);
+        when(authorizationService.canAccessUser(1)).thenReturn(true);
 
         // when
         UserDTO result = userService.getUserById(1);
@@ -125,6 +159,7 @@ class UserServiceImplTest {
         assertThat(result).isEqualTo(userDTO);
         verify(userRepository).findById(1);
         verify(userMapper).toDto(user);
+        verify(authorizationService).canAccessUser(1);
     }
 
     @Test
@@ -136,7 +171,7 @@ class UserServiceImplTest {
         // when / then
         assertThatThrownBy(() -> userService.getUserById(99))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Użytkownik o id 99 nie istnieje");
+                .hasMessageContaining("User with id 99 does not exist");
 
         verify(userRepository).findById(99);
         verifyNoInteractions(userMapper);
@@ -148,6 +183,7 @@ class UserServiceImplTest {
         // given
         when(userRepository.findByLogin("testuser")).thenReturn(Optional.of(user));
         when(userMapper.toDto(user)).thenReturn(userDTO);
+        when(authorizationService.canAccessUser(1)).thenReturn(true);
 
         // when
         UserDTO result = userService.getUserByLogin("testuser");
@@ -167,7 +203,7 @@ class UserServiceImplTest {
         // when / then
         assertThatThrownBy(() -> userService.getUserByLogin("nonexistent"))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Użytkownik o loginie nonexistent nie istnieje");
+                .hasMessageContaining("User with login nonexistent not found");
 
         verify(userRepository).findByLogin("nonexistent");
         verifyNoInteractions(userMapper);
@@ -210,6 +246,7 @@ class UserServiceImplTest {
         when(passwordEncoder.encode("newuser")).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         when(userMapper.toDto(savedUser)).thenReturn(savedUserDTO);
+        when(authorizationService.hasRole("ADMIN")).thenReturn(true);
 
         // when
         UserDTO result = userService.createUser(newUserDTO);
@@ -218,7 +255,7 @@ class UserServiceImplTest {
         assertThat(result).isEqualTo(savedUserDTO);
         assertThat(result.getGeneratedPassword()).isEqualTo("newuser");
 
-        verify(userGroupRepository, times(2)).findById(1);
+        verify(userGroupRepository, times(1)).findById(1);
         verify(organizationUnitRepository).findById(1);
         verify(passwordEncoder).encode("newuser");
         verify(userRepository).save(any(User.class));
@@ -233,6 +270,7 @@ class UserServiceImplTest {
         newUserDTO.setLogin("newuser");
         newUserDTO.setGroupId(99); // Nieistniejąca grupa
 
+        when(authorizationService.hasRole("ADMIN")).thenReturn(true);
         when(userGroupRepository.findById(99)).thenReturn(Optional.empty());
 
         // when / then
@@ -241,7 +279,8 @@ class UserServiceImplTest {
                 .hasMessageContaining("User group 99 does not exist");
 
         verify(userGroupRepository).findById(99);
-        verifyNoInteractions(passwordEncoder, userRepository, userMapper);
+        verifyNoInteractions(passwordEncoder, userMapper);
+        verify(userRepository, never()).save(any());
     }
 
     @Test
@@ -253,17 +292,17 @@ class UserServiceImplTest {
         newUserDTO.setGroupId(1);
         newUserDTO.setOrganizationUnitId(99); // Nieistniejąca jednostka
 
+        when(authorizationService.hasRole("ADMIN")).thenReturn(true);
         when(userGroupRepository.findById(1)).thenReturn(Optional.of(adminGroup));
         when(organizationUnitRepository.findById(99)).thenReturn(Optional.empty());
 
         // when / then
         assertThatThrownBy(() -> userService.createUser(newUserDTO))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Jednostka organizacyjna nie istnieje");
+                .hasMessageContaining("Organization unit 99 does not exist");
 
         verify(userGroupRepository).findById(1);
         verify(organizationUnitRepository).findById(99);
-        // Usuwamy weryfikację braku interakcji, która nie odpowiada implementacji
         verify(userRepository, never()).save(any());
         verify(userMapper, never()).toDto(any());
     }
@@ -273,7 +312,7 @@ class UserServiceImplTest {
     void getUserBasicInfo_shouldReturnBasicUserInfo() {
         // given
         when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        when(userMapper.toDto(user)).thenReturn(userDTO);
+        when(userMapper.toBasicInfoDto(user)).thenReturn(userDTO);
 
         // when
         UserDTO result = userService.getUserBasicInfo(1);
@@ -281,6 +320,6 @@ class UserServiceImplTest {
         // then
         assertThat(result).isEqualTo(userDTO);
         verify(userRepository).findById(1);
-        verify(userMapper).toDto(user);
+        verify(userMapper).toBasicInfoDto(user);
     }
 }

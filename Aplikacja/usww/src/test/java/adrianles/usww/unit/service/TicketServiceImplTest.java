@@ -8,33 +8,43 @@ import adrianles.usww.domain.entity.User;
 import adrianles.usww.domain.entity.dictionary.TicketCategory;
 import adrianles.usww.domain.entity.dictionary.TicketPriority;
 import adrianles.usww.domain.entity.dictionary.TicketStatus;
+import adrianles.usww.domain.repository.TicketMessageRepository;
 import adrianles.usww.domain.repository.TicketRepository;
 import adrianles.usww.domain.repository.UserRepository;
 import adrianles.usww.domain.repository.dictionary.TicketCategoryRepository;
 import adrianles.usww.domain.repository.dictionary.TicketPriorityRepository;
 import adrianles.usww.domain.repository.dictionary.TicketStatusRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
+import adrianles.usww.security.authorization.AuthorizationService;
+import adrianles.usww.security.userdetails.ExtendedUserDetails;
 import adrianles.usww.service.impl.TicketServiceImpl;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -43,6 +53,9 @@ public class TicketServiceImplTest {
 
     @Mock
     private TicketRepository ticketRepository;
+
+    @Mock
+    private TicketMessageRepository ticketMessageRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -59,6 +72,18 @@ public class TicketServiceImplTest {
     @Mock
     private TicketMapper ticketMapper;
 
+    @Mock
+    private AuthorizationService authorizationService;
+
+    @Mock
+    private Authentication authentication;
+
+    @Mock
+    private SecurityContext securityContext;
+
+    @Mock
+    private ExtendedUserDetails userDetails;
+
     @InjectMocks
     private TicketServiceImpl ticketService;
 
@@ -66,9 +91,10 @@ public class TicketServiceImplTest {
     private TicketDTO ticketDTO;
     private User operator;
     private User student;
-    private TicketCategory category;
     private TicketStatus status;
+    private TicketCategory category;
     private TicketPriority priority;
+    private MockedStatic<SecurityContextHolder> mockedSecurityContextHolder;
 
     @BeforeEach
     void setUp() {
@@ -118,16 +144,40 @@ public class TicketServiceImplTest {
         ticketDTO.setStatusId(1);
         ticketDTO.setPriorityId(1);
         ticketDTO.setArchive(false);
+
+        // Ustawianie mocków dla SecurityContextHolder
+        mockedSecurityContextHolder = Mockito.mockStatic(SecurityContextHolder.class);
+        mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+
+        // Ustawianie zwracanych wartości dla userDetails
+        when(userDetails.getUserId()).thenReturn(1);
+        when(userDetails.isAdmin()).thenReturn(true);
+        when(userDetails.isOperator()).thenReturn(false);
+        when(userDetails.isStudent()).thenReturn(false);
+
+        // Konfiguracja authorizationService
+        when(authorizationService.canAccessTicket(anyInt())).thenReturn(true);
+        when(authorizationService.canModifyTicket(anyInt())).thenReturn(true);
+        when(authorizationService.canArchiveTicket(anyInt())).thenReturn(true);
+
+        // Konfiguracja authentication
+        when(authentication.getAuthorities()).thenAnswer(invocation ->
+                Collections.singletonList(new SimpleGrantedAuthority("ADMIN")));
+    }
+
+    @AfterEach
+    void tearDown() {
+        mockedSecurityContextHolder.close();
     }
 
     @Test
     @DisplayName("Powinien zwrócić wszystkie zgłoszenia")
     void shouldGetAllTickets() {
         // given
-        List<Ticket> tickets = new ArrayList<>();
-        tickets.add(ticket);
-
-        when(ticketRepository.findAll()).thenReturn(tickets);
+        List<Ticket> tickets = Arrays.asList(ticket);
+        when(ticketRepository.findAll(Mockito.<Specification<Ticket>>any())).thenReturn(tickets);
         when(ticketMapper.toDto(any(Ticket.class))).thenReturn(ticketDTO);
 
         // when
@@ -135,10 +185,9 @@ public class TicketServiceImplTest {
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.size()).isEqualTo(1);
+        assertThat(result).hasSize(1);
         assertThat(result.get(0)).isEqualTo(ticketDTO);
-
-        verify(ticketRepository).findAll();
+        verify(ticketRepository).findAll(any(Specification.class));
         verify(ticketMapper).toDto(any(Ticket.class));
     }
 
@@ -161,8 +210,7 @@ public class TicketServiceImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent().size()).isEqualTo(1);
         assertThat(result.getContent().get(0)).isEqualTo(ticketDTO);
-
-        verify(ticketRepository).findAll(Mockito.<Specification<Ticket>>any(), eq(pageable));
+        verify(ticketRepository).findAll(any(Specification.class), eq(pageable));
         verify(ticketMapper).toDto(any(Ticket.class));
     }
 
@@ -179,9 +227,9 @@ public class TicketServiceImplTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result).isEqualTo(ticketDTO);
-
         verify(ticketRepository).findById(1);
         verify(ticketMapper).toDto(ticket);
+        verify(authorizationService).canAccessTicket(1);
     }
 
     @Test
@@ -191,7 +239,9 @@ public class TicketServiceImplTest {
         when(ticketRepository.findById(99)).thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(ResourceNotFoundException.class, () -> ticketService.getTicketById(99));
+        assertThatThrownBy(() -> ticketService.getTicketById(99))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Ticket not found");
 
         verify(ticketRepository).findById(99);
         verify(ticketMapper, never()).toDto(any(Ticket.class));
@@ -215,7 +265,6 @@ public class TicketServiceImplTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result).isEqualTo(ticketDTO);
-
         verify(ticketRepository).save(any(Ticket.class));
         verify(ticketMapper).toDto(any(Ticket.class));
     }
@@ -248,10 +297,10 @@ public class TicketServiceImplTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result).isEqualTo(ticketDTO);
-
         verify(ticketRepository).findById(1);
         verify(ticketRepository).save(any(Ticket.class));
         verify(ticketMapper).toDto(any(Ticket.class));
+        verify(authorizationService).canModifyTicket(1);
     }
 
     @Test
@@ -267,5 +316,7 @@ public class TicketServiceImplTest {
         // then
         verify(ticketRepository).findById(1);
         verify(ticketRepository).save(ticket);
+        verify(authorizationService).canModifyTicket(1);
+        assertThat(ticket.getLastActivityDate()).isNotNull();
     }
 }

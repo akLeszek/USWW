@@ -3,8 +3,6 @@ package adrianles.usww.unit.api.controller;
 import adrianles.usww.api.controller.common.TicketController;
 import adrianles.usww.api.dto.TicketDTO;
 import adrianles.usww.api.dto.TicketFilterCriteriaDTO;
-import adrianles.usww.service.facade.TicketArchiveService;
-import adrianles.usww.service.facade.TicketPriorityService;
 import adrianles.usww.service.facade.TicketService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,12 +34,6 @@ public class TicketControllerTest {
 
     @Mock
     private TicketService ticketService;
-
-    @Mock
-    private TicketArchiveService ticketArchiveService;
-
-    @Mock
-    private TicketPriorityService ticketPriorityService;
 
     @InjectMocks
     private TicketController ticketController;
@@ -97,7 +89,7 @@ public class TicketControllerTest {
     @DisplayName("getActiveTickets powinien zwrócić listę aktywnych zgłoszeń")
     void getActiveTickets_shouldReturnActiveTickets() {
         // given
-        when(ticketArchiveService.getActiveTickets()).thenReturn(tickets);
+        when(ticketService.getActiveTicketsForCurrentUser()).thenReturn(tickets);
 
         // when
         ResponseEntity<List<TicketDTO>> response = ticketController.getActiveTickets();
@@ -106,14 +98,14 @@ public class TicketControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).hasSize(2);
         assertThat(response.getBody()).containsExactly(ticket1, ticket2);
-        verify(ticketArchiveService).getActiveTickets();
+        verify(ticketService).getActiveTicketsForCurrentUser();
     }
 
     @Test
     @DisplayName("getArchiveTickets powinien zwrócić listę zarchiwizowanych zgłoszeń")
     void getArchiveTickets_shouldReturnArchivedTickets() {
         // given
-        when(ticketArchiveService.getArchivedTickets()).thenReturn(tickets);
+        when(ticketService.getArchivedTicketsForCurrentUser()).thenReturn(tickets);
 
         // when
         ResponseEntity<List<TicketDTO>> response = ticketController.getArchiveTickets();
@@ -122,7 +114,7 @@ public class TicketControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).hasSize(2);
         assertThat(response.getBody()).containsExactly(ticket1, ticket2);
-        verify(ticketArchiveService).getArchivedTickets();
+        verify(ticketService).getArchivedTicketsForCurrentUser();
     }
 
     @Test
@@ -174,7 +166,7 @@ public class TicketControllerTest {
     @DisplayName("updateTicketPriority powinien zaktualizować priorytet zgłoszenia")
     void updateTicketPriority_shouldUpdateTicketPriority() {
         // given
-        when(ticketPriorityService.updateTicketPriority(1, 2)).thenReturn(ticket1);
+        when(ticketService.updateTicketPriority(1, 2)).thenReturn(ticket1);
 
         // when
         ResponseEntity<TicketDTO> response = ticketController.updateTicketPriority(1, 2);
@@ -182,14 +174,14 @@ public class TicketControllerTest {
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(ticket1);
-        verify(ticketPriorityService).updateTicketPriority(1, 2);
+        verify(ticketService).updateTicketPriority(1, 2);
     }
 
     @Test
     @DisplayName("archiveTicket powinien zarchiwizować zgłoszenie")
     void archiveTicket_shouldArchiveTicket() {
         // given
-        when(ticketArchiveService.archiveTicket(1)).thenReturn(ticket1);
+        when(ticketService.archiveTicket(1)).thenReturn(ticket1);
 
         // when
         ResponseEntity<TicketDTO> response = ticketController.archiveTicket(1);
@@ -197,14 +189,14 @@ public class TicketControllerTest {
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(ticket1);
-        verify(ticketArchiveService).archiveTicket(1);
+        verify(ticketService).archiveTicket(1);
     }
 
     @Test
     @DisplayName("restoreTicket powinien przywrócić zgłoszenie")
     void restoreTicket_shouldRestoreTicket() {
         // given
-        when(ticketArchiveService.restoreTicket(1)).thenReturn(ticket1);
+        when(ticketService.restoreTicket(1)).thenReturn(ticket1);
 
         // when
         ResponseEntity<TicketDTO> response = ticketController.restoreTicket(1);
@@ -212,7 +204,7 @@ public class TicketControllerTest {
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(ticket1);
-        verify(ticketArchiveService).restoreTicket(1);
+        verify(ticketService).restoreTicket(1);
     }
 
     @Test

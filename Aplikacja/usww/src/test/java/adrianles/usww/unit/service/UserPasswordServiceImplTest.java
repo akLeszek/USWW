@@ -91,7 +91,7 @@ public class UserPasswordServiceImplTest {
                 userPasswordService.changePassword(1, "wrongPassword", "newPassword")
         )
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Aktualne hasło jest nieprawidłowe");
+                .hasMessage("Actual password is incorrect");
 
         verify(userRepository).findById(1);
         verify(passwordEncoder).matches("wrongPassword", "encodedPassword");
@@ -110,7 +110,7 @@ public class UserPasswordServiceImplTest {
                 userPasswordService.changePassword(999, "currentPassword", "newPassword")
         )
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Użytkownik o id 999 nie istnieje");
+                .hasMessage("User with id 999 not found");
 
         verify(userRepository).findById(999);
         verify(passwordEncoder, never()).matches(anyString(), anyString());
@@ -189,7 +189,7 @@ public class UserPasswordServiceImplTest {
                 userPasswordService.resetPassword(999)
         )
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Użytkownik o id 999 nie istnieje");
+                .hasMessage("User with id 999 not found");
 
         verify(userRepository).findById(999);
         verify(passwordEncoder, never()).encode(anyString());

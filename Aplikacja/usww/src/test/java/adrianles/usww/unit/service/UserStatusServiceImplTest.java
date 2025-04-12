@@ -103,7 +103,7 @@ public class UserStatusServiceImplTest {
         // when, then
         assertThatThrownBy(() -> userStatusService.blockUser(999))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Użytkownik o id 999 nie istnieje");
+                .hasMessageContaining("User with id 999 not found");
 
         verify(userRepository).findById(999);
         verifyNoMoreInteractions(userRepository, userMapper);
@@ -140,7 +140,7 @@ public class UserStatusServiceImplTest {
         // when, then
         assertThatThrownBy(() -> userStatusService.unblockUser(999))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Użytkownik o id 999 nie istnieje");
+                .hasMessageContaining("User with id 999 not found");
 
         verify(userRepository).findById(999);
         verifyNoMoreInteractions(userRepository, userMapper);
@@ -186,7 +186,7 @@ public class UserStatusServiceImplTest {
         // when, then
         assertThatThrownBy(() -> userStatusService.archiveUser(999))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Użytkownik o id 999 nie istnieje");
+                .hasMessageContaining("User with id 999 not found");
 
         verify(userRepository).findById(999);
         verifyNoMoreInteractions(userRepository, ticketRepository, userMapper);
@@ -245,7 +245,7 @@ public class UserStatusServiceImplTest {
         // when, then
         assertThatThrownBy(() -> userStatusService.restoreUser(999))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Użytkownik o id 999 nie istnieje");
+                .hasMessageContaining("User with id 999 not found");
 
         verify(userRepository).findById(999);
         verifyNoMoreInteractions(userRepository, userMapper);

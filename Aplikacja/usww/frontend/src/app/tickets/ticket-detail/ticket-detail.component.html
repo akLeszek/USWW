@@ -121,7 +121,7 @@
 
               <div *ngFor="let message of messages" class="message">
                 <div class="message-header">
-                  <span class="sender-name">Użytkownik #{{ message.senderId }}</span>
+                  <span class="sender-name">{{ getSenderName(message.senderId) }}</span>
                   <span class="message-date">{{ formatDate(message.insertDate) }}</span>
                 </div>
                 <div class="message-content">

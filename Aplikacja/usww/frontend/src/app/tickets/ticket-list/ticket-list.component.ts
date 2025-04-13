@@ -10,6 +10,7 @@ import {Dictionary, DictionaryService} from '../../shared/services/dictionary.se
 import {AuthService} from '../../auth/services/auth.service';
 import {ToastService} from '../../shared/services/toast.service';
 import {User} from '../../admin/services/user.service';
+import {CommonUserService} from '../../shared/services/common-user.service';
 
 @Component({
   selector: 'app-ticket-list',
@@ -63,7 +64,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
     private dictionaryService: DictionaryService,
     private route: ActivatedRoute,
     public authService: AuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private commonUserService: CommonUserService
   ) {
   }
 
@@ -121,10 +123,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.ticketService.getOperators().subscribe({
       next: (operators: User[]) => {
         this.operators = operators;
-
-        // Zbuduj mapę ID operatora -> nazwa operatora dla szybkiego dostępu
         operators.forEach(operator => {
-          this.operatorNames[operator.id] = `${operator.forename} ${operator.surname}`;
+          this.operatorNames[operator.id] = operator.login || `${operator.forename} ${operator.surname}`;
         });
       },
       error: (error: unknown) => {
@@ -249,9 +249,14 @@ export class TicketListComponent implements OnInit, OnDestroy {
     return priority ? priority.name : '';
   }
 
-  getOperatorName(operatorId: number): string {
+  getOperatorName(operatorId?: number): string {
     if (!operatorId) return 'Nieprzypisany';
-    return this.operatorNames[operatorId] || `Operator #${operatorId}`;
+    const operator = this.operators.find(op => op.id === operatorId);
+    if (operator) {
+      return operator.login || `${operator.forename} ${operator.surname}`;
+    }
+
+    return this.operatorNames[operatorId] || `Użytkownik #${operatorId}`;
   }
 
   getStatusClass(statusId?: number): string {

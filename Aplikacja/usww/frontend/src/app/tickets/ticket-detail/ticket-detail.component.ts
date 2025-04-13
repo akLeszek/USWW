@@ -5,6 +5,7 @@ import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {MessageAttachment, Ticket, TicketMessage, TicketService} from '../services/ticket.service';
 import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
 import {AuthService} from '../../auth/services/auth.service';
+import {CommonUserService} from '../../shared/services/common-user.service';
 
 @Component({
   selector: 'app-ticket-detail',
@@ -40,6 +41,7 @@ export class TicketDetailComponent implements OnInit {
 
   allowedFileTypes = '';
   maxFileSize = '';
+  senderNames: { [key: number]: string } = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -47,15 +49,17 @@ export class TicketDetailComponent implements OnInit {
     private formBuilder: FormBuilder,
     private ticketService: TicketService,
     private dictionaryService: DictionaryService,
-    private authService: AuthService
+    private authService: AuthService,
+    private commonUserService: CommonUserService
   ) {
     this.messageForm = this.formBuilder.group({
       messageText: ['', [Validators.required]],
-      attachment: [null]
+      attachment: [null],
     });
 
     this.allowedFileTypes = this.ticketService.getReadableAllowedFileTypes();
     this.maxFileSize = this.ticketService.getReadableMaxFileSize();
+    this.senderNames = {};
   }
 
   ngOnInit(): void {
@@ -472,5 +476,23 @@ export class TicketDetailComponent implements OnInit {
 
   getMessageAttachments(messageId?: number): MessageAttachment[] {
     return messageId !== undefined ? (this.messageAttachments[messageId] || []) : [];
+  }
+
+  getSenderName(senderId?: number): string {
+    if (!senderId) return 'Nieznany użytkownik';
+    if (!this.senderNames[senderId]) {
+      this.commonUserService.getUserBasicInfo(senderId).subscribe({
+        next: (user) => {
+          this.senderNames[senderId] = user.login || `${user.forename} ${user.surname}`;
+        },
+        error: (error) => {
+          console.error(`Error fetching user ${senderId} info:`, error);
+          this.senderNames[senderId] = `Użytkownik #${senderId}`;
+        }
+      });
+      return `Ładowanie...`;
+    }
+
+    return this.senderNames[senderId];
   }
 }

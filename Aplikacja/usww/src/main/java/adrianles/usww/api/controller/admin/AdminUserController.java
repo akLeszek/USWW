@@ -58,4 +58,9 @@ public class AdminUserController {
     public ResponseEntity<UserDTO> restoreUser(@PathVariable int id) {
         return ResponseEntity.ok(userStatusService.restoreUser(id));
     }
+
+    @GetMapping("/operators")
+    public ResponseEntity<List<UserDTO>> getOperators() {
+        return ResponseEntity.ok(userService.getAllOperators());
+    }
 }

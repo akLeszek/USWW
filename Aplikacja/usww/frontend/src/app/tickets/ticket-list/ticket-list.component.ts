@@ -9,8 +9,7 @@ import {Ticket, TicketService} from '../services/ticket.service';
 import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
 import {AuthService} from '../../auth/services/auth.service';
 import {ToastService} from '../../shared/services/toast.service';
-import {User} from '../../admin/services/user.service';
-import {CommonUserService} from '../../shared/services/common-user.service';
+import {User, UserService} from '../../admin/services/user.service';
 
 @Component({
   selector: 'app-ticket-list',
@@ -36,7 +35,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
   operatorNames: Record<number, string> = {}; // Cache nazw operatorów
 
   loading = true;
-  processing = false;
   processingTicketId: number | null = null;
   error = '';
   success = '';
@@ -54,8 +52,9 @@ export class TicketListComponent implements OnInit, OnDestroy {
   sortColumn = 'insertedDate';
   sortDirection = 'desc';
 
-  defaultOperatorId = 0; // Domyślny operator (wartość powinna być zgodna z serwerem)
-  Math = Math; // Dla użycia w szablonie
+  defaultOperatorLogin = 'unknown_operator';
+  defaultOperator?: User;
+  Math = Math;
 
   private destroy$ = new Subject<void>();
 
@@ -65,12 +64,14 @@ export class TicketListComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     public authService: AuthService,
     private toastService: ToastService,
-    private commonUserService: CommonUserService
+    private userService: UserService
   ) {
+    this.operatorNames = {};
   }
 
   ngOnInit(): void {
     this.loadDictionaries();
+    this.loadOperators();
 
     this.route.url.subscribe(segments => {
       if (segments.length > 1 && segments[1].path === 'unassigned') {
@@ -123,8 +124,9 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.ticketService.getOperators().subscribe({
       next: (operators: User[]) => {
         this.operators = operators;
+        this.defaultOperator = operators.find(op => op.login === this.defaultOperatorLogin);
         operators.forEach(operator => {
-          this.operatorNames[operator.id] = operator.login || `${operator.forename} ${operator.surname}`;
+          this.operatorNames[operator.id] = `${operator.forename} ${operator.surname}`;
         });
       },
       error: (error: unknown) => {
@@ -132,6 +134,14 @@ export class TicketListComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  isTicketUnassigned(ticket: Ticket): boolean {
+    if (!ticket.operatorId) {
+      return true;
+    }
+    return this.defaultOperator?.id === ticket.operatorId;
+  }
+
 
   loadTickets(): void {
     this.loading = true;
@@ -168,9 +178,9 @@ export class TicketListComponent implements OnInit, OnDestroy {
         const currentUserId = this.authService.currentUserValue?.userId;
 
         if (this.filterAssignment === 'assigned') {
-          assignmentMatch = !!ticket.operatorId && ticket.operatorId !== 0;
+          assignmentMatch = !this.isTicketUnassigned(ticket);
         } else if (this.filterAssignment === 'unassigned') {
-          assignmentMatch = !ticket.operatorId || ticket.operatorId === 0;
+          assignmentMatch = this.isTicketUnassigned(ticket);
         } else if (this.filterAssignment === 'mine') {
           assignmentMatch = ticket.operatorId === currentUserId;
         }
@@ -180,7 +190,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
     });
 
     this.sortFilteredTickets();
-
     this.collectionSize = this.filteredTickets.length;
   }
 
@@ -251,12 +260,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
 
   getOperatorName(operatorId?: number): string {
     if (!operatorId) return 'Nieprzypisany';
-    const operator = this.operators.find(op => op.id === operatorId);
-    if (operator) {
-      return operator.login || `${operator.forename} ${operator.surname}`;
-    }
-
-    return this.operatorNames[operatorId] || `Użytkownik #${operatorId}`;
+    return this.operatorNames[operatorId] || `Operator #${operatorId}`;
   }
 
   getStatusClass(statusId?: number): string {
@@ -372,7 +376,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.processingTicketId = ticketId;
     this.ticketService.assignTicketToOperator(ticketId, operatorId).subscribe({
       next: (updatedTicket: Ticket) => {
-        // Aktualizacja zgłoszenia w lokalnej tablicy
         const index = this.tickets.findIndex(t => t.id === ticketId);
         if (index !== -1) {
           this.tickets[index] = updatedTicket;
@@ -398,7 +401,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.processingTicketId = ticketId;
     this.ticketService.updateTicketStatus(ticketId, statusId).subscribe({
       next: (updatedTicket: Ticket) => {
-        // Aktualizacja zgłoszenia w lokalnej tablicy
         const index = this.tickets.findIndex(t => t.id === ticketId);
         if (index !== -1) {
           this.tickets[index] = updatedTicket;
@@ -424,7 +426,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.processingTicketId = ticketId;
     this.ticketService.archiveTicket(ticketId).subscribe({
       next: (updatedTicket: Ticket) => {
-        // Aktualizacja zgłoszenia w lokalnej tablicy
         const index = this.tickets.findIndex(t => t.id === ticketId);
         if (index !== -1) {
           this.tickets[index] = updatedTicket;

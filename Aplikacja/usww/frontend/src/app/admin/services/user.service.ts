@@ -30,6 +30,10 @@ export class UserService {
     return this.http.get<User[]>(this.apiUrl);
   }
 
+  getOperators(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/operators`);
+  }
+
   blockUser(userId: number): Observable<User> {
     return this.http.post<User>(`${this.apiUrl}/${userId}/block`, {});
   }

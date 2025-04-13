@@ -10,6 +10,8 @@ public interface UserService {
 
     List<UserDTO> getAllUsers();
 
+    List<UserDTO> getAllOperators();
+
     UserDTO getUserById(Integer id);
 
     UserDTO getUserByLogin(String login);

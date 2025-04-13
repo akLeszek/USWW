@@ -13,6 +13,7 @@ import adrianles.usww.exception.UnauthorizedAccessException;
 import adrianles.usww.security.authorization.AuthorizationService;
 import adrianles.usww.security.userdetails.ExtendedUserDetails;
 import adrianles.usww.service.facade.UserService;
+import adrianles.usww.utils.Constants;
 import adrianles.usww.utils.UserGroupUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -201,5 +202,13 @@ public class UserServiceImpl implements UserService {
     protected User findUserById(Integer id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " does not exist"));
+    }
+
+    @Override
+    public List<UserDTO> getAllOperators() {
+        List<User> operators = userRepository.findAllByUserGroupIdn(Constants.OPERATOR_GROUP_IDN);
+        return operators.stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

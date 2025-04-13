@@ -1,0 +1,74 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{{ getDictionaryTitle() }}</h5>
+          <button class="btn btn-primary" [routerLink]="['/admin/dictionaries', dictionaryType, 'new']">
+            <i class="bi bi-plus-circle"></i> Dodaj nowy
+          </button>
+        </div>
+        <div class="card-body">
+          <!-- Komunikaty -->
+          <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+            {{ error }}
+            <button type="button" class="btn-close" (click)="error = ''"></button>
+          </div>
+
+          <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
+            {{ success }}
+            <button type="button" class="btn-close" (click)="success = ''"></button>
+          </div>
+
+          <!-- Ładowanie -->
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Ładowanie...</span>
+            </div>
+          </div>
+
+          <!-- Tabela elementów słownika -->
+          <div *ngIf="!loading" class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Identyfikator</th>
+                <th>Nazwa</th>
+                <th>Akcje</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let dictionary of dictionaries">
+                <td>{{ dictionary.id }}</td>
+                <td>{{ dictionary.idn }}</td>
+                <td>{{ dictionary.name }}</td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <a [routerLink]="['/admin/dictionaries', dictionaryType, dictionary.id, 'edit']" class="btn btn-outline-primary">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <button
+                      class="btn btn-outline-danger"
+                      (click)="deleteDictionary(dictionary.id as number)"
+                      [disabled]="processingId === dictionary.id"
+                    >
+                      <span *ngIf="processingId === dictionary.id" class="spinner-border spinner-border-sm me-1"></span>
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Brak elementów -->
+          <div *ngIf="!loading && dictionaries.length === 0" class="alert alert-info text-center">
+            Brak elementów słownika. Kliknij "Dodaj nowy" aby utworzyć pierwszy element.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

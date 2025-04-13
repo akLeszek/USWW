@@ -1,0 +1,81 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{{ getTitle() }}</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="goBack()">
+            <i class="bi bi-arrow-left"></i> Powrót
+          </button>
+        </div>
+        <div class="card-body">
+          <!-- Komunikaty -->
+          <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+            {{ error }}
+            <button type="button" class="btn-close" (click)="error = ''"></button>
+          </div>
+
+          <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
+            {{ success }}
+            <button type="button" class="btn-close" (click)="success = ''"></button>
+          </div>
+
+          <!-- Ładowanie -->
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Ładowanie...</span>
+            </div>
+          </div>
+
+          <!-- Formularz -->
+          <form [formGroup]="dictionaryForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+            <div class="mb-3">
+              <label for="idn" class="form-label">Identyfikator *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="idn"
+                formControlName="idn"
+                [ngClass]="{'is-invalid': dictionaryForm.get('idn')?.invalid && dictionaryForm.get('idn')?.touched}"
+                [readonly]="isEditMode"
+              >
+              <div *ngIf="dictionaryForm.get('idn')?.invalid && dictionaryForm.get('idn')?.touched" class="invalid-feedback">
+                <div *ngIf="dictionaryForm.get('idn')?.errors?.['required']">Identyfikator jest wymagany</div>
+                <div *ngIf="dictionaryForm.get('idn')?.errors?.['maxlength']">Identyfikator może mieć maksymalnie 15 znaków</div>
+                <div *ngIf="dictionaryForm.get('idn')?.errors?.['pattern']">Identyfikator może zawierać tylko wielkie litery, cyfry i podkreślenia</div>
+              </div>
+              <div class="form-text">Identyfikator musi być unikalny i składać się z wielkich liter, cyfr i podkreśleń</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="name" class="form-label">Nazwa *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                formControlName="name"
+                [ngClass]="{'is-invalid': dictionaryForm.get('name')?.invalid && dictionaryForm.get('name')?.touched}"
+              >
+              <div *ngIf="dictionaryForm.get('name')?.invalid && dictionaryForm.get('name')?.touched" class="invalid-feedback">
+                <div *ngIf="dictionaryForm.get('name')?.errors?.['required']">Nazwa jest wymagana</div>
+                <div *ngIf="dictionaryForm.get('name')?.errors?.['maxlength']">Nazwa może mieć maksymalnie 255 znaków</div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+              <button type="button" class="btn btn-secondary me-2" (click)="goBack()">Anuluj</button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="dictionaryForm.invalid || loading"
+              >
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                {{ isEditMode ? 'Zapisz zmiany' : 'Dodaj' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

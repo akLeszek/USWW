@@ -86,17 +86,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
           },
           {
             title: 'Kategorie zgłoszeń',
-            route: '/admin/categories',
+            route: '/admin/dictionaries/categories',
             visible: this.authService.isAdmin()
           },
           {
             title: 'Statusy zgłoszeń',
-            route: '/admin/statuses',
+            route: '/admin/dictionaries/statuses',
             visible: this.authService.isAdmin()
           },
           {
             title: 'Priorytety zgłoszeń',
-            route: '/admin/priorities',
+            route: '/admin/dictionaries/priorities',
             visible: this.authService.isAdmin()
           }
         ]

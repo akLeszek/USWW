@@ -13,4 +13,13 @@ public interface TicketPriorityDictionaryService {
     TicketPriorityDTO getTicketPriorityById(Integer id);
 
     TicketPriorityDTO getTicketPriorityByIdn(String idn);
+
+    @Transactional
+    TicketPriorityDTO createTicketPriority(TicketPriorityDTO priorityDTO);
+
+    @Transactional
+    TicketPriorityDTO updateTicketPriority(Integer id, TicketPriorityDTO priorityDTO);
+
+    @Transactional
+    void deleteTicketPriority(Integer id);
 }

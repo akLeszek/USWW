@@ -27,6 +27,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer>, JpaSpe
 
     List<Ticket> findByCategoryId(Integer categoryId);
 
+    List<Ticket> findByStatusId(Integer statusId);
+
     int countByStudentId(Integer studentId);
 
     int countByOperatorId(Integer operatorId);

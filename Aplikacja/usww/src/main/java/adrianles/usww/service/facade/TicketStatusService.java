@@ -13,4 +13,13 @@ public interface TicketStatusService {
     TicketStatusDTO getTicketStatusById(Integer id);
 
     TicketStatusDTO getTicketStatusByIdn(String idn);
+
+    @Transactional
+    TicketStatusDTO createTicketStatus(TicketStatusDTO statusDTO);
+
+    @Transactional
+    TicketStatusDTO updateTicketStatus(Integer id, TicketStatusDTO statusDTO);
+
+    @Transactional
+    void deleteTicketStatus(Integer id);
 }

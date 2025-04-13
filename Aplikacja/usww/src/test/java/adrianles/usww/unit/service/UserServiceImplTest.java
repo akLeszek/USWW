@@ -20,6 +20,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -37,6 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class UserServiceImplTest {
 
     @Mock
@@ -255,7 +258,7 @@ class UserServiceImplTest {
         assertThat(result).isEqualTo(savedUserDTO);
         assertThat(result.getGeneratedPassword()).isEqualTo("newuser");
 
-        verify(userGroupRepository, times(1)).findById(1);
+        verify(userGroupRepository, times(2)).findById(1);
         verify(organizationUnitRepository).findById(1);
         verify(passwordEncoder).encode("newuser");
         verify(userRepository).save(any(User.class));

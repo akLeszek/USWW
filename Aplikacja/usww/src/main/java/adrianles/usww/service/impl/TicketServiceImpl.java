@@ -84,9 +84,8 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketDTO getTicketById(Integer ticketId) {
-        Ticket ticket = findTicketById(ticketId);
         checkGetTicketAccess(ticketId);
-
+        Ticket ticket = findTicketById(ticketId);
         return ticketMapper.toDto(ticket);
     }
 

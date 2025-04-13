@@ -227,8 +227,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     if (this.authService.hasRole('ADMIN')) {
       actions.push(
-        {label: 'Zarządzaj użytkownikami', route: '/admin/users', icon: 'bi-people'},
-        {label: 'Ustawienia', route: '/admin/settings', icon: 'bi-gear'}
+        {label: 'Zarządzaj użytkownikami', route: '/admin/users', icon: 'bi-people'}
       );
     }
 

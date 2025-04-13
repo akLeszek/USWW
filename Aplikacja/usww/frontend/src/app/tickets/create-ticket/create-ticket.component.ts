@@ -104,7 +104,7 @@ export class CreateTicketComponent implements OnInit {
     const ticketData: Ticket = {
       title: this.ticketForm.value.title,
       categoryId: parseInt(this.ticketForm.value.categoryId),
-      statusId: newStatus.id,
+      statusId: newStatus.id!,
       studentId: currentUser.userId
     };
 

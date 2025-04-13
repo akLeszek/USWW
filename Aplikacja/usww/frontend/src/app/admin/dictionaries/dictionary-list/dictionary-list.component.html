@@ -50,7 +50,7 @@
                     </a>
                     <button
                       class="btn btn-outline-danger"
-                      (click)="deleteDictionary(dictionary.id as number)"
+                      (click)="deleteDictionary(dictionary.id!)"
                       [disabled]="processingId === dictionary.id"
                     >
                       <span *ngIf="processingId === dictionary.id" class="spinner-border spinner-border-sm me-1"></span>

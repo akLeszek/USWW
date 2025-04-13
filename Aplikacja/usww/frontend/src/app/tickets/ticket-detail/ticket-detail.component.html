@@ -83,6 +83,20 @@
                   </div>
                 </div>
 
+                <div class="col-md-4 mb-3" *ngIf="authService.isAdmin()">
+                  <label class="form-label">Przypisz do operatora</label>
+                  <div class="d-flex">
+                    <select [(ngModel)]="selectedOperatorId" class="form-select me-2" [disabled]="updating">
+                      <option [ngValue]="null">Wybierz operatora</option>
+                      <option *ngFor="let operator of operators" [ngValue]="operator.id">{{ operator.forename }} {{ operator.surname }}</option>
+                    </select>
+                    <button class="btn btn-outline-primary" [disabled]="updating || !selectedOperatorId"
+                            (click)="assignToOperator(selectedOperatorId)">
+                      Przypisz
+                    </button>
+                  </div>
+                </div>
+
                 <div class="col-md-4 mb-3 d-flex flex-column">
                   <label class="form-label">Zarządzanie</label>
                   <div class="d-flex">

@@ -6,6 +6,7 @@ import {MessageAttachment, Ticket, TicketMessage, TicketService} from '../servic
 import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
 import {AuthService} from '../../auth/services/auth.service';
 import {CommonUserService} from '../../shared/services/common-user.service';
+import {User} from '../../admin/services/user.service';
 
 @Component({
   selector: 'app-ticket-detail',
@@ -26,10 +27,12 @@ export class TicketDetailComponent implements OnInit {
   categories: Dictionary[] = [];
   statuses: Dictionary[] = [];
   priorities: Dictionary[] = [];
+  operators: User[] = [];
   messageAttachments: { [key: number]: MessageAttachment[] } = {};
 
   selectedStatusId: number | undefined | null = null;
   selectedPriorityId: number | undefined | null = null;
+  selectedOperatorId: number | null = null;
   messageForm: FormGroup;
 
   loading = true;
@@ -49,7 +52,7 @@ export class TicketDetailComponent implements OnInit {
     private formBuilder: FormBuilder,
     private ticketService: TicketService,
     private dictionaryService: DictionaryService,
-    private authService: AuthService,
+    public authService: AuthService,
     private commonUserService: CommonUserService
   ) {
     this.messageForm = this.formBuilder.group({
@@ -73,6 +76,10 @@ export class TicketDetailComponent implements OnInit {
         this.router.navigate(['/tickets']);
       }
     });
+
+    if (this.authService.isAdmin()) {
+      this.loadOperators();
+    }
   }
 
   loadData(): void {
@@ -86,6 +93,7 @@ export class TicketDetailComponent implements OnInit {
 
         this.selectedStatusId = ticket.statusId !== undefined ? ticket.statusId : null;
         this.selectedPriorityId = ticket.priorityId !== undefined ? ticket.priorityId : null;
+        this.selectedOperatorId = ticket.operatorId !== undefined ? ticket.operatorId : null;
 
         this.loadMessages();
       },
@@ -121,6 +129,20 @@ export class TicketDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading priorities:', error);
+      }
+    });
+  }
+
+  loadOperators(): void {
+    this.ticketService.getOperators().subscribe({
+      next: (operators) => {
+        this.operators = operators;
+        if (this.ticket && this.ticket.operatorId) {
+          this.selectedOperatorId = this.ticket.operatorId;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading operators:', error);
       }
     });
   }
@@ -326,6 +348,26 @@ export class TicketDetailComponent implements OnInit {
     });
   }
 
+  assignToOperator(operatorId: number | null): void {
+    if (!operatorId || !this.ticket || !this.authService.isAdmin()) {
+      return;
+    }
+
+    this.updating = true;
+    this.ticketService.assignTicketToOperator(this.ticket.id!, operatorId).subscribe({
+      next: (updatedTicket) => {
+        this.ticket = updatedTicket;
+        this.success = 'Zgłoszenie zostało przypisane do operatora.';
+        this.updating = false;
+      },
+      error: (error) => {
+        this.error = 'Nie udało się przypisać zgłoszenia do operatora.';
+        this.updating = false;
+        console.error('Error assigning operator:', error);
+      }
+    });
+  }
+
   archiveTicket(): void {
     if (!this.ticket || this.updating || !this.canArchiveTicket()) return;
 
@@ -401,8 +443,7 @@ export class TicketDetailComponent implements OnInit {
 
     return !this.ticket.archive && !this.isClosedStatus(this.ticket.statusId);
   }
-
-  // Metody pomocnicze dla widoku
+  
   getCategoryName(categoryId?: number): string {
     if (!categoryId) return '';
     const category = this.categories.find(c => c.id === categoryId);

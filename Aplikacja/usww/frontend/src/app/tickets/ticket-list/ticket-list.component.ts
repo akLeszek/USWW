@@ -1,15 +1,15 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ActivatedRoute, RouterModule} from '@angular/router';
-import {FormsModule} from '@angular/forms';
-import {NgbDropdownModule, NgbModule, NgbPaginationModule} from '@ng-bootstrap/ng-bootstrap';
-import {Subject} from 'rxjs';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { NgbDropdownModule, NgbModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { Subject } from 'rxjs';
 
-import {Ticket, TicketService} from '../services/ticket.service';
-import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
-import {AuthService} from '../../auth/services/auth.service';
-import {ToastService} from '../../shared/services/toast.service';
-import {User, UserService} from '../../admin/services/user.service';
+import { Ticket, TicketService } from '../services/ticket.service';
+import { Dictionary, DictionaryService } from '../../shared/services/dictionary.service';
+import { AuthService } from '../../auth/services/auth.service';
+import { ToastService } from '../../shared/services/toast.service';
+import { User, UserService } from '../../admin/services/user.service';
 
 @Component({
   selector: 'app-ticket-list',
@@ -139,9 +139,16 @@ export class TicketListComponent implements OnInit, OnDestroy {
     if (!ticket.operatorId) {
       return true;
     }
-    return this.defaultOperator?.id === ticket.operatorId;
-  }
 
+    // Jeśli mamy już załadowanego defaultOperatora, sprawdzamy jego ID
+    if (this.defaultOperator) {
+      return this.defaultOperator.id === ticket.operatorId;
+    }
+
+    // Jeśli nie mamy jeszcze załadowanego defaultOperatora, sprawdzamy wśród wszystkich operatorów
+    const operator = this.operators.find(op => op.id === ticket.operatorId);
+    return operator?.login === this.defaultOperatorLogin;
+  }
 
   loadTickets(): void {
     this.loading = true;
@@ -368,8 +375,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
     });
   }
 
-  assignToOperator(ticketId: number, operatorId: number): void {
-    if (!this.canAssignTicket()) {
+  assignToOperator(ticketId: number | undefined, operatorId: number): void {
+    if (!ticketId || !this.authService.isAdmin()) {
       return;
     }
 

@@ -190,6 +190,19 @@
                       <span *ngIf="processingTicketId === ticket.id" class="spinner-border spinner-border-sm me-1"></span>
                       <i class="bi bi-person-plus"></i>
                     </button>
+                    <div ngbDropdown *ngIf="authService.isAdmin() && !ticket.archive" class="d-inline-block">
+                      <button class="btn btn-sm btn-outline-secondary" id="assignDropdown" ngbDropdownToggle>
+                        <i class="bi bi-person-badge"></i>
+                      </button>
+                      <div ngbDropdownMenu aria-labelledby="assignDropdown">
+                        <button *ngFor="let operator of operators"
+                                ngbDropdownItem
+                                (click)="assignToOperator(ticket.id, operator.id)"
+                                [disabled]="processingTicketId === ticket.id">
+                          {{ operator.forename }} {{ operator.surname }}
+                        </button>
+                      </div>
+                    </div>
                     <button
                       *ngIf="authService.isAdmin() && !ticket.archive"
                       class="btn btn-sm btn-outline-danger"

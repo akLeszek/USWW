@@ -16,4 +16,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findByOrganizationUnitId(Integer organizationUnitId);
 
     List<User> findAllByUserGroupIdn(String organizationUnitIdn);
+
+    List<User> findAllByUserGroupIdnAndOrganizationUnitId(String groupIdn, Integer organizationUnitId);
+
 }

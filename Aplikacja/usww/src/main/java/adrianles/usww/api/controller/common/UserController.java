@@ -31,4 +31,10 @@ public class UserController {
     public ResponseEntity<UserDTO> getUserBasicInfo(@PathVariable int id) {
         return ResponseEntity.ok(userService.getUserBasicInfo(id));
     }
+
+    @GetMapping("/by-login/{login}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserDTO> getUserByLogin(@PathVariable String login) {
+        return ResponseEntity.ok(userService.getUserByLogin(login));
+    }
 }

@@ -97,6 +97,16 @@
                   </div>
                 </div>
 
+                <div class="col-md-4 mb-3" *ngIf="canAssignToMe()">
+                  <label class="form-label">Przypisanie</label>
+                  <button
+                    class="btn btn-outline-primary"
+                    [disabled]="updating"
+                    (click)="assignToMe()">
+                    <i class="bi bi-person-check"></i> Przypisz do mnie
+                  </button>
+                </div>
+
                 <div class="col-md-4 mb-3 d-flex flex-column">
                   <label class="form-label">Zarządzanie</label>
                   <div class="d-flex">

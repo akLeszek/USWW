@@ -6,7 +6,7 @@ import {MessageAttachment, Ticket, TicketMessage, TicketService} from '../servic
 import {Dictionary, DictionaryService} from '../../shared/services/dictionary.service';
 import {AuthService} from '../../auth/services/auth.service';
 import {CommonUserService} from '../../shared/services/common-user.service';
-import {User} from '../../admin/services/user.service';
+import {User, UserService} from '../../admin/services/user.service';
 
 @Component({
   selector: 'app-ticket-detail',
@@ -34,6 +34,7 @@ export class TicketDetailComponent implements OnInit {
   selectedPriorityId: number | undefined | null = null;
   selectedOperatorId: number | null = null;
   messageForm: FormGroup;
+  canAssignSelfToTicket = false;
 
   loading = true;
   messageSending = false;
@@ -53,7 +54,8 @@ export class TicketDetailComponent implements OnInit {
     private ticketService: TicketService,
     private dictionaryService: DictionaryService,
     public authService: AuthService,
-    private commonUserService: CommonUserService
+    private commonUserService: CommonUserService,
+    private userService: UserService
   ) {
     this.messageForm = this.formBuilder.group({
       messageText: ['', [Validators.required]],
@@ -76,10 +78,6 @@ export class TicketDetailComponent implements OnInit {
         this.router.navigate(['/tickets']);
       }
     });
-
-    if (this.authService.isAdmin()) {
-      this.loadOperators();
-    }
   }
 
   loadData(): void {
@@ -95,6 +93,8 @@ export class TicketDetailComponent implements OnInit {
         this.selectedPriorityId = ticket.priorityId !== undefined ? ticket.priorityId : null;
         this.selectedOperatorId = ticket.operatorId !== undefined ? ticket.operatorId : null;
 
+        // Ładowanie operatorów po pobraniu zgłoszenia, gdy już znamy studentId
+        this.loadOperators();
         this.loadMessages();
       },
       error: (error) => {
@@ -134,15 +134,86 @@ export class TicketDetailComponent implements OnInit {
   }
 
   loadOperators(): void {
+    if (!this.ticket || !this.ticket.studentId) return;
+
+    if (this.authService.isAdmin()) {
+      // Pobierz operatorów z tej samej jednostki co student dla administratora
+      this.ticketService.getOperatorsBySameOrganizationAsStudent(this.ticket.studentId).subscribe({
+        next: (operators) => {
+          this.operators = operators;
+
+          // Znajdź użytkownika unknown_operator
+          this.userService.getUserByLogin("unknown_operator").subscribe({
+            next: (unknownOperator) => {
+              // Jeśli unknown_operator nie znajduje się jeszcze na liście, dodaj go
+              if (!this.operators.some(op => op.id === unknownOperator.id)) {
+                // Zmodyfikuj nazwę wyświetlaną dla unknown_operator
+                unknownOperator.forename = "Nieznany";
+                unknownOperator.surname = "operator";
+                this.operators.unshift(unknownOperator); // Dodaj na początek listy
+              }
+
+              if (this.ticket && this.ticket.operatorId) {
+                this.selectedOperatorId = this.ticket.operatorId;
+              }
+            },
+            error: (error) => {
+              console.error('Error loading unknown operator:', error);
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error loading operators for student organization:', error);
+          this.loadAllOperators();
+        }
+      });
+    } else if (this.authService.isOperator()) {
+      this.checkIfCanAssignToMe();
+    }
+  }
+
+  checkIfCanAssignToMe(): void {
+    if (!this.ticket) return;
+
+    if (!this.ticket.studentId) return;
+
+    const currentUserId = this.authService.currentUserValue?.userId;
+    if (!currentUserId) return;
+
+    this.userService.getUserById(this.ticket.studentId).subscribe({
+      next: (student) => {
+        this.userService.getUserById(currentUserId).subscribe({
+          next: (operator) => {
+            this.canAssignSelfToTicket =
+              student.organizationUnitId === operator.organizationUnitId &&
+              this.ticket?.operatorId !== currentUserId;
+          }
+        });
+      }
+    });
+  }
+
+  loadAllOperators(): void {
     this.ticketService.getOperators().subscribe({
       next: (operators) => {
         this.operators = operators;
-        if (this.ticket && this.ticket.operatorId) {
-          this.selectedOperatorId = this.ticket.operatorId;
-        }
+        
+        this.userService.getUserByLogin("unknown_operator").subscribe({
+          next: (unknownOperator) => {
+            if (!this.operators.some(op => op.id === unknownOperator.id)) {
+              unknownOperator.forename = "Nieznany";
+              unknownOperator.surname = "operator";
+              this.operators.unshift(unknownOperator);
+            }
+
+            if (this.ticket && this.ticket.operatorId) {
+              this.selectedOperatorId = this.ticket.operatorId;
+            }
+          }
+        });
       },
       error: (error) => {
-        console.error('Error loading operators:', error);
+        console.error('Error loading all operators:', error);
       }
     });
   }
@@ -368,6 +439,32 @@ export class TicketDetailComponent implements OnInit {
     });
   }
 
+  assignToMe(): void {
+    if (!this.ticket || !this.canAssignSelfToTicket) return;
+
+    const currentUserId = this.authService.currentUserValue?.userId;
+    if (!currentUserId) return;
+
+    this.updating = true;
+    this.error = '';
+    this.success = '';
+
+    this.ticketService.assignTicketToOperator(this.ticket.id!, currentUserId).subscribe({
+      next: (updatedTicket) => {
+        this.ticket = updatedTicket;
+        this.selectedOperatorId = currentUserId;
+        this.success = 'Zgłoszenie zostało przypisane do Ciebie.';
+        this.updating = false;
+        this.canAssignSelfToTicket = false; // Zgłoszenie już przypisane, nie można przypisać ponownie
+      },
+      error: (error) => {
+        this.error = 'Nie udało się przypisać zgłoszenia. ' +
+          (error.error?.message || 'Spróbuj ponownie.');
+        this.updating = false;
+      }
+    });
+  }
+
   archiveTicket(): void {
     if (!this.ticket || this.updating || !this.canArchiveTicket()) return;
 
@@ -426,6 +523,10 @@ export class TicketDetailComponent implements OnInit {
     return this.authService.isAdmin() || this.authService.isOperator();
   }
 
+  canAssignToMe(): boolean {
+    return this.authService.isOperator() && this.canAssignSelfToTicket;
+  }
+
   canArchiveTicket(): boolean {
     if (!this.ticket) return false;
 
@@ -443,7 +544,7 @@ export class TicketDetailComponent implements OnInit {
 
     return !this.ticket.archive && !this.isClosedStatus(this.ticket.statusId);
   }
-  
+
   getCategoryName(categoryId?: number): string {
     if (!categoryId) return '';
     const category = this.categories.find(c => c.id === categoryId);

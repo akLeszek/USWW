@@ -54,6 +54,10 @@ export class UserService {
     return this.http.get<User>(`${this.apiUrl}/${userId}`);
   }
 
+  getUserByLogin(login: string): Observable<User> {
+    return this.http.get<User>(`${environment.apiUrl}/users/by-login/${login}`);
+  }
+
   updateUser(userId: number, userData: Partial<User>): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/${userId}`, userData);
   }

@@ -63,4 +63,9 @@ public class AdminUserController {
     public ResponseEntity<List<UserDTO>> getOperators() {
         return ResponseEntity.ok(userService.getAllOperators());
     }
+
+    @GetMapping("/operators/by-student/{studentId}")
+    public ResponseEntity<List<UserDTO>> getOperatorsBySameOrganizationAsStudent(@PathVariable int studentId) {
+        return ResponseEntity.ok(userService.getOperatorsBySameOrganizationUnitAsStudent(studentId));
+    }
 }

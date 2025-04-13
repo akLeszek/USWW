@@ -23,4 +23,6 @@ public interface UserService {
     UserDTO updateUser(Integer userId, UserDTO userDTO);
 
     UserDTO getUserBasicInfo(Integer id);
+
+    List<UserDTO> getOperatorsBySameOrganizationUnitAsStudent(Integer studentId);
 }

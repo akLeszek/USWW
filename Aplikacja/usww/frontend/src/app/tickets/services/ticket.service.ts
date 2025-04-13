@@ -191,4 +191,8 @@ export class TicketService {
   updateTicketStatus(ticketId: number, statusId: number): Observable<Ticket> {
     return this.http.put<Ticket>(`${this.apiUrl}/${ticketId}/status/${statusId}`, {});
   }
+
+  getOperatorsBySameOrganizationAsStudent(studentId: number): Observable<User[]> {
+    return this.http.get<User[]>(`${environment.apiUrl}/admin/users/operators/by-student/${studentId}`);
+  }
 }

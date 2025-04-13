@@ -211,4 +211,21 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<UserDTO> getOperatorsBySameOrganizationUnitAsStudent(Integer studentId) {
+        User student = findUserById(studentId);
+        if (student.getOrganizationUnit() == null) {
+            return List.of();
+        }
+
+        List<User> operators = userRepository.findAllByUserGroupIdnAndOrganizationUnitId(
+                Constants.OPERATOR_GROUP_IDN,
+                student.getOrganizationUnit().getId()
+        );
+
+        return operators.stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }

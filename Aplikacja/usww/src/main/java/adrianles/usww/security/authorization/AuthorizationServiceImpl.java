@@ -6,6 +6,7 @@ import adrianles.usww.domain.repository.TicketRepository;
 import adrianles.usww.domain.repository.UserRepository;
 import adrianles.usww.exception.ResourceNotFoundException;
 import adrianles.usww.security.userdetails.ExtendedUserDetails;
+import adrianles.usww.utils.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -35,7 +36,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
         if (hasRole("OPERATOR")) {
             Integer operatorId = ticket.getOperator() != null ? ticket.getOperator().getId() : null;
-            return userDetails.getUserId().equals(operatorId) ||
+            String operatorLogin = ticket.getOperator() != null ? ticket.getOperator().getLogin() : null;
+            boolean isDefaultOperator = operatorLogin != null && operatorLogin.equals(Constants.DEFAULT_OPERATOR_LOGIN);
+            return (isDefaultOperator || userDetails.getUserId().equals(operatorId)) &&
                     isSameOrganizationUnit(userDetails.getUserId(), ticket.getStudent().getId());
         }
 
@@ -91,7 +94,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             return true;
         }
 
-        return hasRole("OPERATOR") && isSameOrganizationUnit(userDetails.getUserId(), userId);
+        if (hasRole("OPERATOR")) {
+            return isSameOrganizationUnit(userDetails.getUserId(), userId);
+        }
+
+        return false;
     }
 
     @Override

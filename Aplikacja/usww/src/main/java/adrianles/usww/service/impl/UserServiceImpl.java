@@ -199,7 +199,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User group " + userDTO.getGroupId() + " does not exist"));
     }
 
-    protected User findUserById(Integer id) {
+    public User findUserById(Integer id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " does not exist"));
     }
@@ -222,6 +222,18 @@ public class UserServiceImpl implements UserService {
         List<User> operators = userRepository.findAllByUserGroupIdnAndOrganizationUnitId(
                 Constants.OPERATOR_GROUP_IDN,
                 student.getOrganizationUnit().getId()
+        );
+
+        return operators.stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserDTO> getOperatorsByOrganizationUnitId(Integer organizationUnitId) {
+        List<User> operators = userRepository.findAllByUserGroupIdnAndOrganizationUnitId(
+                Constants.OPERATOR_GROUP_IDN,
+                organizationUnitId
         );
 
         return operators.stream()

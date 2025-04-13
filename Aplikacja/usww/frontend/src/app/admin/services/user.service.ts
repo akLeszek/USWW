@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {environment} from '../../../environments/environment';
+import {AuthService} from '../../auth/services/auth.service';
 
 export interface User {
   id: number;
@@ -23,15 +24,11 @@ export interface User {
 export class UserService {
   private apiUrl = `${environment.apiUrl}/admin/users`;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private authService: AuthService) {
   }
 
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(this.apiUrl);
-  }
-
-  getOperators(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/operators`);
   }
 
   blockUser(userId: number): Observable<User> {
@@ -51,7 +48,15 @@ export class UserService {
   }
 
   getUserById(userId: number): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${userId}`);
+    if (this.authService.isAdmin()) {
+      return this.http.get<User>(`${this.apiUrl}/${userId}`);
+    } else {
+      return this.http.get<User>(`${environment.apiUrl}/users/${userId}`);
+    }
+  }
+
+  getPublicUserById(userId: number): Observable<User> {
+    return this.http.get<User>(`${environment.apiUrl}/users/${userId}`);
   }
 
   getUserByLogin(login: string): Observable<User> {

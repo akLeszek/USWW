@@ -140,12 +140,10 @@ export class TicketListComponent implements OnInit, OnDestroy {
       return true;
     }
 
-    // Jeśli mamy już załadowanego defaultOperatora, sprawdzamy jego ID
     if (this.defaultOperator) {
       return this.defaultOperator.id === ticket.operatorId;
     }
 
-    // Jeśli nie mamy jeszcze załadowanego defaultOperatora, sprawdzamy wśród wszystkich operatorów
     const operator = this.operators.find(op => op.id === ticket.operatorId);
     return operator?.login === this.defaultOperatorLogin;
   }

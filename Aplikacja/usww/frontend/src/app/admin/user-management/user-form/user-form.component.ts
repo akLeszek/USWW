@@ -61,7 +61,6 @@ export class UserFormComponent implements OnInit {
       loginBan: [false]
     });
 
-    // Nasłuchuj zmian w polu groupId
     this.userForm.get('groupId')?.valueChanges.subscribe(groupId => {
       this.updateOrganizationUnitValidation(groupId);
     });
@@ -84,7 +83,6 @@ export class UserFormComponent implements OnInit {
     organizationUnitField?.updateValueAndValidity();
   }
 
-  // Pomocnicza metoda do sprawdzania wymagalności jednostki
   isOrganizationUnitRequired(groupId: number | string): boolean {
     if (!groupId) return false;
     const group = this.userGroups.find(g => g.id === Number(groupId));
@@ -96,12 +94,10 @@ export class UserFormComponent implements OnInit {
   }
 
   loadDictionaries(): void {
-    // Jednoczesne ładowanie słowników
     Promise.all([
       this.loadUserGroups(),
       this.loadOrganizationUnits()
     ]).then(() => {
-      // Po załadowaniu słowników sprawdź, czy jesteśmy w trybie edycji
       this.route.paramMap.subscribe(params => {
         const id = params.get('id');
         if (id) {
@@ -160,10 +156,8 @@ export class UserFormComponent implements OnInit {
           loginBan: user.loginBan
         });
 
-        // Wyłącz edycję loginu w trybie edycji
         this.userForm.get('login')?.disable();
 
-        // Odśwież walidację jednostki organizacyjnej
         this.updateOrganizationUnitValidation(user.groupId);
 
         this.loading = false;

@@ -1,6 +1,7 @@
 package adrianles.usww.service.facade;
 
 import adrianles.usww.api.dto.UserDTO;
+import adrianles.usww.domain.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -24,5 +25,9 @@ public interface UserService {
 
     UserDTO getUserBasicInfo(Integer id);
 
+    List<UserDTO> getOperatorsByOrganizationUnitId(Integer organizationUnitId);
+
     List<UserDTO> getOperatorsBySameOrganizationUnitAsStudent(Integer studentId);
+
+    User findUserById(Integer userId);
 }

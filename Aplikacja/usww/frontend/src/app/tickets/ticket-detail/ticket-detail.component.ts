@@ -137,17 +137,13 @@ export class TicketDetailComponent implements OnInit {
     if (!this.ticket || !this.ticket.studentId) return;
 
     if (this.authService.isAdmin()) {
-      // Pobierz operatorów z tej samej jednostki co student dla administratora
       this.ticketService.getOperatorsBySameOrganizationAsStudent(this.ticket.studentId).subscribe({
         next: (operators) => {
           this.operators = operators;
 
-          // Znajdź użytkownika unknown_operator
           this.userService.getUserByLogin("unknown_operator").subscribe({
             next: (unknownOperator) => {
-              // Jeśli unknown_operator nie znajduje się jeszcze na liście, dodaj go
               if (!this.operators.some(op => op.id === unknownOperator.id)) {
-                // Zmodyfikuj nazwę wyświetlaną dla unknown_operator
                 unknownOperator.forename = "Nieznany";
                 unknownOperator.surname = "operator";
                 this.operators.unshift(unknownOperator); // Dodaj na początek listy
@@ -174,21 +170,28 @@ export class TicketDetailComponent implements OnInit {
 
   checkIfCanAssignToMe(): void {
     if (!this.ticket) return;
-
     if (!this.ticket.studentId) return;
 
     const currentUserId = this.authService.currentUserValue?.userId;
     if (!currentUserId) return;
 
-    this.userService.getUserById(this.ticket.studentId).subscribe({
+    this.userService.getPublicUserById(this.ticket.studentId).subscribe({
       next: (student) => {
-        this.userService.getUserById(currentUserId).subscribe({
+        this.userService.getPublicUserById(currentUserId).subscribe({
           next: (operator) => {
             this.canAssignSelfToTicket =
               student.organizationUnitId === operator.organizationUnitId &&
               this.ticket?.operatorId !== currentUserId;
+
+            console.log('Can assign to self:', this.canAssignSelfToTicket);
+          },
+          error: (error) => {
+            console.error('Error getting operator data:', error);
           }
         });
+      },
+      error: (error) => {
+        console.error('Error getting student data:', error);
       }
     });
   }
@@ -197,7 +200,7 @@ export class TicketDetailComponent implements OnInit {
     this.ticketService.getOperators().subscribe({
       next: (operators) => {
         this.operators = operators;
-        
+
         this.userService.getUserByLogin("unknown_operator").subscribe({
           next: (unknownOperator) => {
             if (!this.operators.some(op => op.id === unknownOperator.id)) {
@@ -455,7 +458,7 @@ export class TicketDetailComponent implements OnInit {
         this.selectedOperatorId = currentUserId;
         this.success = 'Zgłoszenie zostało przypisane do Ciebie.';
         this.updating = false;
-        this.canAssignSelfToTicket = false; // Zgłoszenie już przypisane, nie można przypisać ponownie
+        this.canAssignSelfToTicket = false;
       },
       error: (error) => {
         this.error = 'Nie udało się przypisać zgłoszenia. ' +

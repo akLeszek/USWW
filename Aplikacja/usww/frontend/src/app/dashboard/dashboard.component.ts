@@ -1,12 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { CommonModule, AsyncPipe, NgClass, NgFor, NgIf } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, Subject, combineLatest, BehaviorSubject } from 'rxjs';
-import { catchError, map, takeUntil, tap, startWith, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { AuthService } from '../auth/services/auth.service';
-import { DashboardService, DashboardStatistics, RecentTicket } from './services/dashboard.service';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {RouterModule} from '@angular/router';
+import {AsyncPipe, NgClass, NgFor, NgIf} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
+import {catchError, debounceTime, distinctUntilChanged, finalize, map, startWith, takeUntil} from 'rxjs/operators';
+import {AuthService} from '../auth/services/auth.service';
+import {DashboardService, DashboardStatistics, RecentTicket} from './services/dashboard.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,40 +16,34 @@ import { DashboardService, DashboardStatistics, RecentTicket } from './services/
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  // Strumienie danych
+
   statistics$!: Observable<DashboardStatistics>;
   recentTickets$!: Observable<RecentTicket[]>;
   filteredSortedTickets$!: Observable<RecentTicket[]>;
 
-  // Stan wyszukiwania i sortowania
   searchTerm = new BehaviorSubject<string>('');
   sortField = new BehaviorSubject<keyof RecentTicket>('insertedDate');
   sortDirection = new BehaviorSubject<'asc' | 'desc'>('desc');
 
-  // Stany interfejsu
   loading = false;
   error = '';
   refreshing = false;
 
-  // Anulowanie subskrypcji przy zniszczeniu komponentu
   private destroy$ = new Subject<void>();
 
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
-    // Inicjalizacja głównych strumieni danych
     this.initDataStreams();
 
-    // Konfiguracja filtrowania i sortowania
     this.setupFiltering();
 
-    // Wstępne pobranie danych
-    this.loadDashboardData();
+    this.loadDashboardData(true);
 
-    // Nasłuchiwanie błędów z serwisu
     this.dashboardService.error$
       .pipe(takeUntil(this.destroy$))
       .subscribe(errorMsg => {
@@ -58,7 +52,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       });
 
-    // Nasłuchiwanie stanu ładowania
     this.dashboardService.loading$
       .pipe(takeUntil(this.destroy$))
       .subscribe(isLoading => {
@@ -66,11 +59,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Inicjalizacja głównych strumieni danych
-   */
   private initDataStreams(): void {
-    // Strumień statystyk
     this.statistics$ = this.dashboardService.getStatistics().pipe(
       takeUntil(this.destroy$),
       catchError(err => {
@@ -79,7 +68,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       })
     );
 
-    // Strumień zgłoszeń
     this.recentTickets$ = this.dashboardService.getRecentTickets().pipe(
       takeUntil(this.destroy$),
       catchError(err => {
@@ -89,11 +77,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  /**
-   * Konfiguracja filtrowania i sortowania zgłoszeń
-   */
   private setupFiltering(): void {
-    // Filtrowanie i sortowanie zgłoszeń w oparciu o kryteria
     this.filteredSortedTickets$ = combineLatest([
       this.recentTickets$,
       this.searchTerm.pipe(
@@ -105,20 +89,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.sortDirection
     ]).pipe(
       map(([tickets, search, field, direction]) => {
-        // Najpierw filtrowanie
         let result = this.filterTickets(tickets, search);
-
-        // Potem sortowanie
         result = this.sortTickets(result, field, direction);
-
         return result;
       })
     );
   }
 
-  /**
-   * Filtrowanie zgłoszeń wg frazy
-   */
   private filterTickets(tickets: RecentTicket[], searchTerm: string): RecentTicket[] {
     if (!searchTerm) return tickets;
 
@@ -130,38 +107,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  /**
-   * Sortowanie zgłoszeń
-   */
   private sortTickets(tickets: RecentTicket[], field: keyof RecentTicket, direction: 'asc' | 'desc'): RecentTicket[] {
     return this.dashboardService.sortTickets(tickets, field, direction);
   }
 
-  /**
-   * Ustawia pole i kierunek sortowania
-   */
   toggleSort(field: keyof RecentTicket): void {
     const currentField = this.sortField.value;
 
     if (currentField === field) {
-      // Jeśli to samo pole, odwróć kierunek
       const newDirection = this.sortDirection.value === 'asc' ? 'desc' : 'asc';
       this.sortDirection.next(newDirection);
     } else {
-      // Jeśli inne pole, ustaw je i domyślny kierunek (desc)
       this.sortField.next(field);
       this.sortDirection.next('desc');
     }
   }
 
-  /**
-   * Pobiera dane dashboardu
-   */
   loadDashboardData(forceRefresh: boolean = false): void {
     this.error = '';
     this.refreshing = true;
 
-    // Odśwież statystyki
     this.statistics$ = this.dashboardService.getStatistics(forceRefresh).pipe(
       takeUntil(this.destroy$),
       finalize(() => this.refreshing = false),
@@ -171,7 +136,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       })
     );
 
-    // Odśwież zgłoszenia
     this.recentTickets$ = this.dashboardService.getRecentTickets(5, forceRefresh).pipe(
       takeUntil(this.destroy$),
       catchError(err => {
@@ -181,16 +145,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  /**
-   * Wymusza odświeżenie wszystkich danych
-   */
   refreshData(): void {
     this.loadDashboardData(true);
   }
 
-  /**
-   * Pusta struktura statystyk w przypadku błędu
-   */
   private getEmptyStatistics(): Observable<DashboardStatistics> {
     return new Observable<DashboardStatistics>(observer => {
       observer.next({
@@ -203,24 +161,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Format daty
-   */
   formatDate(dateString: string): string {
     return this.dashboardService.formatDate(dateString);
   }
 
-  /**
-   * Status CSS
-   */
   getStatusClass(statusId: number): string {
     return this.dashboardService.getStatusClass(statusId);
   }
 
-  /**
-   * Dostosowane opcje szybkiego dostępu na podstawie roli
-   */
-  get quickActions(): {label: string; route: string; icon: string}[] {
+  get quickActions(): { label: string; route: string; icon: string }[] {
     const actions = [
       {label: 'Nowe zgłoszenie', route: '/tickets/new', icon: 'bi-plus-circle'}
     ];
@@ -240,14 +189,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return actions;
   }
 
-  /**
-   * Czyszczenie zasobów
-   */
   ngOnDestroy(): void {
-    // Anulowanie auto-odświeżania
     this.dashboardService.stopAutoRefresh();
 
-    // Anulowanie subskrypcji
     this.destroy$.next();
     this.destroy$.complete();
   }

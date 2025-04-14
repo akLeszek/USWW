@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError, timer, of } from 'rxjs';
-import { catchError, shareReplay, tap, switchMap, takeUntil } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
+import {BehaviorSubject, Observable, of, throwError, timer} from 'rxjs';
+import {catchError, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
+import {environment} from '../../../environments/environment';
+import {AuthService} from '../../auth/services/auth.service';
 
 export interface DashboardStatistics {
   activeTickets: number;
@@ -32,34 +33,48 @@ export interface RecentTicket {
 export class DashboardService {
   private apiUrl = `${environment.apiUrl}/dashboard`;
 
-  // Strumienie stanu
   private loadingSubject = new BehaviorSubject<boolean>(false);
   loading$ = this.loadingSubject.asObservable();
 
   private errorSubject = new BehaviorSubject<string | null>(null);
   error$ = this.errorSubject.asObservable();
 
-  // Kontrola automatycznego odświeżania
   private refreshTrigger = new BehaviorSubject<boolean>(true);
   private stopAutoRefresh$ = new BehaviorSubject<boolean>(false);
 
-  // Cache API
   private statisticsCache$?: Observable<DashboardStatistics>;
   private recentTicketsCache$?: Observable<RecentTicket[]>;
   private cacheDuration = 60000; // 1 minuta
   private lastStatisticsFetch = 0;
   private lastTicketsFetch = 0;
 
-  constructor(private http: HttpClient) {}
+  private lastUserId?: number;
+
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {
+    this.authService.currentUser.subscribe(user => {
+      const userId = user?.userId;
+
+      if (userId !== this.lastUserId) {
+        this.lastUserId = userId;
+        this.refreshAllData();
+      }
+    });
+  }
 
   getStatistics(forceRefresh = false): Observable<DashboardStatistics> {
     const now = Date.now();
     const cacheExpired = now - this.lastStatisticsFetch > this.cacheDuration;
+    const currentUser = this.authService.currentUserValue;
+    const userChanged = currentUser?.userId !== this.lastUserId;
 
-    if (forceRefresh || !this.statisticsCache$ || cacheExpired) {
+    if (forceRefresh || !this.statisticsCache$ || cacheExpired || userChanged) {
       this.loadingSubject.next(true);
       this.errorSubject.next(null);
       this.lastStatisticsFetch = now;
+      this.lastUserId = currentUser?.userId;
 
       this.statisticsCache$ = this.http.get<DashboardStatistics>(`${this.apiUrl}/statistics`).pipe(
         tap(() => this.loadingSubject.next(false)),
@@ -74,11 +89,14 @@ export class DashboardService {
   getRecentTickets(limit = 5, forceRefresh = false): Observable<RecentTicket[]> {
     const now = Date.now();
     const cacheExpired = now - this.lastTicketsFetch > this.cacheDuration;
+    const currentUser = this.authService.currentUserValue;
+    const userChanged = currentUser?.userId !== this.lastUserId;
 
-    if (forceRefresh || !this.recentTicketsCache$ || cacheExpired) {
+    if (forceRefresh || !this.recentTicketsCache$ || cacheExpired || userChanged) {
       this.loadingSubject.next(true);
       this.errorSubject.next(null);
       this.lastTicketsFetch = now;
+      this.lastUserId = currentUser?.userId;
 
       this.recentTicketsCache$ = this.http.get<RecentTicket[]>(
         `${this.apiUrl}/tickets/recent?limit=${limit}`
@@ -112,36 +130,37 @@ export class DashboardService {
     ).subscribe();
   }
 
-  /**
-   * Publiczna metoda do zatrzymania automatycznego odświeżania
-   * Używana przez komponenty
-   */
   stopAutoRefresh(): void {
     this.stopAutoRefresh$.next(true);
   }
 
-  /**
-   * @deprecated Używaj stopAutoRefresh() zamiast tej metody
-   */
   stopAutoRefreshTask(): void {
     this.stopAutoRefresh$.next(true);
   }
 
   getStatusClass(statusId: number): string {
     switch (statusId) {
-      case 1: return 'bg-primary';    // NEW
-      case 2: return 'bg-warning';    // IN_PROGRESS
-      case 3: return 'bg-success';    // CLOSED
-      default: return 'bg-secondary'; // Unknown
+      case 1:
+        return 'bg-primary';    // NEW
+      case 2:
+        return 'bg-warning';    // IN_PROGRESS
+      case 3:
+        return 'bg-success';    // CLOSED
+      default:
+        return 'bg-secondary'; // Unknown
     }
   }
 
   getStatusName(statusId: number): string {
     switch (statusId) {
-      case 1: return 'Nowe';
-      case 2: return 'W trakcie';
-      case 3: return 'Zamknięte';
-      default: return 'Nieznany';
+      case 1:
+        return 'Nowe';
+      case 2:
+        return 'W trakcie';
+      case 3:
+        return 'Zamknięte';
+      default:
+        return 'Nieznany';
     }
   }
 
@@ -163,24 +182,20 @@ export class DashboardService {
       let aValue: any = a[field];
       let bValue: any = b[field];
 
-      // Specjalna obsługa dat
       if (field === 'insertedDate' || field === 'lastActivityDate') {
         aValue = aValue ? new Date(aValue).getTime() : 0;
         bValue = bValue ? new Date(bValue).getTime() : 0;
       }
 
-      // Specjalna obsługa wartości null/undefined
       if (aValue === null || aValue === undefined) return direction === 'asc' ? -1 : 1;
       if (bValue === null || bValue === undefined) return direction === 'asc' ? 1 : -1;
 
-      // Sortowanie łańcuchów znaków ignorujące wielkość liter
       if (typeof aValue === 'string' && typeof bValue === 'string') {
         return direction === 'asc'
           ? aValue.localeCompare(bValue, 'pl', {sensitivity: 'base'})
           : bValue.localeCompare(aValue, 'pl', {sensitivity: 'base'});
       }
 
-      // Standardowe sortowanie liczbowe
       return direction === 'asc'
         ? (aValue < bValue ? -1 : aValue > bValue ? 1 : 0)
         : (aValue > bValue ? -1 : aValue < bValue ? 1 : 0);
@@ -213,10 +228,8 @@ export class DashboardService {
     let errorMessage = defaultMessage;
 
     if (error.error instanceof ErrorEvent) {
-      // Błąd po stronie klienta
       errorMessage = `Błąd: ${error.error.message}`;
     } else {
-      // Błąd po stronie serwera
       switch (error.status) {
         case 0:
           errorMessage = 'Brak połączenia z serwerem';

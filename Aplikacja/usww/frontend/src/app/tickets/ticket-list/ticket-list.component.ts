@@ -32,7 +32,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
   statuses: Dictionary[] = [];
   priorities: Dictionary[] = [];
   operators: User[] = [];
-  operatorNames: Record<number, string> = {}; // Cache nazw operatorów
+  operatorNames: Record<number, string> = {};
 
   loading = true;
   processingTicketId: number | null = null;
@@ -150,18 +150,34 @@ export class TicketListComponent implements OnInit, OnDestroy {
 
   loadTickets(): void {
     this.loading = true;
-    this.ticketService.getAllTickets().subscribe({
-      next: (tickets) => {
-        this.tickets = tickets;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: (error: unknown) => {
-        this.error = 'Wystąpił błąd podczas ładowania zgłoszeń.';
-        console.error('Error loading tickets:', error);
-        this.loading = false;
-      }
-    });
+
+    if (this.filterAssignment === 'unassigned') {
+      this.ticketService.getUnassignedTickets().subscribe({
+        next: (tickets) => {
+          this.tickets = tickets;
+          this.applyFilters();
+          this.loading = false;
+        },
+        error: (error: unknown) => {
+          this.error = 'Wystąpił błąd podczas ładowania zgłoszeń.';
+          console.error('Error loading tickets:', error);
+          this.loading = false;
+        }
+      });
+    } else {
+      this.ticketService.getAllTickets().subscribe({
+        next: (tickets) => {
+          this.tickets = tickets;
+          this.applyFilters();
+          this.loading = false;
+        },
+        error: (error: unknown) => {
+          this.error = 'Wystąpił błąd podczas ładowania zgłoszeń.';
+          console.error('Error loading tickets:', error);
+          this.loading = false;
+        }
+      });
+    }
   }
 
   applyFilters(): void {

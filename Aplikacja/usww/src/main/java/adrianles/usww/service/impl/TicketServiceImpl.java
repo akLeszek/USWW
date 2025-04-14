@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -298,13 +299,34 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public List<TicketDTO> getUnassignedTickets() {
-        if (!authorizationService.hasRole("ADMIN", "OPERATOR")) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        ExtendedUserDetails userDetails = (ExtendedUserDetails) authentication.getPrincipal();
+
+        if (userDetails.isAdmin()) {
+            return ticketRepository.findByOperatorIsNullOrOperatorLogin(Constants.DEFAULT_OPERATOR_LOGIN).stream()
+                    .map(ticketMapper::toDto)
+                    .collect(Collectors.toList());
+        } else if (userDetails.isOperator()) {
+            User operator = userRepository.findById(userDetails.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Operator not found"));
+
+            if (operator.getOrganizationUnit() == null) {
+                return Collections.emptyList();
+            }
+
+            Integer organizationUnitId = operator.getOrganizationUnit().getId();
+
+            List<Ticket> unassignedTickets = ticketRepository.findByOperatorIsNullOrOperatorLogin(Constants.DEFAULT_OPERATOR_LOGIN);
+
+            return unassignedTickets.stream()
+                    .filter(ticket -> ticket.getStudent() != null &&
+                            ticket.getStudent().getOrganizationUnit() != null &&
+                            ticket.getStudent().getOrganizationUnit().getId().equals(organizationUnitId))
+                    .map(ticketMapper::toDto)
+                    .collect(Collectors.toList());
+        } else {
             throw new UnauthorizedAccessException("Unauthorized access to unassigned tickets");
         }
-
-        return ticketRepository.findByOperatorIsNullOrOperatorLogin(Constants.DEFAULT_OPERATOR_LOGIN).stream()
-                .map(ticketMapper::toDto)
-                .collect(Collectors.toList());
     }
 
     @Override

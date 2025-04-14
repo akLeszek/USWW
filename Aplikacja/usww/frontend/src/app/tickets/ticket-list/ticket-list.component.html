@@ -144,7 +144,8 @@
                      [ngClass]="{'bi-sort-up': sortDirection === 'asc', 'bi-sort-down': sortDirection === 'desc'}">
                   </i>
                 </th>
-                <th scope="col" *ngIf="authService.isAdmin() || authService.isOperator()" (click)="sort('operatorId')" class="sortable">
+                <th scope="col" *ngIf="authService.isAdmin() || authService.isOperator()" (click)="sort('operatorId')"
+                    class="sortable">
                   Operator
                   <i *ngIf="sortColumn === 'operatorId'" class="bi"
                      [ngClass]="{'bi-sort-up': sortDirection === 'asc', 'bi-sort-down': sortDirection === 'desc'}">
@@ -173,8 +174,8 @@
                     </span>
                 </td>
                 <td>{{ formatDate(ticket.insertedDate) }}</td>
-                <td *ngIf="authService.isAdmin() || authService.isOperator()">
-                  {{ ticket.operatorId ? getOperatorName(ticket.operatorId) : 'Nieprzypisany' }}
+                <td *ngIf="canAssignTicket()">
+                  {{ getOperatorName(ticket.operatorId) }}
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm">
@@ -187,7 +188,8 @@
                       (click)="assignToMe(ticket.id)"
                       [disabled]="processingTicketId === ticket.id"
                     >
-                      <span *ngIf="processingTicketId === ticket.id" class="spinner-border spinner-border-sm me-1"></span>
+                      <span *ngIf="processingTicketId === ticket.id"
+                            class="spinner-border spinner-border-sm me-1"></span>
                       <i class="bi bi-person-plus"></i>
                     </button>
                     <div ngbDropdown *ngIf="authService.isAdmin() && !ticket.archive" class="d-inline-block">

@@ -136,27 +136,25 @@ export class TicketDetailComponent implements OnInit {
   loadOperators(): void {
     if (!this.ticket || !this.ticket.studentId) return;
 
+    this.userService.getUserByLogin("unknown_operator").subscribe({
+      next: (unknownOperator) => {
+        if (!this.operators.some(op => op.id === unknownOperator.id)) {
+          this.operators.unshift(unknownOperator); // Dodaj na początek listy
+        }
+
+        if (this.ticket && this.ticket.operatorId) {
+          this.selectedOperatorId = this.ticket.operatorId;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading unknown operator:', error);
+      }
+    });
+
     if (this.authService.isAdmin()) {
       this.ticketService.getOperatorsBySameOrganizationAsStudent(this.ticket.studentId).subscribe({
         next: (operators) => {
           this.operators = operators;
-
-          this.userService.getUserByLogin("unknown_operator").subscribe({
-            next: (unknownOperator) => {
-              if (!this.operators.some(op => op.id === unknownOperator.id)) {
-                unknownOperator.forename = "Nieznany";
-                unknownOperator.surname = "operator";
-                this.operators.unshift(unknownOperator); // Dodaj na początek listy
-              }
-
-              if (this.ticket && this.ticket.operatorId) {
-                this.selectedOperatorId = this.ticket.operatorId;
-              }
-            },
-            error: (error) => {
-              console.error('Error loading unknown operator:', error);
-            }
-          });
         },
         error: (error) => {
           console.error('Error loading operators for student organization:', error);
@@ -204,8 +202,6 @@ export class TicketDetailComponent implements OnInit {
         this.userService.getUserByLogin("unknown_operator").subscribe({
           next: (unknownOperator) => {
             if (!this.operators.some(op => op.id === unknownOperator.id)) {
-              unknownOperator.forename = "Nieznany";
-              unknownOperator.surname = "operator";
               this.operators.unshift(unknownOperator);
             }
 

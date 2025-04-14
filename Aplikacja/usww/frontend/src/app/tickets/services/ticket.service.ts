@@ -195,4 +195,8 @@ export class TicketService {
   getOperatorsBySameOrganizationAsStudent(studentId: number): Observable<User[]> {
     return this.http.get<User[]>(`${environment.apiUrl}/admin/users/operators/by-student/${studentId}`);
   }
+
+  getUnassignedTickets(): Observable<Ticket[]> {
+    return this.http.get<Ticket[]>(`${this.apiUrl}/unassigned`);
+  }
 }

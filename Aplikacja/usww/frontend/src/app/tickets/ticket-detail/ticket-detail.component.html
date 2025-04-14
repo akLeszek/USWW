@@ -88,7 +88,9 @@
                   <div class="d-flex">
                     <select [(ngModel)]="selectedOperatorId" class="form-select me-2" [disabled]="updating">
                       <option [ngValue]="null">Wybierz operatora</option>
-                      <option *ngFor="let operator of operators" [ngValue]="operator.id">{{ operator.forename }} {{ operator.surname }}</option>
+                      <option *ngFor="let operator of operators"
+                              [ngValue]="operator.id">{{ operator.forename }} {{ operator.surname }}
+                      </option>
                     </select>
                     <button class="btn btn-outline-primary" [disabled]="updating || !selectedOperatorId"
                             (click)="assignToOperator(selectedOperatorId)">
@@ -99,12 +101,14 @@
 
                 <div class="col-md-4 mb-3" *ngIf="authService.isOperator() && canAssignSelfToTicket">
                   <label class="form-label">Przypisanie</label>
-                  <button
-                    class="btn btn-outline-primary"
-                    [disabled]="updating"
-                    (click)="assignToMe()">
-                    <i class="bi bi-person-check"></i> Przypisz do mnie
-                  </button>
+                  <div class="d-flex">
+                    <button
+                      class="btn btn-outline-primary"
+                      [disabled]="updating"
+                      (click)="assignToMe()">
+                      <i class="bi bi-person-check"></i> Przypisz do mnie
+                    </button>
+                  </div>
                 </div>
 
                 <div class="col-md-4 mb-3 d-flex flex-column">

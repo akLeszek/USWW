@@ -128,6 +128,18 @@ export class TicketListComponent implements OnInit, OnDestroy {
         operators.forEach(operator => {
           this.operatorNames[operator.id] = `${operator.forename} ${operator.surname}`;
         });
+
+        if (!this.defaultOperator) {
+          this.userService.getUserByLogin(this.defaultOperatorLogin).subscribe({
+            next: (unknownOperator) => {
+              this.defaultOperator = unknownOperator;
+              this.operatorNames[unknownOperator.id] = `${unknownOperator.forename} ${unknownOperator.surname}`;
+            },
+            error: (error) => {
+              console.error('Error loading unknown operator:', error);
+            }
+          });
+        }
       },
       error: (error: unknown) => {
         console.error('Error loading operators:', error);

@@ -36,9 +36,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
         if (hasRole("OPERATOR")) {
             Integer operatorId = ticket.getOperator() != null ? ticket.getOperator().getId() : null;
-            String operatorLogin = ticket.getOperator() != null ? ticket.getOperator().getLogin() : null;
-            boolean isDefaultOperator = operatorLogin != null && operatorLogin.equals(Constants.DEFAULT_OPERATOR_LOGIN);
-            return (isDefaultOperator || userDetails.getUserId().equals(operatorId)) &&
+            return (isDefaultOperator(operatorId) || userDetails.getUserId().equals(operatorId)) &&
                     isSameOrganizationUnit(userDetails.getUserId(), ticket.getStudent().getId());
         }
 
@@ -95,7 +93,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         }
 
         if (hasRole("OPERATOR")) {
-            return isSameOrganizationUnit(userDetails.getUserId(), userId);
+            return isDefaultOperator(userId) || isSameOrganizationUnit(userDetails.getUserId(), userId);
         }
 
         return false;
@@ -195,5 +193,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         }
 
         return user1.getOrganizationUnit().getId().equals(user2.getOrganizationUnit().getId());
+    }
+
+    private boolean isDefaultOperator(Integer userId) {
+        User defaultOperator = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return defaultOperator.getLogin().equals(Constants.DEFAULT_OPERATOR_LOGIN);
     }
 }

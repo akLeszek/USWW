@@ -4,6 +4,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.4'
     id 'com.github.node-gradle.node' version '7.1.0'
     id 'jacoco'
+    id 'war'
 }
 
 group = 'adrianles'
@@ -18,6 +19,15 @@ java {
 
 repositories {
     mavenCentral()
+}
+
+bootWar {
+    archiveFileName = 'usww.war'
+}
+
+war {
+    archiveFileName = 'usww.war'
+    enabled = true
 }
 
 dependencies {

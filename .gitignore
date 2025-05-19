@@ -72,3 +72,10 @@ Desktop.ini
 /Aplikacja/usww/build/test-results/
 /Aplikacja/usww/build/
 *.bak
+/Aplikacja/usww/src/main/resources/static/3rdpartylicenses.txt
+/Aplikacja/usww/src/main/resources/static/browser/favicon.ico
+/Aplikacja/usww/src/main/resources/static/browser/index.html
+/Aplikacja/usww/src/main/resources/static/browser/main-MCBCSFM4.js
+/Aplikacja/usww/src/main/resources/static/browser/polyfills-7AGQ2GRQ.js
+/Aplikacja/usww/src/main/resources/static/browser/styles-HRGV7M42.css
+/Aplikacja/usww/src/main/resources/static/prerendered-routes.json

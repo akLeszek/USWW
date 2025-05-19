@@ -14,10 +14,7 @@ import {DictionaryFormComponent} from './admin/dictionaries/dictionary-form/dict
 
 export const routes: Routes = [
   {path: 'login', component: LoginComponent},
-  {
-    path: 'auth/change-password',
-    component: ChangePasswordComponent
-  },
+  {path: 'auth/change-password', component: ChangePasswordComponent},
   {
     path: '',
     component: LayoutComponent,

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -36,7 +37,7 @@ public class DatabaseInitializer {
         try {
             System.out.println("Executing script " + sqlScript);
             Resource resource = new ClassPathResource(sqlScript);
-            String script = resource.getContentAsString(Charset.defaultCharset());
+            String script = resource.getContentAsString(StandardCharsets.UTF_8);
             connection.createStatement().execute(script);
         } catch (Exception exception) {
             System.err.println("Error while executing script " + sqlScript);

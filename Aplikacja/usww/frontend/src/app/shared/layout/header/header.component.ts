@@ -31,7 +31,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.userLogin = user ? user.username : null;
-        console.log('Zalogowany użytkownik:', this.userLogin);
       });
   }
 

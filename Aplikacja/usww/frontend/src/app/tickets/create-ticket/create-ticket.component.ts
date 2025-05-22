@@ -24,10 +24,12 @@ export class CreateTicketComponent implements OnInit {
   loading = false;
   success = false;
   error = '';
+  allowedFileTypes = '';
+  maxFileSize = '';
 
   constructor(
     private formBuilder: FormBuilder,
-    private ticketService: TicketService,
+    protected ticketService: TicketService,
     private dictionaryService: DictionaryService,
     private authService: AuthService,
     private router: Router
@@ -38,6 +40,9 @@ export class CreateTicketComponent implements OnInit {
       message: ['', Validators.required],
       attachment: [null]
     });
+
+    this.allowedFileTypes = this.ticketService.getReadableAllowedFileTypes();
+    this.maxFileSize = this.ticketService.getReadableMaxFileSize();
   }
 
   ngOnInit(): void {
@@ -71,9 +76,19 @@ export class CreateTicketComponent implements OnInit {
   onFileChange(event: any): void {
     if (event.target.files.length > 0) {
       const file = event.target.files[0];
+
+      const validation = this.ticketService.validateFile(file);
+      if (!validation.valid) {
+        this.error = validation.errorMessage || 'Nieprawidłowy plik';
+        event.target.value = '';
+        return;
+      }
+
       this.ticketForm.patchValue({
         attachment: file
       });
+
+      this.error = '';
     }
   }
 
@@ -99,8 +114,6 @@ export class CreateTicketComponent implements OnInit {
       return;
     }
 
-    console.log('Current user:', currentUser);
-
     const ticketData: Ticket = {
       title: this.ticketForm.value.title,
       categoryId: parseInt(this.ticketForm.value.categoryId),
@@ -108,11 +121,8 @@ export class CreateTicketComponent implements OnInit {
       studentId: currentUser.userId
     };
 
-    console.log('Creating ticket with data:', ticketData);
-
     this.ticketService.createTicket(ticketData).subscribe({
       next: (ticket) => {
-        console.log('Ticket created successfully:', ticket);
         if (this.ticketForm.value.message && ticket.id) {
           const messageData = {
             messageText: this.ticketForm.value.message,
@@ -120,12 +130,23 @@ export class CreateTicketComponent implements OnInit {
             senderId: currentUser.userId
           };
 
-          console.log('Creating message with data:', messageData);
-
           this.ticketService.createTicketMessage(messageData).subscribe({
             next: (message) => {
-              console.log('Message created successfully:', message);
-              this.handleSuccess();
+              const attachment = this.ticketForm.value.attachment;
+              if (message.id && attachment) {
+                this.ticketService.addAttachment(message.id, attachment).subscribe({
+                  next: (attachmentData) => {
+                    this.handleSuccess();
+                  },
+                  error: (error) => {
+                    console.error('Error adding attachment:', error);
+                    this.error = 'Zgłoszenie zostało utworzone, ale nie udało się dodać załącznika.';
+                    this.loading = false;
+                  }
+                });
+              } else {
+                this.handleSuccess();
+              }
             },
             error: (error) => {
               console.error('Error creating message:', error);

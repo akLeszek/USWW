@@ -72,8 +72,15 @@
                 class="form-control"
                 id="attachment"
                 (change)="onFileChange($event)"
+                [ngClass]="{'is-invalid': error && error.includes('plik')}"
               >
-              <div class="form-text">Dozwolone formaty: PDF, JPG, PNG</div>
+              <div class="form-text">
+                Dozwolone formaty: {{ ticketService.getReadableAllowedFileTypes() }},
+                maksymalny rozmiar: {{ ticketService.getReadableMaxFileSize() }}
+              </div>
+              <div *ngIf="error && error.includes('plik')" class="invalid-feedback">
+                {{ error }}
+              </div>
             </div>
 
             <div class="d-flex justify-content-end mt-4">

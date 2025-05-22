@@ -81,7 +81,8 @@ export class TicketService {
   }
 
   getReadableAllowedFileTypes(): string {
-    return 'PDF, JPG, PNG';
+    const config = this.getUploadConfig()
+    return config.allowedContentTypes.join(', ');
   }
 
 

@@ -28,7 +28,7 @@ export interface TicketMessage {
 export interface MessageAttachment {
   id?: number;
   messageId: number;
-  fileName?: string;
+  filename?: string;
   attachment?: any;
 }
 

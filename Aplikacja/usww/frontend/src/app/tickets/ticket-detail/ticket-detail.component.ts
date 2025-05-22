@@ -346,9 +346,8 @@ export class TicketDetailComponent implements OnInit {
         const a = document.createElement('a');
         a.href = url;
 
-        const fileName = attachment && attachment.fileName ?
-          attachment.fileName : `attachment-${attachmentId}`;
-        a.download = fileName;
+        a.download = attachment && attachment.filename ?
+          attachment.filename : `attachment-${attachmentId}`;
 
         document.body.appendChild(a);
         a.click();

@@ -79,3 +79,5 @@ Desktop.ini
 /Aplikacja/usww/src/main/resources/static/browser/polyfills-7AGQ2GRQ.js
 /Aplikacja/usww/src/main/resources/static/browser/styles-HRGV7M42.css
 /Aplikacja/usww/src/main/resources/static/prerendered-routes.json
+/Aplikacja/usww/src/main/resources/static/*
+/Aplikacja/scripts/*

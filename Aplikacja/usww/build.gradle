@@ -7,9 +7,6 @@ plugins {
     id 'war'
 }
 
-group = 'adrianles'
-version = '0.0.1-SNAPSHOT'
-
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     toolchain {
@@ -19,10 +16,7 @@ java {
 
 repositories {
     mavenCentral()
-}
-
-bootWar {
-    archiveFileName = 'usww.war'
+    google()
 }
 
 war {
@@ -30,22 +24,36 @@ war {
     enabled = true
 }
 
+dependencyManagement {
+    imports {
+        mavenBom 'com.google.cloud:spring-cloud-gcp-dependencies:5.11.3'
+    }
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation 'com.google.cloud:spring-cloud-gcp-starter'
+    implementation 'com.google.cloud.sql:cloud-sql-connector-jdbc-sqlserver:1.24.1'
 
     implementation 'com.microsoft.sqlserver:mssql-jdbc'
 
     implementation 'org.projectlombok:lombok'
     implementation 'org.apache.commons:commons-lang3'
     implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
-    implementation 'io.jsonwebtoken:jjwt:0.12.6'
+
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
     annotationProcessor 'org.projectlombok:lombok'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.junit.jupiter:junit-jupiter-params'
@@ -53,14 +61,13 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     testImplementation 'com.h2database:h2'
-
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'org.mockito:mockito-junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
     testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:mssqlserver'
 }
-
-project.ext.isTestMode = project.hasProperty('testMode') ? project.getProperty('testMode').toBoolean() : false
 
 tasks.named('test') {
     useJUnitPlatform()
@@ -76,20 +83,11 @@ tasks.named('test') {
     failFast = false
 
     finalizedBy jacocoTestReport
-
-    doFirst {
-        project.ext.isTestMode = true
-    }
 }
 
 tasks.register('fastTest') {
     group = 'verification'
     description = 'Runs tests quickly without building Angular frontend'
-
-    doFirst {
-        project.ext.isTestMode = true
-        println 'Running tests in fast mode without Angular frontend build'
-    }
 
     finalizedBy test
 }
@@ -134,12 +132,8 @@ tasks.register('copyAngularToStatic', Copy) {
     dependsOn buildAngular
     from "${projectDir}/frontend/dist/frontend/browser"
     into layout.buildDirectory.dir('resources/main/static').get().asFile
-
-    onlyIf { !project.ext.isTestMode }
 }
 
 tasks.named('processResources') {
-    if (!project.ext.isTestMode) {
-        dependsOn copyAngularToStatic
-    }
+    dependsOn copyAngularToStatic
 }

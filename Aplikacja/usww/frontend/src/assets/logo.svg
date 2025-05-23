@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d6efd;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6f42c1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Tło tarczy akademickiej -->
+  <path d="M16 2L26 8v8c0 8-6 12-10 14-4-2-10-6-10-14V8l10-6z" 
+        fill="url(#grad2)" stroke="#ffffff" stroke-width="1"/>
+  
+  <!-- Książka/dokument -->
+  <rect x="10" y="11" width="8" height="10" rx="1" fill="#ffffff"/>
+  <rect x="11" y="13" width="6" height="0.8" rx="0.4" fill="url(#grad2)"/>
+  <rect x="11" y="15" width="5" height="0.8" rx="0.4" fill="url(#grad2)"/>
+  <rect x="11" y="17" width="6" height="0.8" rx="0.4" fill="url(#grad2)"/>
+  
+  <!-- Ikona komunikacji -->
+  <circle cx="21" cy="12" r="3.5" fill="#ffffff" stroke="url(#grad2)" stroke-width="0.8"/>
+  <path d="M19.5 11.5h3v1h-3z" fill="url(#grad2)"/>
+  <path d="M19.5 12.5h2v0.8h-2z" fill="url(#grad2)"/>
+  
+  <!-- U.S.W.W tekst -->
+  <text x="16" y="26" text-anchor="middle" font-family="Arial, sans-serif" 
+        font-size="3" font-weight="bold" fill="#ffffff">USWW</text>
+</svg>

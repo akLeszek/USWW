@@ -9,6 +9,7 @@ import adrianles.usww.security.jwt.JwtUtil;
 import adrianles.usww.security.userdetails.ExtendedUserDetails;
 import adrianles.usww.security.userdetails.UserDetailsServiceImpl;
 import adrianles.usww.service.facade.UserPasswordService;
+import adrianles.usww.service.impl.TokenCacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +43,9 @@ class AuthControllerTest {
 
     @Mock
     private UserPasswordService userPasswordService;
+
+    @Mock
+    private TokenCacheService tokenCacheService;
 
     @Mock
     private Authentication authentication;
@@ -68,7 +73,6 @@ class AuthControllerTest {
     @Test
     @DisplayName("Login - Pierwszy login wymaga zmiany hasła")
     void loginShouldRequirePasswordChangeOnFirstLogin() {
-        // given
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
         when(userDetailsService.loadExtendedUserByUsername("testuser")).thenReturn(userDetails);
@@ -77,20 +81,22 @@ class AuthControllerTest {
         when(userDetails.getUsername()).thenReturn("testuser");
         when(jwtUtil.generateToken("testuser")).thenReturn("testToken");
 
-        // when
         ResponseEntity<?> response = authController.login(authRequest);
 
-        // then
-        assertThat(response.getBody()).isInstanceOf(java.util.Map.class);
+        assertThat(response.getBody()).isInstanceOf(Map.class);
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
         assertThat(responseBody).containsKey("requirePasswordChange");
         assertThat(responseBody.get("requirePasswordChange")).isEqualTo(true);
+        assertThat(responseBody.get("token")).isEqualTo("testToken");
+        assertThat(responseBody.get("userId")).isEqualTo(1);
+
+        verify(jwtUtil).generateToken("testuser");
+        verifyNoInteractions(tokenCacheService);
     }
 
     @Test
     @DisplayName("Login - Standardowe logowanie")
     void loginShouldReturnTokenOnSuccessfulLogin() {
-        // given
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
         when(userDetailsService.loadExtendedUserByUsername("testuser")).thenReturn(userDetails);
@@ -99,20 +105,21 @@ class AuthControllerTest {
         when(userDetails.getUsername()).thenReturn("testuser");
         when(jwtUtil.generateToken("testuser")).thenReturn("testToken");
 
-        // when
         ResponseEntity<?> response = authController.login(authRequest);
 
-        // then
         assertThat(response.getBody()).isInstanceOf(AuthResponse.class);
         AuthResponse authResponse = (AuthResponse) response.getBody();
         assertThat(authResponse.getUserId()).isEqualTo(1);
+        assertThat(authResponse.getUsername()).isEqualTo("testuser");
         assertThat(authResponse.getToken()).isEqualTo("testToken");
+
+        verify(tokenCacheService).setActiveToken("testuser", "testToken");
+        verify(jwtUtil).generateToken("testuser");
     }
 
     @Test
     @DisplayName("Change Password - Sukces")
     void changePasswordShouldSucceed() {
-        // given
         UserDTO updatedUser = new UserDTO();
         updatedUser.setId(1);
         updatedUser.setLogin("testuser");
@@ -123,18 +130,52 @@ class AuthControllerTest {
         when(userDetails.getUsername()).thenReturn("testuser");
         when(jwtUtil.generateToken("testuser")).thenReturn("newToken");
 
-        // when
         ResponseEntity<?> response = authController.changePassword(1, passwordChangeRequest);
 
-        // then
-        assertThat(response.getBody()).isInstanceOf(java.util.Map.class);
+        assertThat(response.getBody()).isInstanceOf(Map.class);
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
         assertThat(responseBody.get("message")).isEqualTo("Password changed successfully");
         assertThat(responseBody.get("token")).isEqualTo("newToken");
 
-        // Dodatkowe weryfikacje wywołań
         verify(userPasswordService).changePassword(1, "oldPassword", "newPassword");
         verify(userDetailsService).loadUserByUsername("testuser");
         verify(jwtUtil).generateToken("testuser");
+    }
+
+    @Test
+    @DisplayName("Login - Logout powinien usunąć token z cache")
+    void logoutShouldRemoveTokenFromCache() {
+        Authentication mockAuth = mock(Authentication.class);
+        when(mockAuth.getName()).thenReturn("testuser");
+
+        ResponseEntity<?> response = authController.logout(mockAuth);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        verify(tokenCacheService).removeToken("testuser");
+    }
+
+    @Test
+    @DisplayName("Login - Logout bez uwierzytelnienia")
+    void logoutShouldHandleNullAuthentication() {
+        ResponseEntity<?> response = authController.logout(null);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        verifyNoInteractions(tokenCacheService);
+    }
+
+    @Test
+    @DisplayName("Login - Błąd uwierzytelniania")
+    void loginShouldHandleAuthenticationFailure() {
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new org.springframework.security.authentication.BadCredentialsException("Bad credentials"));
+
+        try {
+            authController.login(authRequest);
+        } catch (Exception e) {
+            assertThat(e).isInstanceOf(org.springframework.security.authentication.BadCredentialsException.class);
+        }
+
+        verifyNoInteractions(tokenCacheService);
+        verifyNoInteractions(jwtUtil);
     }
 }

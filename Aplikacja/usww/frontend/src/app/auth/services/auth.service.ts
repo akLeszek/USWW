@@ -100,8 +100,12 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
+    this.http.post(`${this.apiUrl}/logout`, {}).subscribe({
+      complete: () => {
+        localStorage.removeItem('currentUser');
+        this.currentUserSubject.next(null);
+      }
+    });
   }
 
   isLoggedIn(): boolean {

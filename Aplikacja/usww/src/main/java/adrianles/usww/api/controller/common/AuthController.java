@@ -8,6 +8,7 @@ import adrianles.usww.security.jwt.JwtUtil;
 import adrianles.usww.security.userdetails.ExtendedUserDetails;
 import adrianles.usww.security.userdetails.UserDetailsServiceImpl;
 import adrianles.usww.service.facade.UserPasswordService;
+import adrianles.usww.service.impl.TokenCacheService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ public class AuthController {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
     private final UserPasswordService userPasswordService;
+    private final TokenCacheService tokenCacheService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
@@ -45,6 +47,7 @@ public class AuthController {
         }
 
         String token = jwtUtil.generateToken(userDetails.getUsername());
+        tokenCacheService.setActiveToken(userDetails.getUsername(), token);
         return ResponseEntity.ok(new AuthResponse(userDetails.getUserId(), userDetails.getUsername(), token));
     }
 
@@ -76,5 +79,13 @@ public class AuthController {
         response.put("message", "Password changed successfully");
         response.put("token", token);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(Authentication authentication) {
+        if (authentication != null) {
+            tokenCacheService.removeToken(authentication.getName());
+        }
+        return ResponseEntity.ok().build();
     }
 }

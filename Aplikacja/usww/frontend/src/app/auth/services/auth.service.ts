@@ -99,17 +99,35 @@ export class AuthService {
     );
   }
 
-  logout(): void {
-    this.http.post(`${this.apiUrl}/logout`, {}).subscribe({
-      complete: () => {
+  logout(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
+      tap(() => {
         localStorage.removeItem('currentUser');
         this.currentUserSubject.next(null);
-      }
-    });
+      }),
+      catchError(error => {
+        localStorage.removeItem('currentUser');
+        this.currentUserSubject.next(null);
+        return of(void 0);
+      })
+    );
   }
 
   isLoggedIn(): boolean {
-    return !!this.currentUserValue;
+    const user = this.currentUserValue;
+    if (!user || !user.token) {
+      return false;
+    }
+
+    try {
+      const payload = JSON.parse(atob(user.token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      return payload.exp > currentTime;
+    } catch (error) {
+      localStorage.removeItem('currentUser');
+      this.currentUserSubject.next(null);
+      return false;
+    }
   }
 
   getToken(): string | null {
@@ -150,6 +168,13 @@ export class AuthService {
     return this.hasRole('STUDENT');
   }
 
+  private handleApiError(error: any): void {
+    if (error.status === 401) {
+      localStorage.removeItem('currentUser');
+      this.currentUserSubject.next(null);
+    }
+  }
+
   loadUserProfile(): Observable<any> {
     return this.http.get<any>(`${environment.apiUrl}/users/profile`).pipe(
       tap(profile => {
@@ -162,6 +187,7 @@ export class AuthService {
         }
       }),
       catchError(error => {
+        this.handleApiError(error);
         return throwError(() => new Error('Failed to load user profile'));
       })
     );

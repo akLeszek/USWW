@@ -32,8 +32,20 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/dashboard']);
+    const currentUser = this.authService.currentUserValue;
+    if (currentUser && currentUser.token) {
+      if (this.authService.isLoggedIn()) {
+        this.authService.loadUserProfile().subscribe({
+          next: () => {
+            this.router.navigate(['/dashboard']);
+          },
+          error: () => {
+            this.authService.logout().subscribe();
+          }
+        });
+      } else {
+        this.authService.logout().subscribe();
+      }
     }
   }
 

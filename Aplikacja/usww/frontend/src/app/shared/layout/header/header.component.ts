@@ -43,8 +43,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.toggleSidebar.emit();
   }
 
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: (error) => {
+        console.error('Logout error:', error);
+        this.router.navigate(['/login']);
+      }
+    });
   }
 }

@@ -23,11 +23,13 @@ public class JwtUtil {
 
     public String generateToken(String username) {
         String jti = UUID.randomUUID().toString();
+        long currentTimeMillis = System.currentTimeMillis();
+
         return Jwts.builder()
                 .subject(username)
                 .id(jti)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .issuedAt(new Date(currentTimeMillis))
+                .expiration(new Date(currentTimeMillis + EXPIRATION_TIME))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -41,7 +43,11 @@ public class JwtUtil {
     }
 
     public boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
+        try {
+            return extractClaim(token, Claims::getExpiration).before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

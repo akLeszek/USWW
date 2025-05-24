@@ -1,5 +1,10 @@
 <div class="layout-container">
-  <app-sidebar [collapsed]="isSidebarCollapsed"></app-sidebar>
+  <app-sidebar
+    [collapsed]="isSidebarCollapsed"
+    [mobileOpen]="isMobileSidebarOpen"
+    (mobileToggle)="toggleMobileSidebar()"></app-sidebar>
+
+  <div class="sidebar-overlay" [ngClass]="{'show': isMobileSidebarOpen}" (click)="closeMobileSidebar()"></div>
 
   <div class="content-container" [ngClass]="{'expanded': isSidebarCollapsed}">
     <app-header (toggleSidebar)="toggleSidebar()"></app-header>

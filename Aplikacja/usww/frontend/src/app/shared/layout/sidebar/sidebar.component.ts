@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit, Output, EventEmitter} from '@angular/core';
 import {RouterModule} from '@angular/router';
 import {AuthService} from '../../../auth/services/auth.service';
 import {NgClass, NgForOf, NgIf} from '@angular/common';
@@ -23,6 +23,9 @@ interface MenuItem {
 })
 export class SidebarComponent implements OnInit, OnDestroy {
   @Input() collapsed = false;
+  @Input() mobileOpen = false;
+  @Output() mobileToggle = new EventEmitter<void>();
+
   menuItems: MenuItem[] = [];
   private destroy$ = new Subject<void>();
 
@@ -114,5 +117,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   hasVisibleChildren(item: MenuItem): boolean {
     return item.children?.some(child => child.visible !== false) ?? false;
+  }
+
+  onMenuItemClick(): void {
+    if (window.innerWidth <= 768) {
+      this.mobileToggle.emit();
+    }
   }
 }

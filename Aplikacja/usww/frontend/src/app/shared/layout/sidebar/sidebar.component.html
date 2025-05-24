@@ -1,8 +1,8 @@
-<aside class="sidebar" [ngClass]="{'collapsed': collapsed}">
+<aside class="sidebar" [ngClass]="{'collapsed': collapsed, 'mobile-open': mobileOpen}">
   <div class="sidebar-header">
     <div class="logo-container">
       <img src="assets/logo.svg" alt="USWW Logo" class="logo-icon">
-      <span class="logo-text" *ngIf="!collapsed">USWW</span>
+      <span class="logo-text" *ngIf="!collapsed || mobileOpen">USWW</span>
     </div>
   </div>
 
@@ -10,33 +10,35 @@
     <ul class="menu">
       <ng-container *ngFor="let item of menuItems">
         <li class="menu-item" *ngIf="isMenuItemVisible(item)">
-          <a
-            *ngIf="!item.children"
-            [routerLink]="item.route"
-            routerLinkActive="active"
-            class="menu-link"
+
+          *ngIf="!item.children"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="menu-link"
+          (click)="onMenuItemClick()"
           >
-            <i class="bi {{ item.icon }}"></i>
-            <span class="menu-text" *ngIf="!collapsed">{{ item.title }}</span>
-          </a>
+          <i class="bi {{ item.icon }}"></i>
+          <span class="menu-text" *ngIf="!collapsed || mobileOpen">{{ item.title }}</span>
 
           <div
-            *ngIf="item.children"
+            *ngIf="item.children && hasVisibleChildren(item)"
             class="menu-link has-submenu"
             [ngClass]="{'active': item.expanded}"
             (click)="toggleMenuItem(item)"
           >
             <i class="bi {{ item.icon }}"></i>
-            <span class="menu-text" *ngIf="!collapsed">{{ item.title }}</span>
-            <i *ngIf="!collapsed" class="bi dropdown-icon" [ngClass]="item.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+            <span class="menu-text" *ngIf="!collapsed || mobileOpen">{{ item.title }}</span>
+            <i *ngIf="(!collapsed || mobileOpen)" class="bi dropdown-icon" [ngClass]="item.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
           </div>
 
-          <ul class="submenu" *ngIf="item.children && item.expanded && !collapsed">
-            <li *ngFor="let child of item.children" class="submenu-item">
-              <a [routerLink]="child.route" routerLinkActive="active" class="submenu-link">
-                {{ child.title }}
-              </a>
-            </li>
+          <ul class="submenu" *ngIf="item.children && item.expanded && (!collapsed || mobileOpen)">
+            <ng-container *ngFor="let child of item.children">
+              <li class="submenu-item" *ngIf="child.visible !== false">
+                <a [routerLink]="child.route" routerLinkActive="active" class="submenu-link" (click)="onMenuItemClick()">
+                  {{ child.title }}
+                </a>
+              </li>
+            </ng-container>
           </ul>
         </li>
       </ng-container>

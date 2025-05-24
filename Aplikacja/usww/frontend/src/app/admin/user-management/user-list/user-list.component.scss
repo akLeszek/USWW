@@ -1,29 +1,151 @@
-.btn-group-sm > .btn {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
+.container-fluid {
+  padding: 15px;
+
+  @media (min-width: 769px) {
+    padding: 20px;
+  }
 }
 
-.table {
-  margin-bottom: 0;
+.card {
+  margin-bottom: 20px;
 }
 
 .card-header {
   background-color: #f8f9fa;
   border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 15px;
+
+  @media (min-width: 769px) {
+    padding: 15px 20px;
+  }
+
+  .d-flex {
+    flex-direction: column;
+    gap: 10px;
+
+    @media (min-width: 576px) {
+      flex-direction: row;
+      gap: 0;
+    }
+  }
+
+  h5 {
+    font-size: 1.1rem;
+    margin-bottom: 0;
+
+    @media (min-width: 769px) {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+.card-body {
+  padding: 15px;
+
+  @media (min-width: 769px) {
+    padding: 20px;
+  }
+}
+
+.btn-group-sm > .btn {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.7rem;
+
+  @media (min-width: 769px) {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+.table {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+
+  th, td {
+    padding: 8px 6px;
+    vertical-align: middle;
+
+    @media (min-width: 769px) {
+      padding: 12px;
+      font-size: 1rem;
+    }
+  }
+
+  th {
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+
+    .btn-group-sm > .btn {
+      padding: 0.15rem 0.3rem;
+      font-size: 0.65rem;
+      margin: 1px;
+    }
+  }
 }
 
 .badge {
-  min-width: 80px;
+  min-width: 70px;
   text-align: center;
+  font-size: 0.7rem;
+
+  @media (min-width: 769px) {
+    min-width: 80px;
+    font-size: 0.75rem;
+  }
 }
 
-@media (max-width: 768px) {
-  .table-responsive {
-    font-size: 0.9rem;
+.form-control, .form-select {
+  font-size: 0.9rem;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+}
+
+.row.mb-3 {
+  @media (max-width: 768px) {
+    margin-bottom: 15px;
+
+    .col-md-4 {
+      margin-bottom: 10px;
+    }
+  }
+}
+
+.table-responsive {
+  @media (max-width: 768px) {
+    margin: -5px;
+    padding: 5px;
+    font-size: 0.8rem;
+  }
+}
+
+::ng-deep .pagination {
+  justify-content: center;
+
+  .page-link {
+    font-size: 0.875rem;
+
+    @media (max-width: 768px) {
+      padding: 0.2rem 0.4rem;
+      font-size: 0.75rem;
+    }
   }
 
-  .btn-group-sm > .btn {
-    padding: 0.2rem 0.4rem;
-    font-size: 0.7rem;
+  @media (max-width: 768px) {
+    .page-item:not(.active):not(.disabled) {
+      display: none;
+
+      &:first-child,
+      &:last-child,
+      &:nth-child(2),
+      &:nth-last-child(2) {
+        display: block;
+      }
+    }
   }
 }

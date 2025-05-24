@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NgClass } from '@angular/common';
 
@@ -14,8 +14,41 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 })
 export class LayoutComponent {
   isSidebarCollapsed = false;
+  isMobileSidebarOpen = false;
+  isMobile = false;
+
+  constructor() {
+    this.checkScreenSize();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkScreenSize();
+    if (!this.isMobile) {
+      this.isMobileSidebarOpen = false;
+    }
+  }
+
+  private checkScreenSize() {
+    this.isMobile = window.innerWidth <= 768;
+    if (this.isMobile) {
+      this.isSidebarCollapsed = false;
+    }
+  }
 
   toggleSidebar() {
-    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    if (this.isMobile) {
+      this.toggleMobileSidebar();
+    } else {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    }
+  }
+
+  toggleMobileSidebar() {
+    this.isMobileSidebarOpen = !this.isMobileSidebarOpen;
+  }
+
+  closeMobileSidebar() {
+    this.isMobileSidebarOpen = false;
   }
 }

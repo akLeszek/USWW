@@ -11,21 +11,19 @@
       <ng-container *ngFor="let item of menuItems">
         <li class="menu-item" *ngIf="isMenuItemVisible(item)">
 
-          *ngIf="!item.children"
-          [routerLink]="item.route"
-          routerLinkActive="active"
-          class="menu-link"
-          (click)="onMenuItemClick()"
-          >
-          <i class="bi {{ item.icon }}"></i>
-          <span class="menu-text" *ngIf="!collapsed || mobileOpen">{{ item.title }}</span>
+          <a *ngIf="!item.children"
+             [routerLink]="item.route"
+             routerLinkActive="active"
+             class="menu-link"
+             (click)="onMenuItemClick()">
+            <i class="bi {{ item.icon }}"></i>
+            <span class="menu-text" *ngIf="!collapsed || mobileOpen">{{ item.title }}</span>
+          </a>
 
-          <div
-            *ngIf="item.children && hasVisibleChildren(item)"
-            class="menu-link has-submenu"
-            [ngClass]="{'active': item.expanded}"
-            (click)="toggleMenuItem(item)"
-          >
+          <div *ngIf="item.children && hasVisibleChildren(item)"
+               class="menu-link has-submenu"
+               [ngClass]="{'active': item.expanded}"
+               (click)="toggleMenuItem(item)">
             <i class="bi {{ item.icon }}"></i>
             <span class="menu-text" *ngIf="!collapsed || mobileOpen">{{ item.title }}</span>
             <i *ngIf="(!collapsed || mobileOpen)" class="bi dropdown-icon" [ngClass]="item.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
@@ -40,6 +38,7 @@
               </li>
             </ng-container>
           </ul>
+
         </li>
       </ng-container>
     </ul>

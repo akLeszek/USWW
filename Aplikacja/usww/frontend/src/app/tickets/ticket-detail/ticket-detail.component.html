@@ -59,44 +59,26 @@
               <div class="row">
                 <div class="col-md-4 mb-3" *ngIf="canChangeStatus()">
                   <label class="form-label">Status zgłoszenia</label>
-                  <div class="d-flex">
-                    <select [(ngModel)]="selectedStatusId" class="form-select me-2" [disabled]="updating">
-                      <option *ngFor="let status of statuses" [ngValue]="status.id">{{ status.name }}</option>
-                    </select>
-                    <button class="btn btn-outline-primary" [disabled]="updating"
-                            (click)="updateTicketStatus(selectedStatusId)">
-                      Zmień
-                    </button>
-                  </div>
+                  <select [(ngModel)]="selectedStatusId" class="form-select" [disabled]="updating">
+                    <option *ngFor="let status of statuses" [ngValue]="status.id">{{ status.name }}</option>
+                  </select>
                 </div>
 
                 <div class="col-md-4 mb-3" *ngIf="canChangePriority()">
                   <label class="form-label">Priorytet</label>
-                  <div class="d-flex">
-                    <select [(ngModel)]="selectedPriorityId" class="form-select me-2" [disabled]="updating">
-                      <option *ngFor="let priority of priorities" [ngValue]="priority.id">{{ priority.name }}</option>
-                    </select>
-                    <button class="btn btn-outline-primary" [disabled]="updating"
-                            (click)="updateTicketPriority(selectedPriorityId)">
-                      Zmień
-                    </button>
-                  </div>
+                  <select [(ngModel)]="selectedPriorityId" class="form-select" [disabled]="updating">
+                    <option *ngFor="let priority of priorities" [ngValue]="priority.id">{{ priority.name }}</option>
+                  </select>
                 </div>
 
                 <div class="col-md-4 mb-3" *ngIf="authService.isAdmin()">
                   <label class="form-label">Przypisz do operatora</label>
-                  <div class="d-flex">
-                    <select [(ngModel)]="selectedOperatorId" class="form-select me-2" [disabled]="updating">
-                      <option [ngValue]="null">Wybierz operatora</option>
-                      <option *ngFor="let operator of operators"
-                              [ngValue]="operator.id">{{ operator.forename }} {{ operator.surname }}
-                      </option>
-                    </select>
-                    <button class="btn btn-outline-primary" [disabled]="updating || !selectedOperatorId"
-                            (click)="assignToOperator(selectedOperatorId)">
-                      Przypisz
-                    </button>
-                  </div>
+                  <select [(ngModel)]="selectedOperatorId" class="form-select" [disabled]="updating">
+                    <option [ngValue]="null">Wybierz operatora</option>
+                    <option *ngFor="let operator of operators"
+                            [ngValue]="operator.id">{{ operator.forename }} {{ operator.surname }}
+                    </option>
+                  </select>
                 </div>
 
                 <div class="col-md-4 mb-3" *ngIf="authService.isOperator() && canAssignSelfToTicket">
@@ -110,24 +92,39 @@
                     </button>
                   </div>
                 </div>
+              </div>
 
-                <div class="col-md-4 mb-3 d-flex flex-column">
-                  <label class="form-label">Zarządzanie</label>
-                  <div class="d-flex">
+              <div class="ticket-control-panel mt-4" *ngIf="canChangeStatus() || canChangePriority() || authService.isAdmin() || canArchiveTicket() || canRestoreTicket()">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="control-buttons">
+                    <button
+                      class="btn btn-success me-2"
+                      [disabled]="!hasChanges() || updating"
+                      (click)="saveChanges()">
+                      <span *ngIf="updating" class="spinner-border spinner-border-sm me-1"></span>
+                      <i class="bi bi-check-lg"></i> Zapisz zmiany
+                    </button>
+                    <button
+                      *ngIf="hasChanges()"
+                      class="btn btn-outline-secondary me-2"
+                      [disabled]="updating"
+                      (click)="resetChanges()">
+                      <i class="bi bi-arrow-counterclockwise"></i> Cofnij zmiany
+                    </button>
+                  </div>
+                  <div class="archive-buttons">
                     <button
                       *ngIf="canArchiveTicket()"
                       class="btn btn-outline-danger me-2"
                       [disabled]="updating"
-                      (click)="archiveTicket()"
-                    >
+                      (click)="archiveTicket()">
                       <i class="bi bi-archive"></i> Archiwizuj
                     </button>
                     <button
                       *ngIf="canRestoreTicket()"
-                      class="btn btn-outline-success me-2"
+                      class="btn btn-outline-success"
                       [disabled]="updating"
-                      (click)="restoreTicket()"
-                    >
+                      (click)="restoreTicket()">
                       <i class="bi bi-arrow-counterclockwise"></i> Przywróć
                     </button>
                   </div>
@@ -225,7 +222,6 @@
           </div>
         </div>
 
-        <!-- Info if ticket is archived or closed -->
         <div *ngIf="!canAddMessage()" class="card bg-light">
           <div class="card-body text-center py-4">
             <i class="bi bi-lock" style="font-size: 1.5rem;"></i>

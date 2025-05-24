@@ -65,3 +65,38 @@
   padding-top: 15px;
   border-top: 1px solid #eee;
 }
+
+.ticket-control-panel {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 15px 20px;
+
+  .control-buttons {
+    display: flex;
+    align-items: center;
+  }
+
+  .archive-buttons {
+    display: flex;
+    align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    .d-flex {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .control-buttons,
+    .archive-buttons {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

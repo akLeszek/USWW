@@ -64,7 +64,7 @@ public class TicketController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'STUDENT')")
+    @PreAuthorize("hasAnyAuthority('STUDENT')")
     public ResponseEntity<TicketDTO> createTicket(@Valid @RequestBody TicketDTO ticketDTO) {
         return ResponseEntity.ok(ticketService.createTicket(ticketDTO));
     }

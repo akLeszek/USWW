@@ -170,20 +170,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   get quickActions(): { label: string; route: string; icon: string }[] {
-    const actions = [
-      {label: 'Nowe zgłoszenie', route: '/tickets/new', icon: 'bi-plus-circle'}
-    ];
+    const actions = [];
 
-    if (this.authService.hasRole('ADMIN')) {
-      actions.push(
-        {label: 'Zarządzaj użytkownikami', route: '/admin/users', icon: 'bi-people'}
-      );
+    if (this.authService.isStudent()) {
+      actions.push({
+        label: 'Nowe zgłoszenie',
+        route: '/tickets/new',
+        icon: 'bi-plus-circle'
+      });
     }
 
-    if (this.authService.hasRole('ADMIN') || this.authService.hasRole('OPERATOR')) {
-      actions.push(
-        {label: 'Wszystkie zgłoszenia', route: '/tickets', icon: 'bi-list-check'}
-      );
+    if (this.authService.isAdmin()) {
+      actions.push({
+        label: 'Zarządzaj użytkownikami',
+        route: '/admin/users',
+        icon: 'bi-people'
+      });
+    }
+
+    if (this.authService.isAdmin() || this.authService.isOperator()) {
+      actions.push({
+        label: 'Wszystkie zgłoszenia',
+        route: '/tickets',
+        icon: 'bi-list-check'
+      });
     }
 
     return actions;

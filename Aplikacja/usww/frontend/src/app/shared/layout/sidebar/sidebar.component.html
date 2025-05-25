@@ -21,15 +21,12 @@
           </a>
 
           <div *ngIf="item.children && hasVisibleChildren(item)"
-               class="menu-link has-submenu"
-               [ngClass]="{'active': item.expanded}"
-               (click)="toggleMenuItem(item)">
+               class="menu-link">
             <i class="bi {{ item.icon }}"></i>
             <span class="menu-text" *ngIf="!collapsed || mobileOpen">{{ item.title }}</span>
-            <i *ngIf="(!collapsed || mobileOpen)" class="bi dropdown-icon" [ngClass]="item.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
           </div>
 
-          <ul class="submenu" *ngIf="item.children && item.expanded && (!collapsed || mobileOpen)">
+          <ul class="submenu" *ngIf="item.children && (!collapsed || mobileOpen)">
             <ng-container *ngFor="let child of item.children">
               <li class="submenu-item" *ngIf="child.visible !== false">
                 <a [routerLink]="child.route" routerLinkActive="active" class="submenu-link" (click)="onMenuItemClick()">

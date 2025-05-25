@@ -197,7 +197,7 @@ export class AuthService {
     const currentUser = this.currentUserValue;
     if (!currentUser) return false;
 
-    if (this.isAdmin()) return true;
+    if (this.isAdmin()) return false;
 
     if (resource === 'Ticket') {
       if (this.isOperator()) {

@@ -59,6 +59,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         title: 'Zgłoszenia',
         icon: 'bi-ticket-perforated',
         visible: true,
+        expanded: true,
         children: [
           {
             title: 'Lista zgłoszeń',
@@ -68,7 +69,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
           {
             title: 'Nowe zgłoszenie',
             route: '/tickets/new',
-            visible: this.authService.hasPermission('Ticket', 'CREATE')
+            visible: this.authService.isStudent()
           },
           {
             title: 'Nieprzypisane zgłoszenia',
@@ -81,6 +82,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         title: 'Administracja',
         icon: 'bi-gear',
         visible: this.authService.isAdmin(),
+        expanded: true,
         children: [
           {
             title: 'Użytkownicy',
@@ -108,7 +110,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   toggleMenuItem(item: MenuItem): void {
-    item.expanded = !item.expanded;
   }
 
   isMenuItemVisible(item: MenuItem): boolean {

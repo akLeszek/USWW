@@ -479,4 +479,13 @@ export class TicketListComponent implements OnInit, OnDestroy {
   refreshList(): void {
     this.loadTickets();
   }
+
+  shouldShowAssignmentFilter(): boolean {
+    return this.canFilterByAssignment() && !this.isOnUnassignedView();
+  }
+
+  private isOnUnassignedView(): boolean {
+    return this.filterAssignment === 'unassigned' &&
+      window.location.pathname.includes('/tickets/unassigned');
+  }
 }

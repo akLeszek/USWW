@@ -57,6 +57,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
   Math = Math;
 
   private destroy$ = new Subject<void>();
+  private isUnassignedView = false;
 
   constructor(
     private ticketService: TicketService,
@@ -74,7 +75,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.loadOperators();
 
     this.route.url.subscribe(segments => {
-      if (segments.length > 1 && segments[1].path === 'unassigned') {
+      this.isUnassignedView = segments.length > 1 && segments[1].path === 'unassigned';
+      if (this.isUnassignedView) {
         this.filterAssignment = 'unassigned';
       }
     });
@@ -253,7 +255,11 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.filterCategory = '';
     this.filterStatus = '';
     this.filterPriority = '';
-    this.filterAssignment = '';
+
+    if (!this.isUnassignedView) {
+      this.filterAssignment = '';
+    }
+
     this.applyFilters();
   }
 
@@ -481,11 +487,10 @@ export class TicketListComponent implements OnInit, OnDestroy {
   }
 
   shouldShowAssignmentFilter(): boolean {
-    return this.canFilterByAssignment() && !this.isOnUnassignedView();
+    return this.canFilterByAssignment() && !this.isUnassignedView;
   }
 
-  private isOnUnassignedView(): boolean {
-    return this.filterAssignment === 'unassigned' &&
-      window.location.pathname.includes('/tickets/unassigned');
+  protected isOnUnassignedView(): boolean {
+    return this.isUnassignedView;
   }
 }

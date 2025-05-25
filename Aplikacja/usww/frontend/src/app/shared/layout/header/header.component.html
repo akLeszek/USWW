@@ -8,7 +8,7 @@
 
   <div class="header-right">
     <div class="user-controls" *ngIf="userLogin">
-      <button class="user-button" (click)="toggleProfilePanel()" [class.active]="showProfilePanel">
+      <button class="user-button" (click)="navigateToProfile()" title="Profil użytkownika">
         <i class="bi bi-person-circle"></i>
         <span class="username">{{ userLogin }}</span>
       </button>
@@ -18,11 +18,4 @@
       </button>
     </div>
   </div>
-
-  <div class="profile-overlay" *ngIf="showProfilePanel" (click)="closeProfilePanel()"></div>
-
-  <app-user-profile
-    *ngIf="showProfilePanel"
-    (closeProfile)="closeProfilePanel()">
-  </app-user-profile>
 </header>

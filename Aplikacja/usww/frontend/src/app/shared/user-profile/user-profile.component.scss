@@ -1,164 +1,136 @@
-.user-profile-panel {
-  position: fixed;
-  top: 60px;
-  right: 15px;
-  width: 350px;
-  max-height: calc(100vh - 80px);
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  z-index: 1050;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+.container-fluid {
+  padding: 15px;
 
-  @media (max-width: 768px) {
-    position: fixed;
-    top: 60px;
-    left: 10px;
-    right: 10px;
-    width: auto;
-    max-height: calc(100vh - 80px);
-  }
-
-  .profile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-
-    h5 {
-      color: #495057;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .btn-close {
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      opacity: 0.6;
-      transition: opacity 0.2s;
-
-      &:hover {
-        opacity: 1;
-      }
-    }
-  }
-
-  .profile-content {
+  @media (min-width: 769px) {
     padding: 20px;
-    max-height: calc(100vh - 140px);
-    overflow-y: auto;
+  }
+}
 
-    @media (max-width: 768px) {
-      padding: 15px;
-      max-height: calc(100vh - 130px);
-    }
+.card {
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 15px 20px;
+}
+
+.card-body {
+  padding: 20px;
+
+  @media (min-width: 769px) {
+    padding: 30px;
+  }
+}
+
+.user-avatar {
+  i {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 15px;
   }
 
-  .user-avatar {
-    text-align: center;
-    margin-bottom: 20px;
+  .username {
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+  }
+}
 
-    i {
-      font-size: 3rem;
+.profile-info {
+  margin-bottom: 30px;
+
+  .row {
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f3f4;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .col-sm-4 {
+      font-weight: 500;
       color: #6c757d;
-      margin-bottom: 8px;
-    }
-
-    .username {
-      font-weight: 600;
-      color: #495057;
-      margin: 0;
-    }
-  }
-
-  .profile-info {
-    margin-bottom: 25px;
-
-    .info-row {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f3f4;
 
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .info-label {
-        font-weight: 500;
-        color: #6c757d;
-        font-size: 0.9rem;
-        min-width: 100px;
-      }
-
-      .info-value {
-        color: #495057;
-        font-size: 0.9rem;
-        text-align: right;
-        flex: 1;
-        margin-left: 10px;
-
-        .badge {
-          font-size: 0.75rem;
-        }
-      }
-    }
-  }
-
-  .profile-actions {
-    border-top: 1px solid #f1f3f4;
-    padding-top: 20px;
-
-    .btn {
-      font-size: 0.9rem;
-    }
-
-    .password-form {
-      border: 1px solid #e9ecef;
-      border-radius: 6px;
-      padding: 15px;
-      background-color: #f8f9fa;
-
-      .form-label {
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: #495057;
+      @media (max-width: 575px) {
         margin-bottom: 5px;
       }
+    }
 
-      .form-control {
+    .col-sm-8 {
+      color: #495057;
+      display: flex;
+      align-items: center;
+
+      .badge {
         font-size: 0.85rem;
-        border-radius: 4px;
-      }
-
-      .invalid-feedback {
-        font-size: 0.75rem;
-      }
-
-      .alert {
-        font-size: 0.85rem;
-        margin-bottom: 15px;
-        padding: 8px 12px;
       }
     }
   }
 }
 
-.profile-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.3);
-  z-index: 1040;
+.profile-actions {
+  border-top: 1px solid #f1f3f4;
+  padding-top: 25px;
 
-  @media (min-width: 769px) {
-    display: none;
+  .btn {
+    font-size: 0.9rem;
+  }
+
+  .password-form {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f8f9fa;
+
+    h6 {
+      color: #495057;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .form-label {
+      font-weight: 500;
+      color: #495057;
+      margin-bottom: 5px;
+    }
+
+    .form-control {
+      border-radius: 6px;
+    }
+
+    .invalid-feedback {
+      font-size: 0.85rem;
+    }
+
+    .alert {
+      margin-bottom: 15px;
+      padding: 10px 15px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 10px;
+  }
+
+  .card-body {
+    padding: 15px;
+  }
+
+  .user-avatar {
+    i {
+      font-size: 3rem;
+    }
+  }
+
+  .profile-actions .password-form {
+    padding: 15px;
   }
 }

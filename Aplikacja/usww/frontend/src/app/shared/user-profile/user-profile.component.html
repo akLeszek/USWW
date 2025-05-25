@@ -1,150 +1,192 @@
-<div class="user-profile-panel">
-  <div class="profile-header">
-    <h5 class="mb-0">Profil użytkownika</h5>
-    <button type="button" class="btn-close" (click)="closeProfilePanel()"></button>
-  </div>
-
-  <div class="profile-content">
-    <div *ngIf="loading" class="text-center py-4">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Ładowanie...</span>
-      </div>
-    </div>
-
-    <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
-      {{ error }}
-      <button type="button" class="btn-close" (click)="error = ''"></button>
-    </div>
-
-    <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
-      {{ success }}
-      <button type="button" class="btn-close" (click)="success = ''"></button>
-    </div>
-
-    <div *ngIf="!loading && userProfile" class="profile-details">
-      <div class="user-avatar">
-        <i class="bi bi-person-circle"></i>
-        <h6 class="username">{{ userProfile.login }}</h6>
-      </div>
-
-      <div class="profile-info">
-        <div class="info-row">
-          <span class="info-label">Imię:</span>
-          <span class="info-value">{{ userProfile.forename || 'Brak' }}</span>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Profil użytkownika</h5>
+          <button class="btn btn-sm btn-outline-secondary" routerLink="/dashboard">
+            <i class="bi bi-arrow-left"></i> Dashboard
+          </button>
         </div>
-
-        <div class="info-row">
-          <span class="info-label">Nazwisko:</span>
-          <span class="info-value">{{ userProfile.surname || 'Brak' }}</span>
-        </div>
-
-        <div class="info-row">
-          <span class="info-label">Grupa:</span>
-          <span class="info-value">{{ getUserGroupName() }}</span>
-        </div>
-
-        <div class="info-row">
-          <span class="info-label">Jednostka:</span>
-          <span class="info-value">{{ getOrganizationUnitName() }}</span>
-        </div>
-
-        <div class="info-row">
-          <span class="info-label">Ostatnie logowanie:</span>
-          <span class="info-value">{{ formatDate(userProfile.lastLogin) }}</span>
-        </div>
-
-        <div class="info-row">
-          <span class="info-label">Status:</span>
-          <span class="info-value">
-            <span class="badge" [ngClass]="{
-              'bg-success': !userProfile.loginBan && !userProfile.archive,
-              'bg-danger': userProfile.loginBan,
-              'bg-secondary': userProfile.archive
-            }">
-              {{ userProfile.archive ? 'Zarchiwizowany' : (userProfile.loginBan ? 'Zablokowany' : 'Aktywny') }}
-            </span>
-          </span>
-        </div>
-      </div>
-
-      <div class="profile-actions">
-        <button
-          class="btn btn-outline-primary btn-sm w-100"
-          (click)="togglePasswordForm()"
-          [disabled]="passwordChanging">
-          <i class="bi bi-key"></i>
-          {{ showPasswordForm ? 'Anuluj zmianę hasła' : 'Zmień hasło' }}
-        </button>
-
-        <div *ngIf="showPasswordForm" class="password-form mt-3">
-          <div *ngIf="passwordError" class="alert alert-danger alert-dismissible fade show">
-            {{ passwordError }}
-            <button type="button" class="btn-close" (click)="passwordError = ''"></button>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Ładowanie...</span>
+            </div>
           </div>
 
-          <div *ngIf="passwordSuccess" class="alert alert-success alert-dismissible fade show">
-            {{ passwordSuccess }}
-            <button type="button" class="btn-close" (click)="passwordSuccess = ''"></button>
+          <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+            {{ error }}
+            <button type="button" class="btn-close" (click)="error = ''"></button>
           </div>
 
-          <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()">
-            <div class="mb-3">
-              <label for="currentPassword" class="form-label">Aktualne hasło</label>
-              <input
-                type="password"
-                class="form-control form-control-sm"
-                id="currentPassword"
-                formControlName="currentPassword"
-                [ngClass]="{'is-invalid': passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched}"
-              >
-              <div class="invalid-feedback" *ngIf="passwordForm.get('currentPassword')?.errors?.['required'] && passwordForm.get('currentPassword')?.touched">
-                Aktualne hasło jest wymagane
+          <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
+            {{ success }}
+            <button type="number" class="btn-close" (click)="success = ''"></button>
+          </div>
+
+          <div *ngIf="!loading && userProfile" class="profile-content">
+            <div class="user-avatar text-center mb-4">
+              <i class="bi bi-person-circle"></i>
+              <h4 class="username mt-2">{{ userProfile.login }}</h4>
+            </div>
+
+            <div class="profile-info">
+              <div class="row mb-3">
+                <div class="col-sm-4">
+                  <strong>Imię:</strong>
+                </div>
+                <div class="col-sm-8">
+                  {{ userProfile.forename || 'Brak' }}
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-sm-4">
+                  <strong>Nazwisko:</strong>
+                </div>
+                <div class="col-sm-8">
+                  {{ userProfile.surname || 'Brak' }}
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-sm-4">
+                  <strong>Grupa:</strong>
+                </div>
+                <div class="col-sm-8">
+                  {{ getUserGroupName() }}
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-sm-4">
+                  <strong>Jednostka:</strong>
+                </div>
+                <div class="col-sm-8">
+                  {{ getOrganizationUnitName() }}
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-sm-4">
+                  <strong>Ostatnie logowanie:</strong>
+                </div>
+                <div class="col-sm-8">
+                  {{ formatDate(userProfile.lastLogin) }}
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-sm-4">
+                  <strong>Status:</strong>
+                </div>
+                <div class="col-sm-8">
+                  <span class="badge" [ngClass]="{
+                    'bg-success': !userProfile.loginBan && !userProfile.archive,
+                    'bg-danger': userProfile.loginBan,
+                    'bg-secondary': userProfile.archive
+                  }">
+                    {{ userProfile.archive ? 'Zarchiwizowany' : (userProfile.loginBan ? 'Zablokowany' : 'Aktywny') }}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div class="mb-3">
-              <label for="newPassword" class="form-label">Nowe hasło</label>
-              <input
-                type="password"
-                class="form-control form-control-sm"
-                id="newPassword"
-                formControlName="newPassword"
-                [ngClass]="{'is-invalid': passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched}"
-              >
-              <div class="invalid-feedback" *ngIf="passwordForm.get('newPassword')?.errors?.['required'] && passwordForm.get('newPassword')?.touched">
-                Nowe hasło jest wymagane
-              </div>
-              <div class="invalid-feedback" *ngIf="passwordForm.get('newPassword')?.errors?.['minlength'] && passwordForm.get('newPassword')?.touched">
-                Nowe hasło musi mieć co najmniej 6 znaków
+            <hr>
+
+            <div class="profile-actions">
+              <button
+                class="btn btn-outline-primary"
+                (click)="togglePasswordForm()"
+                [disabled]="passwordChanging">
+                <i class="bi bi-key"></i>
+                {{ showPasswordForm ? 'Anuluj zmianę hasła' : 'Zmień hasło' }}
+              </button>
+
+              <div *ngIf="showPasswordForm" class="password-form mt-4">
+                <h6>Zmiana hasła</h6>
+
+                <div *ngIf="passwordError" class="alert alert-danger alert-dismissible fade show">
+                  {{ passwordError }}
+                  <button type="button" class="btn-close" (click)="passwordError = ''"></button>
+                </div>
+
+                <div *ngIf="passwordSuccess" class="alert alert-success alert-dismissible fade show">
+                  {{ passwordSuccess }}
+                  <button type="button" class="btn-close" (click)="passwordSuccess = ''"></button>
+                </div>
+
+                <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()">
+                  <div class="mb-3">
+                    <label for="currentPassword" class="form-label">Aktualne hasło</label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="currentPassword"
+                      formControlName="currentPassword"
+                      [ngClass]="{'is-invalid': passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched}"
+                    >
+                    <div class="invalid-feedback" *ngIf="passwordForm.get('currentPassword')?.errors?.['required'] && passwordForm.get('currentPassword')?.touched">
+                      Aktualne hasło jest wymagane
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="newPassword" class="form-label">Nowe hasło</label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="newPassword"
+                      formControlName="newPassword"
+                      [ngClass]="{'is-invalid': passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched}"
+                    >
+                    <div class="invalid-feedback" *ngIf="passwordForm.get('newPassword')?.errors?.['required'] && passwordForm.get('newPassword')?.touched">
+                      Nowe hasło jest wymagane
+                    </div>
+                    <div class="invalid-feedback" *ngIf="passwordForm.get('newPassword')?.errors?.['minlength'] && passwordForm.get('newPassword')?.touched">
+                      Nowe hasło musi mieć co najmniej 6 znaków
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Potwierdź hasło</label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="confirmPassword"
+                      formControlName="confirmPassword"
+                      [ngClass]="{'is-invalid': (passwordForm.get('confirmPassword')?.invalid || passwordForm.errors?.['passwordMismatch']) && passwordForm.get('confirmPassword')?.touched}"
+                    >
+                    <div class="invalid-feedback" *ngIf="passwordForm.get('confirmPassword')?.errors?.['required'] && passwordForm.get('confirmPassword')?.touched">
+                      Potwierdzenie hasła jest wymagane
+                    </div>
+                    <div class="invalid-feedback" *ngIf="passwordForm.errors?.['passwordMismatch'] && passwordForm.get('confirmPassword')?.touched">
+                      Hasła nie są zgodne
+                    </div>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      [disabled]="passwordForm.invalid || passwordChanging"
+                    >
+                      <span *ngIf="passwordChanging" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                      Zmień hasło
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      (click)="togglePasswordForm()"
+                      [disabled]="passwordChanging">
+                      Anuluj
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
-
-            <div class="mb-3">
-              <label for="confirmPassword" class="form-label">Potwierdź hasło</label>
-              <input
-                type="password"
-                class="form-control form-control-sm"
-                id="confirmPassword"
-                formControlName="confirmPassword"
-                [ngClass]="{'is-invalid': (passwordForm.get('confirmPassword')?.invalid || passwordForm.errors?.['passwordMismatch']) && passwordForm.get('confirmPassword')?.touched}"
-              >
-              <div class="invalid-feedback" *ngIf="passwordForm.get('confirmPassword')?.errors?.['required'] && passwordForm.get('confirmPassword')?.touched">
-                Potwierdzenie hasła jest wymagane
-              </div>
-              <div class="invalid-feedback" *ngIf="passwordForm.errors?.['passwordMismatch'] && passwordForm.get('confirmPassword')?.touched">
-                Hasła nie są zgodne
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              class="btn btn-primary btn-sm w-100"
-              [disabled]="passwordForm.invalid || passwordChanging"
-            >
-              <span *ngIf="passwordChanging" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-              Zmień hasło
-            </button>
-          </form>
+          </div>
         </div>
       </div>
     </div>

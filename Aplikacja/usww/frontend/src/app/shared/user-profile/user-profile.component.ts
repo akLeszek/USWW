@@ -1,6 +1,7 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
 import { DictionaryService, Dictionary } from '../services/dictionary.service';
 
@@ -22,14 +23,13 @@ interface UserProfile {
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterModule
   ],
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.scss']
 })
 export class UserProfileComponent implements OnInit {
-  @Output() closeProfile = new EventEmitter<void>();
-
   userProfile: UserProfile | null = null;
   userGroups: Dictionary[] = [];
   organizationUnits: Dictionary[] = [];
@@ -47,7 +47,8 @@ export class UserProfileComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private dictionaryService: DictionaryService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private router: Router
   ) {
     this.passwordForm = this.formBuilder.group({
       currentPassword: ['', [Validators.required]],
@@ -160,7 +161,7 @@ export class UserProfileComponent implements OnInit {
     });
   }
 
-  closeProfilePanel(): void {
-    this.closeProfile.emit();
+  navigateToDashboard(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

@@ -87,8 +87,9 @@
   border-radius: 6px;
   transition: all 0.2s;
   color: #333;
+  text-decoration: none;
 
-  &:hover, &.active {
+  &:hover {
     background-color: rgba(13, 110, 253, 0.1);
     color: #0d6efd;
   }
@@ -142,19 +143,5 @@
     @media (min-width: 769px) {
       font-size: 1.2rem;
     }
-  }
-}
-
-.profile-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.3);
-  z-index: 1040;
-
-  @media (min-width: 769px) {
-    display: none;
   }
 }

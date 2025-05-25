@@ -14,7 +14,6 @@
           </div>
         </div>
         <div class="card-body">
-          <!-- Komunikaty -->
           <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
             {{ error }}
             <button type="button" class="btn-close" (click)="error = ''"></button>
@@ -25,7 +24,6 @@
             <button type="button" class="btn-close" (click)="success = ''"></button>
           </div>
 
-          <!-- Filtry -->
           <div class="row mb-3">
             <div class="col-md-3 mb-3">
               <label for="filterTitle" class="form-label">Tytuł</label>
@@ -65,7 +63,6 @@
               </select>
             </div>
 
-            <!-- Filtr przypisania - tylko dla admina i operatora -->
             <div class="col-md-3 mb-3" *ngIf="shouldShowAssignmentFilter()">
               <label for="filterAssignment" class="form-label">Przypisanie</label>
               <select
@@ -81,7 +78,6 @@
               </select>
             </div>
 
-            <!-- Filtr priorytetu -->
             <div class="col-md-3 mb-3" *ngIf="authService.isAdmin() || authService.isOperator()">
               <label for="filterPriority" class="form-label">Priorytet</label>
               <select
@@ -96,7 +92,6 @@
             </div>
           </div>
 
-          <!-- Przycisk kontrolne -->
           <div class="row mb-3">
             <div class="col-12">
               <div class="d-flex justify-content-end gap-2">
@@ -117,14 +112,12 @@
             </div>
           </div>
 
-          <!-- Ładowanie -->
           <div *ngIf="loading" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
               <span class="visually-hidden">Ładowanie...</span>
             </div>
           </div>
 
-          <!-- Tabela zgłoszeń -->
           <div *ngIf="!loading" class="table-responsive">
             <table class="table table-hover ticket-table">
               <thead>
@@ -166,7 +159,7 @@
                      [ngClass]="{'bi-sort-up': sortDirection === 'asc', 'bi-sort-down': sortDirection === 'desc'}">
                   </i>
                 </th>
-                <th scope="col">Akcje</th>
+                <th scope="col"></th>
               </tr>
               </thead>
               <tbody>
@@ -193,49 +186,15 @@
                   {{ getOperatorName(ticket.operatorId) }}
                 </td>
                 <td>
-                  <div class="btn-group btn-group-sm">
-                    <a [routerLink]="['/tickets', ticket.id]" class="btn btn-sm btn-outline-primary">
-                      <i class="bi bi-eye"></i> Szczegóły
-                    </a>
-                    <button
-                      *ngIf="canAssignTicket() && isTicketUnassigned(ticket)"
-                      class="btn btn-sm btn-outline-secondary"
-                      (click)="assignToMe(ticket.id)"
-                      [disabled]="processingTicketId === ticket.id"
-                    >
-                      <span *ngIf="processingTicketId === ticket.id"
-                            class="spinner-border spinner-border-sm me-1"></span>
-                      <i class="bi bi-person-plus"></i>
-                    </button>
-                    <div ngbDropdown *ngIf="authService.isAdmin() && !ticket.archive" class="d-inline-block">
-                      <button class="btn btn-sm btn-outline-secondary" id="assignDropdown" ngbDropdownToggle>
-                        <i class="bi bi-person-badge"></i>
-                      </button>
-                      <div ngbDropdownMenu aria-labelledby="assignDropdown">
-                        <button *ngFor="let operator of operators"
-                                ngbDropdownItem
-                                (click)="assignToOperator(ticket.id, operator.id)"
-                                [disabled]="processingTicketId === ticket.id">
-                          {{ operator.forename }} {{ operator.surname }}
-                        </button>
-                      </div>
-                    </div>
-                    <button
-                      *ngIf="authService.isAdmin() && !ticket.archive"
-                      class="btn btn-sm btn-outline-danger"
-                      (click)="ticket.id !== undefined && archiveTicket(ticket.id)"
-                      [disabled]="processingTicketId === ticket.id"
-                    >
-                      <i class="bi bi-archive"></i>
-                    </button>
-                  </div>
+                  <a [routerLink]="['/tickets', ticket.id]" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i> Szczegóły
+                  </a>
                 </td>
               </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Brak wyników -->
           <div *ngIf="!loading && filteredTickets.length === 0" class="alert alert-info text-center">
             Brak zgłoszeń spełniających kryteria wyszukiwania.
             <button class="btn btn-sm btn-outline-primary ms-2" (click)="resetFilters()">
@@ -243,7 +202,6 @@
             </button>
           </div>
 
-          <!-- Paginacja -->
           <div *ngIf="!loading && filteredTickets.length > 0"
                class="d-flex justify-content-between align-items-center mt-3">
             <div>

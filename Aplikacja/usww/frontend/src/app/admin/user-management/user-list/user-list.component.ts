@@ -140,87 +140,6 @@ export class UserListComponent implements OnInit {
     return unit ? unit.name : 'Nieznana jednostka';
   }
 
-  blockUser(userId: number): void {
-    this.error = '';
-    this.success = '';
-    this.processingUserId = userId;
-
-    this.userService.blockUser(userId).subscribe({
-      next: () => {
-        const user = this.users.find(u => u.id === userId);
-        if (user) user.loginBan = true;
-        this.success = 'Użytkownik został zablokowany pomyślnie';
-        this.processingUserId = null;
-      },
-      error: (error) => {
-        this.error = 'Nie udało się zablokować użytkownika';
-        this.processingUserId = null;
-      }
-    });
-  }
-
-  unblockUser(userId: number): void {
-    this.error = '';
-    this.success = '';
-    this.processingUserId = userId;
-
-    this.userService.unblockUser(userId).subscribe({
-      next: () => {
-        const user = this.users.find(u => u.id === userId);
-        if (user) user.loginBan = false;
-        this.success = 'Użytkownik został odblokowany pomyślnie';
-        this.processingUserId = null;
-      },
-      error: (error) => {
-        this.error = 'Nie udało się odblokować użytkownika';
-        this.processingUserId = null;
-      }
-    });
-  }
-
-  canCreateUser(): boolean {
-    return this.authService.isAdmin();
-  }
-
-  canEditUser(user: User): boolean {
-    return this.authService.isAdmin() ||
-      (this.authService.currentUserValue?.userId === user.id);
-  }
-
-  canBlockUser(user: User): boolean {
-    if (!this.authService.isAdmin()) return false;
-    return user.id !== this.authService.currentUserValue?.userId;
-  }
-
-  canUnblockUser(user: User): boolean {
-    return this.authService.isAdmin();
-  }
-
-  canResetPassword(user: User): boolean {
-    return this.authService.isAdmin();
-  }
-
-  canArchiveUser(user: User): boolean {
-    return this.authService.isAdmin() && user.id !== this.authService.currentUserValue?.userId;
-  }
-
-  resetPassword(userId: number): void {
-    this.error = '';
-    this.success = '';
-    this.processingUserId = userId;
-
-    this.userService.resetPassword(userId).subscribe({
-      next: (response: User) => {
-        this.success = `Hasło zostało zresetowane. Nowe hasło: ${response.generatedPassword}`;
-        this.processingUserId = null;
-      },
-      error: (error: unknown) => {
-        this.error = 'Nie udało się zresetować hasła użytkownika';
-        this.processingUserId = null;
-      }
-    });
-  }
-
   archiveUser(userId: number): void {
     this.error = '';
     this.success = '';
@@ -243,11 +162,6 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  get currentPageUsers() {
-    const startIndex = (this.page - 1) * this.pageSize;
-    return this.filteredUsers.slice(startIndex, startIndex + this.pageSize);
-  }
-
   restoreUser(userId: number): void {
     this.error = '';
     this.success = '';
@@ -267,5 +181,15 @@ export class UserListComponent implements OnInit {
         this.processingUserId = null;
       }
     });
+  }
+
+  canEditUser(user: User): boolean {
+    return this.authService.isAdmin() ||
+      (this.authService.currentUserValue?.userId === user.id);
+  }
+
+  get currentPageUsers() {
+    const startIndex = (this.page - 1) * this.pageSize;
+    return this.filteredUsers.slice(startIndex, startIndex + this.pageSize);
   }
 }

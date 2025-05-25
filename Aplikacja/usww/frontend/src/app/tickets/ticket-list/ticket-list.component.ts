@@ -2,14 +2,12 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { NgbDropdownModule, NgbModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { Subject } from 'rxjs';
 
 import { Ticket, TicketService } from '../services/ticket.service';
 import { Dictionary, DictionaryService } from '../../shared/services/dictionary.service';
 import { AuthService } from '../../auth/services/auth.service';
-import { ToastService } from '../../shared/services/toast.service';
-import { User, UserService } from '../../admin/services/user.service';
 
 @Component({
   selector: 'app-ticket-list',
@@ -19,8 +17,7 @@ import { User, UserService } from '../../admin/services/user.service';
     RouterModule,
     FormsModule,
     NgbModule,
-    NgbPaginationModule,
-    NgbDropdownModule
+    NgbPaginationModule
   ],
   templateUrl: './ticket-list.component.html',
   styleUrls: ['./ticket-list.component.scss']
@@ -31,11 +28,9 @@ export class TicketListComponent implements OnInit, OnDestroy {
   categories: Dictionary[] = [];
   statuses: Dictionary[] = [];
   priorities: Dictionary[] = [];
-  operators: User[] = [];
   operatorNames: Record<number, string> = {};
 
   loading = true;
-  processingTicketId: number | null = null;
   error = '';
   success = '';
 
@@ -52,8 +47,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
   sortColumn = 'insertedDate';
   sortDirection = 'desc';
 
-  defaultOperatorLogin = 'unknown_operator';
-  defaultOperator?: User;
   Math = Math;
 
   private destroy$ = new Subject<void>();
@@ -63,9 +56,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
     private ticketService: TicketService,
     private dictionaryService: DictionaryService,
     private route: ActivatedRoute,
-    public authService: AuthService,
-    private toastService: ToastService,
-    private userService: UserService
+    public authService: AuthService
   ) {
     this.operatorNames = {};
   }
@@ -121,54 +112,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadOperators(): void {
-    if (!this.canAssignTicket()) {
-      return;
-    }
-
-    this.ticketService.getOperators().subscribe({
-      next: (operators: User[]) => {
-        this.operators = operators;
-        this.defaultOperator = operators.find(op => op.login === this.defaultOperatorLogin);
-        operators.forEach(operator => {
-          this.operatorNames[operator.id] = `${operator.forename} ${operator.surname}`;
-        });
-
-        if (!this.defaultOperator) {
-          this.loadUnknownOperator();
-        }
-      },
-      error: (error: unknown) => {
-        console.error('Error loading operators:', error);
-      }
-    });
-  }
-
-  private loadUnknownOperator(): void {
-    this.userService.getUserByLogin(this.defaultOperatorLogin).subscribe({
-      next: (unknownOperator) => {
-        this.defaultOperator = unknownOperator;
-        this.operatorNames[unknownOperator.id] = `${unknownOperator.forename} ${unknownOperator.surname}`;
-      },
-      error: (error) => {
-        console.error('Error loading unknown operator:', error);
-      }
-    });
-  }
-
-  isTicketUnassigned(ticket: Ticket): boolean {
-    if (!ticket.operatorId) {
-      return true;
-    }
-
-    if (this.defaultOperator) {
-      return this.defaultOperator.id === ticket.operatorId;
-    }
-
-    const operator = this.operators.find(op => op.id === ticket.operatorId);
-    return operator?.login === this.defaultOperatorLogin;
-  }
-
   loadTickets(): void {
     this.loading = true;
 
@@ -204,15 +147,11 @@ export class TicketListComponent implements OnInit, OnDestroy {
   }
 
   private loadOperatorNamesForTickets(): void {
-    if (this.canAssignTicket()) {
-      this.loadOperators();
-    } else {
-      this.tickets.forEach(ticket => {
-        if (ticket.operatorId && !this.operatorNames[ticket.operatorId]) {
-          this.operatorNames[ticket.operatorId] = 'Operator';
-        }
-      });
-    }
+    this.tickets.forEach(ticket => {
+      if (ticket.operatorId && !this.operatorNames[ticket.operatorId]) {
+        this.operatorNames[ticket.operatorId] = 'Operator';
+      }
+    });
   }
 
   applyFilters(): void {
@@ -241,9 +180,9 @@ export class TicketListComponent implements OnInit, OnDestroy {
         const currentUserId = this.authService.currentUserValue?.userId;
 
         if (this.filterAssignment === 'assigned') {
-          assignmentMatch = !this.isTicketUnassigned(ticket);
+          assignmentMatch = ticket.operatorId !== undefined && ticket.operatorId !== null;
         } else if (this.filterAssignment === 'unassigned') {
-          assignmentMatch = this.isTicketUnassigned(ticket);
+          assignmentMatch = !ticket.operatorId;
         } else if (this.filterAssignment === 'mine') {
           assignmentMatch = ticket.operatorId === currentUserId;
         }
@@ -306,7 +245,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
       .slice((this.page - 1) * this.pageSize, (this.page) * this.pageSize);
   }
 
-  // Metody pomocnicze do wyświetlania danych
   getCategoryName(categoryId?: number): string {
     if (!categoryId) return '';
     const category = this.categories.find(c => c.id === categoryId);
@@ -399,115 +337,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
     }
 
     return this.statuses;
-  }
-
-  assignToMe(ticketId: number | undefined): void {
-    if (!ticketId || !this.canAssignTicket()) {
-      return;
-    }
-
-    this.processingTicketId = ticketId;
-    const operatorId = this.authService.currentUserValue?.userId;
-
-    if (!operatorId) {
-      this.toastService.showError('Brak ID operatora. Zaloguj się ponownie.');
-      this.processingTicketId = null;
-      return;
-    }
-
-    this.ticketService.assignTicketToOperator(ticketId, operatorId).subscribe({
-      next: (updatedTicket: Ticket) => {
-        // Aktualizacja zgłoszenia w lokalnej tablicy
-        const index = this.tickets.findIndex(t => t.id === ticketId);
-        if (index !== -1) {
-          this.tickets[index] = updatedTicket;
-        }
-
-        this.applyFilters();
-        this.toastService.showSuccess('Zgłoszenie zostało przypisane do Ciebie');
-        this.processingTicketId = null;
-      },
-      error: (error: unknown) => {
-        console.error('Error assigning ticket:', error);
-        this.toastService.showError('Nie udało się przypisać zgłoszenia');
-        this.processingTicketId = null;
-      }
-    });
-  }
-
-  assignToOperator(ticketId: number | undefined, operatorId: number): void {
-    if (!ticketId || !this.authService.isAdmin()) {
-      return;
-    }
-
-    this.processingTicketId = ticketId;
-    this.ticketService.assignTicketToOperator(ticketId, operatorId).subscribe({
-      next: (updatedTicket: Ticket) => {
-        const index = this.tickets.findIndex(t => t.id === ticketId);
-        if (index !== -1) {
-          this.tickets[index] = updatedTicket;
-        }
-
-        this.applyFilters();
-        this.toastService.showSuccess('Zgłoszenie zostało przypisane do operatora');
-        this.processingTicketId = null;
-      },
-      error: (error: unknown) => {
-        console.error('Error assigning ticket:', error);
-        this.toastService.showError('Nie udało się przypisać zgłoszenia');
-        this.processingTicketId = null;
-      }
-    });
-  }
-
-  changeTicketStatus(ticketId: number, statusId: number): void {
-    if (!this.authService.canModifyResource(ticketId, 'Ticket')) {
-      return;
-    }
-
-    this.processingTicketId = ticketId;
-    this.ticketService.updateTicketStatus(ticketId, statusId).subscribe({
-      next: (updatedTicket: Ticket) => {
-        const index = this.tickets.findIndex(t => t.id === ticketId);
-        if (index !== -1) {
-          this.tickets[index] = updatedTicket;
-        }
-
-        this.applyFilters();
-        this.toastService.showSuccess('Status zgłoszenia został zmieniony');
-        this.processingTicketId = null;
-      },
-      error: (error: unknown) => {
-        console.error('Error updating ticket status:', error);
-        this.toastService.showError('Nie udało się zmienić statusu zgłoszenia');
-        this.processingTicketId = null;
-      }
-    });
-  }
-
-  archiveTicket(ticketId: number): void {
-    if (!ticketId || !this.authService.isAdmin()) {
-      return;
-    }
-
-    this.processingTicketId = ticketId;
-    this.ticketService.archiveTicket(ticketId).subscribe({
-      next: (updatedTicket: Ticket) => {
-        const index = this.tickets.findIndex(t => t.id === ticketId);
-        if (index !== -1) {
-          this.tickets[index] = updatedTicket;
-        }
-
-        this.applyFilters();
-        this.toastService.showSuccess('Zgłoszenie zostało zarchiwizowane');
-        this.processingTicketId = null;
-      },
-      error: (error: unknown) => {
-        console.error('Error archiving ticket:', error);
-        this.toastService.showError('Nie udało się zarchiwizować zgłoszenia');
-        this.processingTicketId = null;
-      }
-    });
   }
 
   refreshList(): void {

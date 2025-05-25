@@ -77,7 +77,7 @@ public class DictionaryController {
     }
 
     @GetMapping("/user-groups")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<UserGroupDTO>> getAllUserGroups() {
         return ResponseEntity.ok(userGroupService.getAllUserGroups());
     }

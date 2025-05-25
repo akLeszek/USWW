@@ -56,7 +56,6 @@ export class TicketService {
     this.http.get<UploadConfig>(`${this.configApiUrl}/upload`).subscribe({
       next: (config) => {
         this.uploadConfig = config;
-        console.log('Upload configuration loaded:', config);
       },
       error: (error) => {
         console.error('Failed to load upload configuration:', error);

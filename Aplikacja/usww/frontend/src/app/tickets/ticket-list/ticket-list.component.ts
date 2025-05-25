@@ -164,6 +164,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
             this.operatorNames[operatorId] = user.login === 'unknown_operator'
               ? 'Nieprzypisany'
               : `${user.forename} ${user.surname}`.trim() || user.login;
+            console.log('ALS: ', user);
           },
           error: (error) => {
             console.error(`Error loading operator ${operatorId} info:`, error);

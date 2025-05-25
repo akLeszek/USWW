@@ -606,7 +606,7 @@ export class TicketDetailComponent implements OnInit {
     if (!this.senderNames[senderId]) {
       this.commonUserService.getUserBasicInfo(senderId).subscribe({
         next: (user) => {
-          this.senderNames[senderId] = user.login || `${user.forename} ${user.surname}`;
+          this.senderNames[senderId] = `${user.forename} ${user.surname}` || user.login;
         },
         error: (error) => {
           console.error(`Error fetching user ${senderId} info:`, error);

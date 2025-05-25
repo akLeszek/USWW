@@ -101,7 +101,7 @@ public class UserMapperTest {
         assertThat(basicInfoDTO.getId()).isEqualTo(1);
         assertThat(basicInfoDTO.getForename()).isEqualTo("Jan");
         assertThat(basicInfoDTO.getSurname()).isEqualTo("Kowalski");
-        assertThat(basicInfoDTO.getLogin()).isNull();
+        assertThat(basicInfoDTO.getLogin()).isEqualTo("testuser");
         assertThat(basicInfoDTO.getGroupId()).isNull();
         assertThat(basicInfoDTO.getOrganizationUnitId()).isNull();
     }

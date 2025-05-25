@@ -192,8 +192,6 @@ export class TicketDetailComponent implements OnInit {
             this.canAssignSelfToTicket =
               student.organizationUnitId === operator.organizationUnitId &&
               this.ticket?.operatorId !== currentUserId;
-
-            console.log('Can assign to self:', this.canAssignSelfToTicket);
           },
           error: (error) => {
             console.error('Error getting operator data:', error);

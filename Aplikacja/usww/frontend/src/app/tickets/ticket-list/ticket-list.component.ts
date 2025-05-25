@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 import { Ticket, TicketService } from '../services/ticket.service';
 import { Dictionary, DictionaryService } from '../../shared/services/dictionary.service';
 import { AuthService } from '../../auth/services/auth.service';
+import { CommonUserService } from '../../shared/services/common-user.service';
 
 @Component({
   selector: 'app-ticket-list',
@@ -55,6 +56,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
   constructor(
     private ticketService: TicketService,
     private dictionaryService: DictionaryService,
+    private commonUserService: CommonUserService,
     private route: ActivatedRoute,
     public authService: AuthService
   ) {
@@ -147,9 +149,27 @@ export class TicketListComponent implements OnInit, OnDestroy {
   }
 
   private loadOperatorNamesForTickets(): void {
-    this.tickets.forEach(ticket => {
-      if (ticket.operatorId && !this.operatorNames[ticket.operatorId]) {
-        this.operatorNames[ticket.operatorId] = 'Operator';
+    const operatorIds = [...new Set(
+      this.tickets
+        .filter(ticket => ticket.operatorId)
+        .map(ticket => ticket.operatorId!)
+    )];
+
+    operatorIds.forEach(operatorId => {
+      if (!this.operatorNames[operatorId]) {
+        this.operatorNames[operatorId] = 'Ładowanie...';
+
+        this.commonUserService.getUserBasicInfo(operatorId).subscribe({
+          next: (user) => {
+            this.operatorNames[operatorId] = user.login === 'unknown_operator'
+              ? 'Nieprzypisany'
+              : `${user.forename} ${user.surname}`.trim() || user.login;
+          },
+          error: (error) => {
+            console.error(`Error loading operator ${operatorId} info:`, error);
+            this.operatorNames[operatorId] = `Operator #${operatorId}`;
+          }
+        });
       }
     });
   }
@@ -265,7 +285,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
 
   getOperatorName(operatorId?: number): string {
     if (!operatorId) return 'Nieprzypisany';
-    return this.operatorNames[operatorId] || `Operator #${operatorId}`;
+    return this.operatorNames[operatorId] || 'Ładowanie...';
   }
 
   getStatusClass(statusId?: number): string {

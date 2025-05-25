@@ -34,6 +34,7 @@ public class UserMapper {
 
         UserDTO basicInfo = new UserDTO();
         basicInfo.setId(user.getId());
+        basicInfo.setLogin(user.getLogin());
         basicInfo.setForename(user.getForename());
         basicInfo.setSurname(user.getSurname());
 

@@ -75,13 +75,17 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.loadOperators();
 
     this.route.url.subscribe(segments => {
+      const wasUnassignedView = this.isUnassignedView;
       this.isUnassignedView = segments.length > 1 && segments[1].path === 'unassigned';
+
       if (this.isUnassignedView) {
         this.filterAssignment = 'unassigned';
+      } else if (wasUnassignedView) {
+        this.filterAssignment = '';
       }
-    });
 
-    this.loadTickets();
+      this.loadTickets();
+    });
   }
 
   ngOnDestroy(): void {
@@ -195,6 +199,13 @@ export class TicketListComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
+    if (this.isUnassignedView && this.filterAssignment === 'unassigned') {
+      this.filteredTickets = [...this.tickets];
+      this.sortFilteredTickets();
+      this.collectionSize = this.filteredTickets.length;
+      return;
+    }
+
     this.filteredTickets = this.tickets.filter(ticket => {
       const titleMatch = !this.filterTitle ||
         (ticket.title && ticket.title.toLowerCase().includes(this.filterTitle.toLowerCase()));

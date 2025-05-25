@@ -72,7 +72,6 @@ export class TicketListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDictionaries();
-    this.loadOperators();
 
     this.route.url.subscribe(segments => {
       const wasUnassignedView = this.isUnassignedView;
@@ -120,13 +119,13 @@ export class TicketListComponent implements OnInit, OnDestroy {
         console.error('Error loading priorities:', error);
       }
     });
-
-    if (this.canAssignTicket()) {
-      this.loadOperators();
-    }
   }
 
   loadOperators(): void {
+    if (!this.canAssignTicket()) {
+      return;
+    }
+
     this.ticketService.getOperators().subscribe({
       next: (operators: User[]) => {
         this.operators = operators;
@@ -136,19 +135,23 @@ export class TicketListComponent implements OnInit, OnDestroy {
         });
 
         if (!this.defaultOperator) {
-          this.userService.getUserByLogin(this.defaultOperatorLogin).subscribe({
-            next: (unknownOperator) => {
-              this.defaultOperator = unknownOperator;
-              this.operatorNames[unknownOperator.id] = `${unknownOperator.forename} ${unknownOperator.surname}`;
-            },
-            error: (error) => {
-              console.error('Error loading unknown operator:', error);
-            }
-          });
+          this.loadUnknownOperator();
         }
       },
       error: (error: unknown) => {
         console.error('Error loading operators:', error);
+      }
+    });
+  }
+
+  private loadUnknownOperator(): void {
+    this.userService.getUserByLogin(this.defaultOperatorLogin).subscribe({
+      next: (unknownOperator) => {
+        this.defaultOperator = unknownOperator;
+        this.operatorNames[unknownOperator.id] = `${unknownOperator.forename} ${unknownOperator.surname}`;
+      },
+      error: (error) => {
+        console.error('Error loading unknown operator:', error);
       }
     });
   }
@@ -173,6 +176,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
       this.ticketService.getUnassignedTickets().subscribe({
         next: (tickets) => {
           this.tickets = tickets;
+          this.loadOperatorNamesForTickets();
           this.applyFilters();
           this.loading = false;
         },
@@ -186,6 +190,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
       this.ticketService.getAllTickets().subscribe({
         next: (tickets) => {
           this.tickets = tickets;
+          this.loadOperatorNamesForTickets();
           this.applyFilters();
           this.loading = false;
         },
@@ -193,6 +198,18 @@ export class TicketListComponent implements OnInit, OnDestroy {
           this.error = 'Wystąpił błąd podczas ładowania zgłoszeń.';
           console.error('Error loading tickets:', error);
           this.loading = false;
+        }
+      });
+    }
+  }
+
+  private loadOperatorNamesForTickets(): void {
+    if (this.canAssignTicket()) {
+      this.loadOperators();
+    } else {
+      this.tickets.forEach(ticket => {
+        if (ticket.operatorId && !this.operatorNames[ticket.operatorId]) {
+          this.operatorNames[ticket.operatorId] = 'Operator';
         }
       });
     }

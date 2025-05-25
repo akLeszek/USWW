@@ -55,7 +55,7 @@
               </div>
             </div>
 
-            <div class="ticket-actions mt-4">
+            <div class="ticket-actions mt-4" *ngIf="!authService.isStudent()">
               <div class="row">
                 <div class="col-md-4 mb-3" *ngIf="canChangeStatus()">
                   <label class="form-label">Status zgłoszenia</label>
@@ -172,7 +172,7 @@
 
         <div *ngIf="canAddMessage()" class="card">
           <div class="card-header">
-            <h5 class="mb-0">Odpowiedź</h5>
+            <h5 class="mb-0">{{ authService.isStudent() ? 'Dodaj odpowiedź' : 'Odpowiedź' }}</h5>
           </div>
           <div class="card-body">
             <form [formGroup]="messageForm" (ngSubmit)="sendMessage()">

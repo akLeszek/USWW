@@ -36,8 +36,17 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
         if (hasRole("OPERATOR")) {
             Integer operatorId = ticket.getOperator() != null ? ticket.getOperator().getId() : null;
-            return (isDefaultOperator(operatorId) || userDetails.getUserId().equals(operatorId)) &&
-                    isSameOrganizationUnit(userDetails.getUserId(), ticket.getStudent().getId());
+
+            if (userDetails.getUserId().equals(operatorId)) {
+                return true;
+            }
+
+            if (isDefaultOperator(operatorId) &&
+                    isSameOrganizationUnit(userDetails.getUserId(), ticket.getStudent().getId())) {
+                return true;
+            }
+
+            return false;
         }
 
         return userDetails.getUserId().equals(ticket.getStudent().getId());
@@ -63,15 +72,21 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
         if (hasRole("OPERATOR")) {
             Integer operatorId = ticket.getOperator() != null ? ticket.getOperator().getId() : null;
-            return userDetails.getUserId().equals(operatorId);
+
+            if (userDetails.getUserId().equals(operatorId)) {
+                return true;
+            }
+
+            if (isDefaultOperator(operatorId) &&
+                    isSameOrganizationUnit(userDetails.getUserId(), ticket.getStudent().getId())) {
+                return true;
+            }
+
+            return false;
         }
 
         if (hasRole("STUDENT")) {
-            Integer studentId = ticket.getStudent() != null ? ticket.getStudent().getId() : null;
-            boolean isOwner = userDetails.getUserId().equals(studentId);
-            boolean hasNewStatus = ticket.getStatus() != null &&
-                    "NEW".equals(ticket.getStatus().getIdn());
-            return isOwner && hasNewStatus;
+            return false;
         }
 
         return false;
@@ -195,9 +210,12 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         return user1.getOrganizationUnit().getId().equals(user2.getOrganizationUnit().getId());
     }
 
-    private boolean isDefaultOperator(Integer userId) {
-        User defaultOperator = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return defaultOperator.getLogin().equals(Constants.DEFAULT_OPERATOR_LOGIN);
+    private boolean isDefaultOperator(Integer operatorId) {
+        if (operatorId == null) {
+            return true;
+        }
+
+        User operator = userRepository.findById(operatorId).orElse(null);
+        return operator != null && Constants.DEFAULT_OPERATOR_LOGIN.equals(operator.getLogin());
     }
 }

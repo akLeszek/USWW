@@ -144,6 +144,14 @@ export class TicketDetailComponent implements OnInit {
   loadOperators(): void {
     if (!this.ticket || !this.ticket.studentId) return;
 
+    if (this.authService.isAdmin()) {
+      this.loadOperatorsForAdmin();
+    } else if (this.authService.isOperator()) {
+      this.checkIfCanAssignToMe();
+    }
+  }
+
+  private loadOperatorsForAdmin(): void {
     this.userService.getUserByLogin("unknown_operator").subscribe({
       next: (unknownOperator) => {
         if (!this.operators.some(op => op.id === unknownOperator.id)) {
@@ -159,19 +167,15 @@ export class TicketDetailComponent implements OnInit {
       }
     });
 
-    if (this.authService.isAdmin()) {
-      this.ticketService.getOperatorsBySameOrganizationAsStudent(this.ticket.studentId).subscribe({
-        next: (operators) => {
-          this.operators = operators;
-        },
-        error: (error) => {
-          console.error('Error loading operators for student organization:', error);
-          this.loadAllOperators();
-        }
-      });
-    } else if (this.authService.isOperator()) {
-      this.checkIfCanAssignToMe();
-    }
+    this.ticketService.getOperatorsBySameOrganizationAsStudent(this.ticket!.studentId!).subscribe({
+      next: (operators) => {
+        this.operators = [...this.operators, ...operators];
+      },
+      error: (error) => {
+        console.error('Error loading operators for student organization:', error);
+        this.loadAllOperators();
+      }
+    });
   }
 
   checkIfCanAssignToMe(): void {
@@ -483,17 +487,23 @@ export class TicketDetailComponent implements OnInit {
   canEditTicket(): boolean {
     if (!this.ticket) return false;
 
+    if (this.authService.isStudent()) {
+      return false;
+    }
+
     return this.authService.canModifyResource(this.ticket.id!, 'Ticket') &&
       !this.ticket.archive &&
       !this.isClosedStatus(this.ticket.statusId);
   }
 
   canChangeStatus(): boolean {
-    return this.authService.isAdmin() || this.authService.isOperator();
+    return (this.authService.isAdmin() || this.authService.isOperator()) &&
+      this.canEditTicket();
   }
 
   canChangePriority(): boolean {
-    return this.authService.isAdmin() || this.authService.isOperator();
+    return (this.authService.isAdmin() || this.authService.isOperator()) &&
+      this.canEditTicket();
   }
 
   canAssignToMe(): boolean {

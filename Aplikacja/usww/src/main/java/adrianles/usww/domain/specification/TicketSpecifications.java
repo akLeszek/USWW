@@ -150,12 +150,37 @@ public class TicketSpecifications {
         }
 
         if (userRoles.contains("OPERATOR")) {
-            return spec.or(hasOperatorId(userId))
-                    .or(hasSameOrganizationUnitAs(userId))
-                    .or(isUnassignedOrDefaultOperator());
+            return spec.and(accessibleByOperator(userId));
         }
 
         return spec.and(hasStudentId(userId));
+    }
+
+    public static Specification<Ticket> accessibleByOperator(Integer operatorId) {
+        return (root, query, cb) -> {
+            Subquery<Integer> orgUnitSubquery = query.subquery(Integer.class);
+            Root<User> operatorRoot = orgUnitSubquery.from(User.class);
+
+            orgUnitSubquery.select(operatorRoot.get("organizationUnit").get("id"))
+                    .where(cb.equal(operatorRoot.get("id"), operatorId));
+
+            Join<Ticket, User> studentJoin = root.join("student");
+            Join<Ticket, User> operatorJoin = root.join("operator", JoinType.LEFT);
+
+            return cb.or(
+                    cb.equal(root.get("operator").get("id"), operatorId),
+                    cb.and(
+                            cb.or(
+                                    cb.isNull(root.get("operator")),
+                                    cb.equal(operatorJoin.get("login"), Constants.DEFAULT_OPERATOR_LOGIN)
+                            ),
+                            cb.and(
+                                    cb.isNotNull(studentJoin.get("organizationUnit")),
+                                    cb.in(studentJoin.get("organizationUnit").get("id")).value(orgUnitSubquery)
+                            )
+                    )
+            );
+        };
     }
 
     public static Specification<Ticket> hasSameOrganizationUnitAs(Integer userId) {

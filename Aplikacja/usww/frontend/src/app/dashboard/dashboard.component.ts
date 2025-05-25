@@ -7,6 +7,7 @@ import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
 import {catchError, debounceTime, distinctUntilChanged, finalize, map, startWith, takeUntil} from 'rxjs/operators';
 import {AuthService} from '../auth/services/auth.service';
 import {DashboardService, DashboardStatistics, RecentTicket} from './services/dashboard.service';
+import {Dictionary, DictionaryService} from '../shared/services/dictionary.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +26,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   sortField = new BehaviorSubject<keyof RecentTicket>('insertedDate');
   sortDirection = new BehaviorSubject<'asc' | 'desc'>('desc');
 
+  statuses: Dictionary[] = [];
+  categories: Dictionary[] = [];
+  priorities: Dictionary[] = [];
+
   loading = false;
   error = '';
   refreshing = false;
@@ -33,15 +38,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private dashboardService: DashboardService,
-    private authService: AuthService
+    private authService: AuthService,
+    private dictionaryService: DictionaryService
   ) {
   }
 
   ngOnInit(): void {
+    this.loadDictionaries();
     this.initDataStreams();
-
     this.setupFiltering();
-
     this.loadDashboardData(true);
 
     this.dashboardService.error$
@@ -57,6 +62,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .subscribe(isLoading => {
         this.loading = isLoading;
       });
+  }
+
+  private loadDictionaries(): void {
+    this.dictionaryService.getTicketStatuses().subscribe({
+      next: (statuses) => {
+        this.statuses = statuses;
+      },
+      error: (error) => {
+        console.error('Error loading statuses:', error);
+      }
+    });
+
+    this.dictionaryService.getTicketCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+      }
+    });
+
+    this.dictionaryService.getTicketPriorities().subscribe({
+      next: (priorities) => {
+        this.priorities = priorities;
+      },
+      error: (error) => {
+        console.error('Error loading priorities:', error);
+      }
+    });
   }
 
   private initDataStreams(): void {
@@ -102,8 +136,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const term = searchTerm.toLowerCase();
     return tickets.filter(ticket =>
       ticket.title.toLowerCase().includes(term) ||
-      (ticket.status?.toLowerCase().includes(term) || '') ||
-      (ticket.category?.toLowerCase().includes(term) || '')
+      this.getStatusName(ticket.statusId).toLowerCase().includes(term) ||
+      this.getCategoryName(ticket.categoryId).toLowerCase().includes(term)
     );
   }
 
@@ -167,6 +201,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getStatusClass(statusId: number): string {
     return this.dashboardService.getStatusClass(statusId);
+  }
+
+  getStatusName(statusId: number): string {
+    const status = this.statuses.find(s => s.id === statusId);
+    return status ? status.name : 'Nieznany';
+  }
+
+  getCategoryName(categoryId: number): string {
+    const category = this.categories.find(c => c.id === categoryId);
+    return category ? category.name : 'Nieznana';
+  }
+
+  getPriorityName(priorityId?: number): string {
+    if (!priorityId) return 'Brak';
+    const priority = this.priorities.find(p => p.id === priorityId);
+    return priority ? priority.name : 'Nieznany';
   }
 
   get quickActions(): { label: string; route: string; icon: string }[] {

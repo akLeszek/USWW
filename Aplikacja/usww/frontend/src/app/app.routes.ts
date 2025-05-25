@@ -11,6 +11,7 @@ import {UserListComponent} from './admin/user-management/user-list/user-list.com
 import {UserFormComponent} from './admin/user-management/user-form/user-form.component';
 import {DictionaryListComponent} from './admin/dictionaries/dictionary-list/dictionary-list.component';
 import {DictionaryFormComponent} from './admin/dictionaries/dictionary-form/dictionary-form.component';
+import {UserProfileComponent} from './shared/user-profile/user-profile.component';
 
 export const routes: Routes = [
   {path: 'login', component: LoginComponent},
@@ -21,6 +22,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {path: 'dashboard', component: DashboardComponent},
+      {path: 'profile', component: UserProfileComponent},
       {path: 'tickets', component: TicketListComponent},
       {path: 'tickets/new', component: CreateTicketComponent},
       {path: 'tickets/unassigned', component: TicketListComponent},

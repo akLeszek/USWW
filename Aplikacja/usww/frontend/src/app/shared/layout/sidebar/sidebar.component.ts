@@ -56,6 +56,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
         visible: true
       },
       {
+        title: 'Profil',
+        icon: 'bi-person',
+        route: '/profile',
+        visible: true
+      },
+      {
         title: 'Zgłoszenia',
         icon: 'bi-ticket-perforated',
         visible: true,

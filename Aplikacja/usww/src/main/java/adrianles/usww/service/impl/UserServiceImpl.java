@@ -15,12 +15,14 @@ import adrianles.usww.security.userdetails.ExtendedUserDetails;
 import adrianles.usww.service.facade.UserService;
 import adrianles.usww.utils.Constants;
 import adrianles.usww.utils.UserGroupUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -239,5 +241,15 @@ public class UserServiceImpl implements UserService {
         return operators.stream()
                 .map(userMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void updateLastLoginTime(String login) {
+        User user = userRepository.findByLogin(login)
+                .orElseThrow(() -> new ResourceNotFoundException("User with login " + login + " not found"));
+
+        user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
     }
 }

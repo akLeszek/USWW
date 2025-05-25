@@ -8,6 +8,7 @@ import adrianles.usww.security.jwt.JwtUtil;
 import adrianles.usww.security.userdetails.ExtendedUserDetails;
 import adrianles.usww.security.userdetails.UserDetailsServiceImpl;
 import adrianles.usww.service.facade.UserPasswordService;
+import adrianles.usww.service.facade.UserService;
 import adrianles.usww.service.impl.TokenCacheService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class AuthController {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
     private final UserPasswordService userPasswordService;
+    private final UserService userService;
     private final TokenCacheService tokenCacheService;
 
     @PostMapping("/login")
@@ -45,6 +47,8 @@ public class AuthController {
         if (userDetails.isFirstLogin()) {
             return userFirstLogin(userDetails);
         }
+
+        userService.updateLastLoginTime(authRequest.getUsername());
 
         String token = jwtUtil.generateToken(userDetails.getUsername());
         tokenCacheService.setActiveToken(userDetails.getUsername(), token);

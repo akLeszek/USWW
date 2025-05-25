@@ -30,4 +30,7 @@ public interface UserService {
     List<UserDTO> getOperatorsBySameOrganizationUnitAsStudent(Integer studentId);
 
     User findUserById(Integer userId);
+
+    @Transactional
+    void updateLastLoginTime(String login);
 }

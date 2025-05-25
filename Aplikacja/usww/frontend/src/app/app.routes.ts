@@ -23,6 +23,7 @@ export const routes: Routes = [
     children: [
       {path: 'dashboard', component: DashboardComponent},
       {path: 'profile', component: UserProfileComponent},
+      {path: 'profile/change-password', component: ChangePasswordComponent},
       {path: 'tickets', component: TicketListComponent},
       {path: 'tickets/new', component: CreateTicketComponent},
       {path: 'tickets/unassigned', component: TicketListComponent},

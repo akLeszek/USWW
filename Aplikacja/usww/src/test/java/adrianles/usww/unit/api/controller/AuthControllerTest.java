@@ -9,6 +9,7 @@ import adrianles.usww.security.jwt.JwtUtil;
 import adrianles.usww.security.userdetails.ExtendedUserDetails;
 import adrianles.usww.security.userdetails.UserDetailsServiceImpl;
 import adrianles.usww.service.facade.UserPasswordService;
+import adrianles.usww.service.facade.UserService;
 import adrianles.usww.service.impl.TokenCacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +54,9 @@ class AuthControllerTest {
     @Mock
     private ExtendedUserDetails userDetails;
 
+    @Mock
+    private UserService userService;
+
     @InjectMocks
     private AuthController authController;
 
@@ -64,6 +68,8 @@ class AuthControllerTest {
         authRequest = new AuthRequest();
         authRequest.setUsername("testuser");
         authRequest.setPassword("password");
+
+        userService.updateLastLoginTime("testuser");
 
         passwordChangeRequest = new PasswordChangeRequestDTO();
         passwordChangeRequest.setCurrentPassword("oldPassword");

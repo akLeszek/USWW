@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { NgClass, NgIf } from '@angular/common';
 
@@ -10,7 +10,8 @@ import { NgClass, NgIf } from '@angular/common';
   imports: [
     ReactiveFormsModule,
     NgClass,
-    NgIf
+    NgIf,
+    RouterLink
   ],
   templateUrl: './change-password.component.html',
   styleUrls: ['./change-password.component.scss']
@@ -21,6 +22,8 @@ export class ChangePasswordComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
   loading: boolean = false;
+  isFirstLogin: boolean = false;
+  isProfileContext: boolean = false;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -40,8 +43,17 @@ export class ChangePasswordComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.userId = params['userId'] ? Number(params['userId']) : null;
+      this.isFirstLogin = !!this.userId;
+      this.isProfileContext = !this.isFirstLogin;
 
-      if (!this.userId) {
+      if (this.isProfileContext) {
+        const currentUser = this.authService.currentUserValue;
+        if (currentUser) {
+          this.userId = currentUser.userId;
+        } else {
+          this.router.navigate(['/login']);
+        }
+      } else if (!this.userId) {
         this.router.navigate(['/login']);
       }
     });
@@ -67,9 +79,14 @@ export class ChangePasswordComponent implements OnInit {
 
     this.authService.changePassword(this.userId, currentPassword, newPassword).subscribe({
       next: (response) => {
-        this.successMessage = 'Hasło zostało zmienione pomyślnie. Za chwilę zostaniesz przekierowany do dashboardu.';
+        this.successMessage = 'Hasło zostało zmienione pomyślnie. Za chwilę zostaniesz przekierowany.';
+
         setTimeout(() => {
-          this.router.navigate(['/dashboard']);
+          if (this.isFirstLogin) {
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.router.navigate(['/profile']);
+          }
         }, 2000);
       },
       error: (error) => {
@@ -80,5 +97,19 @@ export class ChangePasswordComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  getTitle(): string {
+    return this.isFirstLogin ? 'Zmiana hasła' : 'Zmiana hasła';
+  }
+
+  getInfoMessage(): string {
+    return this.isFirstLogin
+      ? 'Wymagana jest zmiana hasła przy pierwszym logowaniu. Nowe hasło musi mieć co najmniej 6 znaków.'
+      : 'Wprowadź aktualne hasło oraz nowe hasło. Nowe hasło musi mieć co najmniej 6 znaków.';
+  }
+
+  getBackRoute(): string {
+    return this.isFirstLogin ? '/login' : '/profile';
   }
 }

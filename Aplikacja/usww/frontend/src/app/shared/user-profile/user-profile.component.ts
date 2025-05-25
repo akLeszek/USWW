@@ -164,4 +164,8 @@ export class UserProfileComponent implements OnInit {
   navigateToDashboard(): void {
     this.router.navigate(['/dashboard']);
   }
+
+  navigateToChangePassword(): void {
+    this.router.navigate(['/profile/change-password']);
+  }
 }

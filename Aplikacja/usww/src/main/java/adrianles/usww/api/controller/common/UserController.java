@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/basic-info")
-    @PreAuthorize("isAuthenticated() and (hasAuthority('ADMIN') or hasPermission(#id, 'User', 'READ'))")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDTO> getUserBasicInfo(@PathVariable int id) {
         return ResponseEntity.ok(userService.getUserBasicInfo(id));
     }

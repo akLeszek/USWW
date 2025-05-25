@@ -85,11 +85,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             return false;
         }
 
-        if (hasRole("STUDENT")) {
-            return false;
-        }
-
-        return false;
+        return userDetails.getUserId().equals(ticket.getStudent().getId());
     }
 
     @Override

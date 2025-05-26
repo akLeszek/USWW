@@ -34,10 +34,6 @@ export class TicketDetailComponent implements OnInit {
   selectedPriorityId: number | undefined | null = null;
   selectedOperatorId: number | null = null;
 
-  originalStatusId: number | undefined | null = null;
-  originalPriorityId: number | undefined | null = null;
-  originalOperatorId: number | null = null;
-
   messageForm: FormGroup;
   canAssignSelfToTicket = false;
 
@@ -97,10 +93,6 @@ export class TicketDetailComponent implements OnInit {
         this.selectedStatusId = ticket.statusId !== undefined ? ticket.statusId : null;
         this.selectedPriorityId = ticket.priorityId !== undefined ? ticket.priorityId : null;
         this.selectedOperatorId = ticket.operatorId !== undefined ? ticket.operatorId : null;
-
-        this.originalStatusId = this.selectedStatusId;
-        this.originalPriorityId = this.selectedPriorityId;
-        this.originalOperatorId = this.selectedOperatorId;
 
         this.loadOperators();
         this.loadMessages();
@@ -379,58 +371,6 @@ export class TicketDetailComponent implements OnInit {
     return null;
   }
 
-  hasChanges(): boolean {
-    return this.selectedStatusId !== this.originalStatusId ||
-      this.selectedPriorityId !== this.originalPriorityId ||
-      this.selectedOperatorId !== this.originalOperatorId;
-  }
-
-  saveChanges(): void {
-    if (!this.ticket || !this.hasChanges() || this.updating) return;
-
-    this.updating = true;
-    this.success = '';
-    this.error = '';
-
-    const updates: Promise<any>[] = [];
-
-    if (this.selectedStatusId !== this.originalStatusId && this.selectedStatusId !== null && this.selectedStatusId !== undefined) {
-      const statusUpdate = this.ticketService.updateTicketStatus(this.ticketId, this.selectedStatusId).toPromise();
-      updates.push(statusUpdate);
-    }
-
-    if (this.selectedPriorityId !== this.originalPriorityId && this.selectedPriorityId !== null && this.selectedPriorityId !== undefined) {
-      const priorityUpdate = this.ticketService.updateTicket(this.ticketId, {
-        ...this.ticket,
-        priorityId: this.selectedPriorityId
-      }).toPromise();
-      updates.push(priorityUpdate);
-    }
-
-    if (this.selectedOperatorId !== this.originalOperatorId && this.selectedOperatorId !== null) {
-      const operatorUpdate = this.ticketService.assignTicketToOperator(this.ticketId, this.selectedOperatorId).toPromise();
-      updates.push(operatorUpdate);
-    }
-
-    Promise.all(updates).then((results) => {
-      this.ticket = results[results.length - 1];
-      this.originalStatusId = this.selectedStatusId;
-      this.originalPriorityId = this.selectedPriorityId;
-      this.originalOperatorId = this.selectedOperatorId;
-      this.success = 'Zmiany zostały zapisane pomyślnie.';
-      this.updating = false;
-    }).catch((error) => {
-      this.error = 'Nie udało się zapisać zmian.';
-      this.updating = false;
-    });
-  }
-
-  resetChanges(): void {
-    this.selectedStatusId = this.originalStatusId;
-    this.selectedPriorityId = this.originalPriorityId;
-    this.selectedOperatorId = this.originalOperatorId;
-  }
-
   assignToMe(): void {
     if (!this.ticket || !this.canAssignSelfToTicket || this.updating) return;
 
@@ -445,7 +385,6 @@ export class TicketDetailComponent implements OnInit {
       next: (updatedTicket) => {
         this.ticket = updatedTicket;
         this.selectedOperatorId = currentUserId;
-        this.originalOperatorId = currentUserId;
         this.canAssignSelfToTicket = false;
         this.success = 'Zgłoszenie zostało przypisane do Ciebie pomyślnie.';
         this.updating = false;
@@ -634,5 +573,91 @@ export class TicketDetailComponent implements OnInit {
     }
 
     return this.senderNames[senderId];
+  }
+
+  onStatusChange(newStatusId: number): void {
+    if (!this.ticket || this.updating || newStatusId === this.ticket.statusId) {
+      return;
+    }
+
+    this.updating = true;
+    this.success = '';
+    this.error = '';
+
+    this.ticketService.updateTicketStatus(this.ticketId, newStatusId).subscribe({
+      next: (updatedTicket) => {
+        this.ticket = updatedTicket;
+        this.selectedStatusId = newStatusId;
+        this.success = 'Status został zaktualizowany pomyślnie.';
+        this.updating = false;
+        this.clearMessageAfterDelay();
+      },
+      error: (error) => {
+        this.selectedStatusId = this.ticket?.statusId;
+        this.error = 'Nie udało się zaktualizować statusu.';
+        this.updating = false;
+        this.clearMessageAfterDelay();
+      }
+    });
+  }
+
+  onPriorityChange(newPriorityId: number): void {
+    if (!this.ticket || this.updating || newPriorityId === this.ticket.priorityId) {
+      return;
+    }
+
+    this.updating = true;
+    this.success = '';
+    this.error = '';
+
+    const updatedTicket = { ...this.ticket, priorityId: newPriorityId };
+
+    this.ticketService.updateTicket(this.ticketId, updatedTicket).subscribe({
+      next: (result) => {
+        this.ticket = result;
+        this.selectedPriorityId = newPriorityId;
+        this.success = 'Priorytet został zaktualizowany pomyślnie.';
+        this.updating = false;
+        this.clearMessageAfterDelay();
+      },
+      error: (error) => {
+        this.selectedPriorityId = this.ticket?.priorityId;
+        this.error = 'Nie udało się zaktualizować priorytetu.';
+        this.updating = false;
+        this.clearMessageAfterDelay();
+      }
+    });
+  }
+
+  onOperatorChange(newOperatorId: number): void {
+    if (!this.ticket || this.updating || newOperatorId === this.ticket.operatorId) {
+      return;
+    }
+
+    this.updating = true;
+    this.success = '';
+    this.error = '';
+
+    this.ticketService.assignTicketToOperator(this.ticketId, newOperatorId).subscribe({
+      next: (updatedTicket) => {
+        this.ticket = updatedTicket;
+        this.selectedOperatorId = newOperatorId;
+        this.success = 'Operator został przypisany pomyślnie.';
+        this.updating = false;
+        this.clearMessageAfterDelay();
+      },
+      error: (error) => {
+        this.error = 'Nie udało się przypisać operatora.';
+        this.updating = false;
+        this.clearMessageAfterDelay();
+      }
+    });
+  }
+
+  private clearMessageAfterDelay(): void {
+    setTimeout(() => {
+      this.success = '';
+      this.error = '';
+    }, 3000);
   }
 }

@@ -432,12 +432,29 @@ export class TicketDetailComponent implements OnInit {
   }
 
   assignToMe(): void {
-    if (!this.ticket || !this.canAssignSelfToTicket) return;
+    if (!this.ticket || !this.canAssignSelfToTicket || this.updating) return;
 
     const currentUserId = this.authService.currentUserValue?.userId;
     if (!currentUserId) return;
 
-    this.selectedOperatorId = currentUserId;
+    this.updating = true;
+    this.success = '';
+    this.error = '';
+
+    this.ticketService.assignTicketToOperator(this.ticketId, currentUserId).subscribe({
+      next: (updatedTicket) => {
+        this.ticket = updatedTicket;
+        this.selectedOperatorId = currentUserId;
+        this.originalOperatorId = currentUserId;
+        this.canAssignSelfToTicket = false;
+        this.success = 'Zgłoszenie zostało przypisane do Ciebie pomyślnie.';
+        this.updating = false;
+      },
+      error: (error) => {
+        this.error = 'Nie udało się przypisać zgłoszenia.';
+        this.updating = false;
+      }
+    });
   }
 
   archiveTicket(): void {

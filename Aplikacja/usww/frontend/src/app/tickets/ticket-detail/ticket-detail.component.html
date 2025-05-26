@@ -88,7 +88,8 @@
                       class="btn btn-outline-primary"
                       [disabled]="updating"
                       (click)="assignToMe()">
-                      <i class="bi bi-person-check"></i> Przypisz do mnie
+                      <span *ngIf="updating" class="spinner-border spinner-border-sm me-1"></span>
+                      <i *ngIf="!updating" class="bi bi-person-check"></i> Przypisz do mnie
                     </button>
                   </div>
                 </div>
